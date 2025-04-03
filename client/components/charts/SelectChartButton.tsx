@@ -8,13 +8,14 @@ import {
   MessageCircleWarningIcon,
   SquareSquareIcon,
 } from "lucide-react";
-import type React from "react";
+import React from "react";
 
 type Props = {
   selected: string;
   onChange: (value: string) => void;
   onClickDensitySetting: () => void;
   onClickFullscreen: () => void;
+  isDenseGroupEnabled: boolean;
 };
 
 export function SelectChartButton({
@@ -22,6 +23,7 @@ export function SelectChartButton({
   onChange,
   onClickDensitySetting,
   onClickFullscreen,
+  isDenseGroupEnabled,
 }: Props) {
   return (
     <HStack
@@ -68,6 +70,8 @@ export function SelectChartButton({
               </Icon>
             }
             cursor={"pointer"}
+            disabled={!isDenseGroupEnabled}
+            disabledReason={"この設定条件では抽出できませんでした"}
           />
           <RadioCardItem
             value={"treemap"}
@@ -84,11 +88,7 @@ export function SelectChartButton({
       </RadioCardRoot>
       <HStack>
         <Tooltip content={"濃い意見グループ設定"} openDelay={0} closeDelay={0}>
-          <Button
-            onClick={onClickDensitySetting}
-            variant={"outline"}
-            h={"50px"}
-          >
+          <Button onClick={onClickDensitySetting} variant={"outline"} h={"50px"}>
             <Icon>
               <CogIcon />
             </Icon>
