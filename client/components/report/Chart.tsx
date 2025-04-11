@@ -4,7 +4,6 @@ import { Tooltip } from "@/components/ui/tooltip";
 import type { Result } from "@/type";
 import { Box, Button, Icon } from "@chakra-ui/react";
 import { Undo2Icon } from "lucide-react";
-import React from "react";
 
 type ReportProps = {
   result: Result;
@@ -57,12 +56,14 @@ export function Chart({
                 ? 1
                 : Math.max(...result.clusters.map((c) => c.level))
             }
+            onHover={avoidHoverTextCoveringShrinkButton}
           />
         )}
         {selectedChart === "treemap" && (
           <TreemapChart
             clusterList={result.clusters}
             argumentList={result.arguments}
+            onHover={avoidHoverTextCoveringShrinkButton}
           />
         )}
       </Box>
@@ -76,6 +77,7 @@ export function Chart({
           <TreemapChart
             clusterList={result.clusters}
             argumentList={result.arguments}
+            onHover={avoidHoverTextCoveringShrinkButton}
           />
         )}
         {(selectedChart === "scatterAll" ||
@@ -88,9 +90,44 @@ export function Chart({
                 ? 1
                 : Math.max(...result.clusters.map((c) => c.level))
             }
+            onHover={avoidHoverTextCoveringShrinkButton}
           />
         )}
       </Box>
     </Box>
   );
+}
+
+export function avoidHoverTextCoveringShrinkButton(): void {
+  alert('avoidHoverTextCoveringShrinkButton');
+  const hoverlayer = document.querySelector(".hoverlayer");
+  const shrinkButton = document.getElementById("tooltip:«rg»:trigger");
+  if (!hoverlayer || !shrinkButton) return;
+  const hoverPos = hoverlayer.getBoundingClientRect();
+  const btnPos = shrinkButton.getBoundingClientRect();
+  const isCovered = !(btnPos.top > hoverPos.bottom || btnPos.bottom < hoverPos.top || btnPos.left > hoverPos.right || btnPos.right < hoverPos.left);
+  if (!isCovered) return;
+
+  const diff = btnPos.bottom - hoverPos.top;
+
+  const hovertext = hoverlayer.querySelector(".hovertext");
+  if (!hovertext) return;
+  const originalTransform = hovertext.getAttribute("transform"); // 例：translate(1643,66)
+  if (!originalTransform) return;
+  const newTransform = originalTransform.split(",")[0]
+    + ","
+    + (Number(originalTransform.split(",")[1].slice(0, -1)) + diff).toString()
+    + ")";
+  hovertext.setAttribute("transform", newTransform);
+
+  const hoverpath = hovertext.querySelector("path");
+  if (!hoverpath) return;
+  const originalPath = hoverpath.getAttribute("d"); // 例：M0,-65 L-6,40 v89 h-201 v-190 H-6 V28 Z
+  if (!originalPath) return;
+  const newPath = originalPath.split(",")[0]
+    + ","
+    + (Number(originalPath.split(",")[1].split("L")[0]) - diff).toString()
+    + "L"
+    + originalPath.split("L")[1];
+  hoverpath.setAttribute("d", newPath);
 }
