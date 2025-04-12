@@ -78,7 +78,6 @@ export function Chart({
           <TreemapChart
             clusterList={result.clusters}
             argumentList={result.arguments}
-            onHover={avoidHoverTextCoveringShrinkButton}
           />
         )}
         {(selectedChart === "scatterAll" ||
@@ -91,7 +90,6 @@ export function Chart({
                 ? 1
                 : Math.max(...result.clusters.map((c) => c.level))
             }
-            onHover={avoidHoverTextCoveringShrinkButton}
           />
         )}
       </Box>
@@ -99,7 +97,10 @@ export function Chart({
   );
 }
 
-export function avoidHoverTextCoveringShrinkButton(): void {
+/**
+ * If hover text is covered by 全画面終了 button, move hover text downwards until whole text is visible.
+ */
+function avoidHoverTextCoveringShrinkButton(): void {
   const hoverlayer = document.querySelector(".hoverlayer");
   const shrinkButton = document.getElementById("shrinkButton");
   if (!hoverlayer || !shrinkButton) return;
@@ -110,9 +111,10 @@ export function avoidHoverTextCoveringShrinkButton(): void {
 
   const diff = btnPos.bottom - hoverPos.top;
 
+  // move hoverlayer downwards
   const hovertext = hoverlayer.querySelector(".hovertext");
   if (!hovertext) return;
-  const originalTransform = hovertext.getAttribute("transform"); // 例：translate(1643,66)
+  const originalTransform = hovertext.getAttribute("transform"); // example：translate(1643,66)
   if (!originalTransform) return;
   const newTransform = originalTransform.split(",")[0]
     + ","
@@ -120,15 +122,21 @@ export function avoidHoverTextCoveringShrinkButton(): void {
     + ")";
   hovertext.setAttribute("transform", newTransform);
 
+  // hoverpath SVGs follow either of the following patterns:
+  // - bubble:    M0,-65 L-6,40 v89 h-201 v-190 H-6 V28 Z
+  // - rectangle: M-160,-17 h328 v35 h-328 Z
+  // In case of bubble pattern, the first point must go back to its original position.
   const hoverpath = hovertext.querySelector("path");
   if (!hoverpath) return;
-  const originalPath = hoverpath.getAttribute("d"); // 例：M0,-65 L-6,40 v89 h-201 v-190 H-6 V28 Z
+  const originalPath = hoverpath.getAttribute("d");
   if (!originalPath) return;
-  const leftOrRight = originalPath.includes("L") ? "L" : "R"; // 吹き出しが起点から左右どちらに出るか
+  const bubblePointers = originalPath.match(/[Ll]/g);
+  if (!bubblePointers) return; // rectangle pattern
+  const bubblePointer = bubblePointers[0];
   const newPath = originalPath.split(",")[0]
     + ","
-    + (Number(originalPath.split(",")[1].split(leftOrRight)[0]) - diff).toString()
-    + leftOrRight
-    + originalPath.split(leftOrRight)[1];
+    + (Number(originalPath.split(",")[1].split(bubblePointer)[0]) - diff).toString()
+    + bubblePointer
+    + originalPath.split(bubblePointer)[1];
   hoverpath.setAttribute("d", newPath);
 }

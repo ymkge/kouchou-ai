@@ -6,7 +6,7 @@ type Props = {
   clusterList: Cluster[];
   argumentList: Argument[];
   targetLevel: number;
-  onHover: (event: Readonly<PlotHoverEvent>) => void;
+  onHover?: (event: Readonly<PlotHoverEvent>) => void;
 };
 
 export function ScatterChart({

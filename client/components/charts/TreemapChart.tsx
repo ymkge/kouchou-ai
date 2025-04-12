@@ -5,7 +5,7 @@ import { ChartCore } from "./ChartCore";
 type Props = {
   clusterList: Cluster[];
   argumentList: Argument[];
-  onHover: (event: Readonly<PlotHoverEvent>) => void;
+  onHover?: (event: Readonly<PlotHoverEvent>) => void;
 };
 
 export function TreemapChart({ clusterList, argumentList, onHover }: Props) {
