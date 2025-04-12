@@ -1,11 +1,11 @@
 import type { Argument, Cluster } from "@/type";
-import type { PlotData, PlotHoverEvent } from "plotly.js";
+import type { PlotData } from "plotly.js";
 import { ChartCore } from "./ChartCore";
 
 type Props = {
   clusterList: Cluster[];
   argumentList: Argument[];
-  onHover?: (event: Readonly<PlotHoverEvent>) => void;
+  onHover?: () => void;
 };
 
 export function TreemapChart({ clusterList, argumentList, onHover }: Props) {

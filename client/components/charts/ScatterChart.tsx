@@ -1,19 +1,18 @@
 import type { Argument, Cluster } from "@/type";
-import { PlotHoverEvent } from "plotly.js";
 import { ChartCore } from "./ChartCore";
 
 type Props = {
   clusterList: Cluster[];
   argumentList: Argument[];
   targetLevel: number;
-  onHover?: (event: Readonly<PlotHoverEvent>) => void;
+  onHover?: () => void;
 };
 
 export function ScatterChart({
   clusterList,
   argumentList,
   targetLevel,
-  onHover
+  onHover,
 }: Props) {
   const targetClusters = clusterList.filter(
     (cluster) => cluster.level === targetLevel,

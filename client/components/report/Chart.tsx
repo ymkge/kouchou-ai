@@ -57,7 +57,7 @@ export function Chart({
                 ? 1
                 : Math.max(...result.clusters.map((c) => c.level))
             }
-            onHover={avoidHoverTextCoveringShrinkButton}
+            onHover={() => setTimeout(avoidHoverTextCoveringShrinkButton, 500)}
           />
         )}
         {selectedChart === "treemap" && (
@@ -106,7 +106,12 @@ function avoidHoverTextCoveringShrinkButton(): void {
   if (!hoverlayer || !shrinkButton) return;
   const hoverPos = hoverlayer.getBoundingClientRect();
   const btnPos = shrinkButton.getBoundingClientRect();
-  const isCovered = !(btnPos.top > hoverPos.bottom || btnPos.bottom < hoverPos.top || btnPos.left > hoverPos.right || btnPos.right < hoverPos.left);
+  const isCovered = !(
+    btnPos.top > hoverPos.bottom ||
+    btnPos.bottom < hoverPos.top ||
+    btnPos.left > hoverPos.right ||
+    btnPos.right < hoverPos.left
+  );
   if (!isCovered) return;
 
   const diff = btnPos.bottom - hoverPos.top;
@@ -116,10 +121,7 @@ function avoidHoverTextCoveringShrinkButton(): void {
   if (!hovertext) return;
   const originalTransform = hovertext.getAttribute("transform"); // example：translate(1643,66)
   if (!originalTransform) return;
-  const newTransform = originalTransform.split(",")[0]
-    + ","
-    + (Number(originalTransform.split(",")[1].slice(0, -1)) + diff).toString()
-    + ")";
+  const newTransform = `${originalTransform.split(",")[0]},${(Number(originalTransform.split(",")[1].slice(0, -1)) + diff).toString()})`;
   hovertext.setAttribute("transform", newTransform);
 
   // hoverpath SVGs follow either of the following patterns:
@@ -133,10 +135,6 @@ function avoidHoverTextCoveringShrinkButton(): void {
   const bubblePointers = originalPath.match(/[Ll]/g);
   if (!bubblePointers) return; // rectangle pattern
   const bubblePointer = bubblePointers[0];
-  const newPath = originalPath.split(",")[0]
-    + ","
-    + (Number(originalPath.split(",")[1].split(bubblePointer)[0]) - diff).toString()
-    + bubblePointer
-    + originalPath.split(bubblePointer)[1];
+  const newPath = `${originalPath.split(",")[0]},${(Number(originalPath.split(",")[1].split(bubblePointer)[0]) - diff).toString()}${bubblePointer}${originalPath.split(bubblePointer)[1]}`;
   hoverpath.setAttribute("d", newPath);
 }
