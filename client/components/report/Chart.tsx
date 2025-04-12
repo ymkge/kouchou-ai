@@ -33,6 +33,7 @@ export function Chart({
       >
         <Tooltip content={"全画面終了"} openDelay={0} closeDelay={0}>
           <Button
+            id={"shrinkButton"}
             onClick={onExitFullscreen}
             h={"50px"}
             position={"fixed"}
@@ -100,21 +101,8 @@ export function Chart({
 
 export function avoidHoverTextCoveringShrinkButton(): void {
   const hoverlayer = document.querySelector(".hoverlayer");
-  if (!hoverlayer) return;
-  const tooltipButtons =document.querySelectorAll('[type="button"][id^="tooltip:«"][id$="»:trigger"]');
-  let shrinkButton = null;
-  for (let tooltipButton of tooltipButtons) {
-    if (tooltipButton?.computedStyleMap()?.get("z-index") == 1) {
-      // 候補となるボタンが以下の3つ。
-      //  - SelectChartButton >「濃い意見グループ設定」「全画面表示」
-      //  - Chart >「全画面終了」
-      // そのうち目当ての「全画面終了」ボタンのみプロットの全面に表示されるようにz-indexが1と指定されている。他は未指定につき"auto"となる。
-      // もう少しちゃんとした判定方法があるはずだが、思いつかないので暫定的にこうする。
-      shrinkButton = tooltipButton;
-      break;
-    }
-  }
-  if (!shrinkButton) return;
+  const shrinkButton = document.getElementById("shrinkButton");
+  if (!hoverlayer || !shrinkButton) return;
   const hoverPos = hoverlayer.getBoundingClientRect();
   const btnPos = shrinkButton.getBoundingClientRect();
   const isCovered = !(btnPos.top > hoverPos.bottom || btnPos.bottom < hoverPos.top || btnPos.left > hoverPos.right || btnPos.right < hoverPos.left);
