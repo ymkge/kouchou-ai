@@ -1,6 +1,7 @@
-# Windows環境でのセットアップ手順
+# Windows環境でのユーザーガイド
 
-このドキュメントでは、Windows環境で広聴AI（kouchou-ai）をセットアップする手順を説明します。
+このドキュメントでは、開発者でない人がWindows環境で広聴AI（kouchou-ai）を使うための手順を説明します。
+ソフトウェア開発に必要な要素を取り除いて最小限にしたものです。
 
 ## 前提条件
 
@@ -16,9 +17,9 @@
 2. インストール後、Docker Desktopを起動します。
 3. タスクバーのDockerアイコンが実行中（緑色）になっていることを確認します。
 
-### 2. リポジトリのダウンロード
+### 2. 広聴AIのダウンロード
 
-1. [kouchou-aiリポジトリ](https://github.com/digitaldemocracy2030/kouchou-ai/archive/refs/heads/main.zip)をzipファイルでダウンロードします。
+1. [広聴AI最新版](https://github.com/digitaldemocracy2030/kouchou-ai/archive/refs/heads/main.zip)をzipファイルでダウンロードします。
 2. ダウンロードしたzipファイルを任意の場所に展開します。
 
 ### 3. OpenAI APIキーの準備
