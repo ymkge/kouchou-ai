@@ -55,12 +55,3 @@ Docker Desktopの設定からリソース割り当て（メモリ、CPU）を増
 
 - メモリ: 4GB以上
 - CPU: 2コア以上
-
-## 技術的な詳細
-
-このセットアップスクリプトは、Docker-outside-of-Docker（DooD）方式を使用しています。Windows環境の違いによる問題を回避し、一貫した環境でアプリケーションを実行するための方法です。
-
-Docker Desktopを使用する場合、以下の利点があります：
-- Docker Desktopはインストール時にDockerコマンドをWindowsのPATHに自動的に追加するため、batファイルから直接参照可能です
-- Docker Desktop自体がLinux環境を提供するため、別途Ubuntuイメージは必要ありません
-- セットアップが簡素化され、技術的な知識が少ないユーザーでも簡単に利用できます
