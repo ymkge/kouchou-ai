@@ -10,7 +10,7 @@
   - 多数派攻撃に対する防御機能（予定）
 
 ## 前提条件
-* docker, docker-compose
+* docker
 * OpenAI APIキー
 
 ## セットアップ・起動
@@ -34,10 +34,10 @@
 * リポジトリをクローン
 * `cp .env.example .env` をコンソールで実行
   * コピー後に各環境変数を設定。各環境変数の意味は.env.exampleに記載。
-* `docker-compose up` をコンソールで実行
+* `docker compose up` をコンソールで実行
   * ブラウザで http://localhost:3000 にアクセスすることでレポート一覧画面にアクセス可能
   * ブラウザで http://localhost:4000 にアクセスすることで管理画面にアクセス可能
-  * 環境変数（.env）を編集した場合は、`docker-compose down` を実行した後、 `docker-compose up --build` を実行してアプリケーションを起動してください
+  * 環境変数（.env）を編集した場合は、`docker compose down` を実行した後、 `docker compose up --build` を実行してアプリケーションを起動してください
     * 一部の環境変数はDockerイメージのビルド時に埋め込まれているため、環境変数を変更した場合はビルドの再実行が必要となります
 
 ### Google Analytics の設定
