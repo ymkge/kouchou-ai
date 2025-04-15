@@ -8,7 +8,7 @@ import {
   MessageCircleWarningIcon,
   SquareSquareIcon,
 } from "lucide-react";
-import React from "react";
+import type React from "react";
 
 type Props = {
   selected: string;
@@ -88,7 +88,11 @@ export function SelectChartButton({
       </RadioCardRoot>
       <HStack>
         <Tooltip content={"濃い意見グループ設定"} openDelay={0} closeDelay={0}>
-          <Button onClick={onClickDensitySetting} variant={"outline"} h={"50px"}>
+          <Button
+            onClick={onClickDensitySetting}
+            variant={"outline"}
+            h={"50px"}
+          >
             <Icon>
               <CogIcon />
             </Icon>
