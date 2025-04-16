@@ -245,6 +245,18 @@ function ReportCard({
       mb={4}
       borderLeftWidth={10}
       borderLeftColor={isErrorState ? "red.600" : statusDisplay.borderColor}
+      position="relative"
+      transition="all 0.2s"
+      role="group"
+      _hover={report.status === "ready" ? {
+        backgroundColor: "gray.50",
+        cursor: "pointer",
+      } : {}}
+      onClick={() => {
+        if (report.status === "ready") {
+          window.open(`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`, "_blank");
+        }
+      }}
     >
       <Card.Body>
         <HStack justify="space-between">
@@ -327,6 +339,38 @@ function ReportCard({
               )}
             </Box>
           </HStack>
+          {report.status === "ready" && (
+            <Box
+              position="absolute"
+              top="0"
+              left="0"
+              right="0"
+              bottom="0"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              backgroundColor="rgba(0, 0, 0, 0.05)"
+              opacity="0"
+              transition="opacity 0.2s"
+              _hover={{ opacity: 1 }}
+              pointerEvents="auto"
+              zIndex="10"
+            >
+              <Button
+                variant="solid"
+                size="sm"
+                bg="white"
+                color="black"
+                zIndex="50"
+                pointerEvents="auto"
+              >
+                <Flex align="center" gap={2}>
+                  <ExternalLinkIcon size={16} />
+                  <Text>レポートを見る</Text>
+                </Flex>
+              </Button>
+            </Box>
+          )}
           <HStack>
             {report.status === "ready" && report.isPubcom && (
               <Tooltip
@@ -336,7 +380,8 @@ function ReportCard({
               >
                 <Button
                   variant="ghost"
-                  onClick={async () => {
+                  onClick={async (e) => {
+                    e.stopPropagation(); // カード全体のクリックイベントを停止
                     try {
                       const response = await fetch(
                         `${getApiBaseUrl()}/admin/comments/${report.slug}/csv`,
@@ -381,7 +426,8 @@ function ReportCard({
                     <Button
                       variant={report.isPublic ? "solid" : "outline"}
                       size="sm"
-                      onClick={async () => {
+                      onClick={async (e) => {
+                        e.stopPropagation(); // カード全体のクリックイベントを停止
                         try {
                           const response = await fetch(
                             `${getApiBaseUrl()}/admin/reports/${report.slug}/visibility`,
@@ -416,19 +462,15 @@ function ReportCard({
                     </Button>
                   </Box>
                 </Tooltip>
-                <Link
-                  href={`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`}
-                  target="_blank"
-                >
-                  <Button variant="ghost">
-                    <ExternalLinkIcon />
-                  </Button>
-                </Link>
               </>
             )}
             <MenuRoot>
               <MenuTrigger asChild>
-                <Button variant="ghost" size="lg">
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  onClick={(e) => e.stopPropagation()} // カード全体のクリックイベントを停止
+                >
                   <EllipsisIcon />
                 </Button>
               </MenuTrigger>
@@ -439,7 +481,8 @@ function ReportCard({
                 <MenuItem
                   value="delete"
                   color="fg.error"
-                  onClick={async () => {
+                  onClick={async (e) => {
+                    e.stopPropagation(); // カード全体のクリックイベントを停止
                     if (
                       confirm(
                         `レポート「${report.title}」を削除してもよろしいですか？`,
