@@ -371,7 +371,7 @@ function ReportCard({
               </Button>
             </Box>
           )}
-          <HStack>
+          <HStack position="relative" zIndex="20">
             {report.status === "ready" && report.isPubcom && (
               <Tooltip
                 content="CSVファイルをダウンロード"
@@ -381,7 +381,7 @@ function ReportCard({
                 <Button
                   variant="ghost"
                   onClick={async (e) => {
-                    e.stopPropagation(); // カード全体のクリックイベントを停止
+                    e.stopPropagation();
                     try {
                       const response = await fetch(
                         `${getApiBaseUrl()}/admin/comments/${report.slug}/csv`,
@@ -427,7 +427,7 @@ function ReportCard({
                       variant={report.isPublic ? "solid" : "outline"}
                       size="sm"
                       onClick={async (e) => {
-                        e.stopPropagation(); // カード全体のクリックイベントを停止
+                        e.stopPropagation();
                         try {
                           const response = await fetch(
                             `${getApiBaseUrl()}/admin/reports/${report.slug}/visibility`,
@@ -469,7 +469,7 @@ function ReportCard({
                 <Button
                   variant="ghost"
                   size="lg"
-                  onClick={(e) => e.stopPropagation()} // カード全体のクリックイベントを停止
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <EllipsisIcon />
                 </Button>
@@ -482,7 +482,7 @@ function ReportCard({
                   value="delete"
                   color="fg.error"
                   onClick={async (e) => {
-                    e.stopPropagation(); // カード全体のクリックイベントを停止
+                    e.stopPropagation();
                     if (
                       confirm(
                         `レポート「${report.title}」を削除してもよろしいですか？`,
