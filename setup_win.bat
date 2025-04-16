@@ -30,7 +30,7 @@ echo NEXT_PUBLIC_SITE_URL=http://localhost:3000 >> .env
 
 REM Start the environment
 echo Starting Docker environment...
-docker compose up -d
+docker compose up -d --build
 
 echo.
 echo Setup completed!
