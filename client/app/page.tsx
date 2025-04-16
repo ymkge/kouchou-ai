@@ -13,14 +13,25 @@ export async function generateMetadata(): Promise<Metadata> {
   try {
     const metaResponse = await fetch(`${getApiBaseUrl()}/meta/metadata.json`);
     const meta: Meta = await metaResponse.json();
+
+    // next.config.ts と同じロジックで basePath を決定するのだ
+    const isStaticExport = process.env.NEXT_PUBLIC_OUTPUT_MODE === "export";
+    const subDirectory = process.env.SUB_DIRECTORY || "";
+    const basePath = isStaticExport ? subDirectory : "";
+    // OGP 画像のパスを basePath を考慮して生成するのだ
+    // assetPrefix も basePath と同じ値なので、basePath を使うのだ
+    const ogpImagePath = `${basePath}/meta/ogp.png`;
+
     return {
       title: `${meta.reporter} - 広聴AI(デジタル民主主義2030ブロードリスニング)`,
       description: `${meta.message}`,
       openGraph: {
-        images: [`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta/ogp.png`],
+        // 正しいパスを使うのだ
+        images: [ogpImagePath],
       },
     };
   } catch (_e) {
+    console.error("Failed to fetch metadata for generateMetadata:", _e);
     return {
       title: "広聴AI(デジタル民主主義2030ブロードリスニング)",
     };
