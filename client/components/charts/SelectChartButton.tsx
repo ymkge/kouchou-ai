@@ -15,6 +15,7 @@ type Props = {
   onChange: (value: string) => void;
   onClickDensitySetting: () => void;
   onClickFullscreen: () => void;
+  isDenseGroupEnabled: boolean;
 };
 
 export function SelectChartButton({
@@ -22,6 +23,7 @@ export function SelectChartButton({
   onChange,
   onClickDensitySetting,
   onClickFullscreen,
+  isDenseGroupEnabled,
 }: Props) {
   return (
     <HStack
@@ -68,6 +70,8 @@ export function SelectChartButton({
               </Icon>
             }
             cursor={"pointer"}
+            disabled={!isDenseGroupEnabled}
+            disabledReason={"この設定条件では抽出できませんでした"}
           />
           <RadioCardItem
             value={"treemap"}
