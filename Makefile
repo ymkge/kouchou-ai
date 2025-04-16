@@ -16,7 +16,7 @@ down:
 client-build-static:
 	rm -rf out
 	docker compose up -d api
-	docker compose run --rm -v $(shell pwd)/server:/server -v $(shell pwd)/out:/app/dist client sh -c "npm run build:static && cp -r out/* dist"
+	docker compose run --rm -e SUB_DIRECTORY=/$(SUBDIR) -v $(shell pwd)/server:/server -v $(shell pwd)/out:/app/dist client sh -c "npm run build:static && cp -r out/* dist"
 	docker compose down
 
 client-setup:
