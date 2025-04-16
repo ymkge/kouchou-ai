@@ -5,12 +5,14 @@ type Props = {
   clusterList: Cluster[];
   argumentList: Argument[];
   targetLevel: number;
+  onHover?: () => void;
 };
 
 export function ScatterChart({
   clusterList,
   argumentList,
   targetLevel,
+  onHover,
 }: Props) {
   const targetClusters = clusterList.filter(
     (cluster) => cluster.level === targetLevel,
@@ -130,6 +132,7 @@ export function ScatterChart({
         displayModeBar: false,
         locale: "ja",
       }}
+      onHover={onHover}
     />
   );
 }
