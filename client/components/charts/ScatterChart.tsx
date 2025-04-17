@@ -78,8 +78,15 @@ export function ScatterChart({
   });
 
   return (
-    <Box position="relative" width="100%" height="100%">
-      <Box position="absolute" top={2} left={2} zIndex={10} bg="white" p={2} borderRadius="md" boxShadow="sm">
+    <Box width="100%" height="100%" display="flex" flexDirection="column">
+      <Box 
+        alignSelf="flex-start"
+        mb={3}
+        ml={3}
+        mt={2}
+        p={1}
+        bg="transparent"
+      >
         <HStack gap={2}>
           <Checkbox 
             checked={showClusterLabels} 
@@ -89,7 +96,8 @@ export function ScatterChart({
           </Checkbox>
         </HStack>
       </Box>
-      <ChartCore
+      <Box position="relative" flex="1">
+        <ChartCore
         data={clusterData.map((data) => ({
         x: data.xValues,
         y: data.yValues,
@@ -148,7 +156,8 @@ export function ScatterChart({
         locale: "ja",
       }}
       onHover={onHover}
-    />
+        />
+      </Box>
     </Box>
   );
 }
