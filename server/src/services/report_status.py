@@ -1,6 +1,6 @@
 import json
 import threading
-from datetime import datetime
+from datetime import UTC, datetime, timezone
 
 from src.config import settings
 from src.schemas.admin_report import ReportInput
@@ -59,7 +59,7 @@ def add_new_report_to_status(report_input: ReportInput) -> None:
             "description": report_input.intro,
             "is_pubcom": report_input.is_pubcom,
             "is_public": True,  # デフォルトは公開状態
-            "created_at": datetime.now().isoformat(),  # 現在の日時をISO形式で追加
+            "created_at": datetime.now(UTC).isoformat(),  # タイムゾーン付きISO形式で追加
         }
         save_status()
 
