@@ -381,7 +381,12 @@ function ReportCard({
                   closeDelay={0}
                 >
                   <Popover.Trigger asChild>
-                    <Button variant="ghost">
+                    <Button
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
                       <Icon>
                         <DownloadIcon />
                       </Icon>
