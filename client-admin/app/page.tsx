@@ -374,7 +374,7 @@ function ReportCard({
           )}
           <HStack position="relative" zIndex="20">
             {report.status === "ready" && report.isPubcom && (
-              <Popover.Root>
+              <Popover.Root portalled={true}>
                 <Tooltip
                   content="CSVファイルをダウンロード"
                   openDelay={0}
@@ -393,7 +393,12 @@ function ReportCard({
                     </Button>
                   </Popover.Trigger>
                 </Tooltip>
-                <Popover.Content width="200px">
+                <Popover.Content
+                  width="200px"
+                  position="absolute"
+                  zIndex={1000}
+                  style={{ margin: "8px" }}
+                  >
                   <Popover.Arrow />
                   <Popover.Body p={0}>
                     <VStack align="stretch" gap={0}>
