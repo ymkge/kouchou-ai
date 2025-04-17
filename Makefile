@@ -212,17 +212,6 @@ azure-assign-managed-identity:
 	    az containerapp identity assign --name api --resource-group $(AZURE_RESOURCE_GROUP) --system-assigned && \
 	    echo 'Managed identity assigned.'"
 
-# apiを再起動（ストレージへのアクセス権限を割り当てた後、api上にストレージの情報をsyncするために利用）
-azure-restart-api:
-	$(call read-env)
-	@echo ">>> API Container App をスケールダウン（再起動準備）..."
-	docker run --rm -v $(HOME)/.azure:/root/.azure mcr.microsoft.com/azure-cli \
-	az containerapp update --name api --resource-group $(AZURE_RESOURCE_GROUP) --min-replicas 0
-	@sleep 5
-	@echo ">>> API Container App をスケールアップ（再起動）..."
-	docker run --rm -v $(HOME)/.azure:/root/.azure mcr.microsoft.com/azure-cli \
-	az containerapp update --name api --resource-group $(AZURE_RESOURCE_GROUP) --min-replicas 1
-
 # Container AppのマネージドIDへのストレージアクセス権の割り当て
 azure-assign-storage-access:
 	$(call read-env)
@@ -282,13 +271,7 @@ azure-fix-client-admin:
 	  az containerapp update --name client-admin --resource-group $(AZURE_RESOURCE_GROUP) \
 	    --image $(AZURE_ACR_NAME).azurecr.io/client-admin:latest"
 
-	@echo ">>> コンテナアプリを再起動（スケールダウン後にスケールアップ）..."
-	docker run --rm -v $(HOME)/.azure:/root/.azure mcr.microsoft.com/azure-cli /bin/bash -c "\
-	  echo '>>> 一時的にスケールダウン...' && \
-	  az containerapp update --name client-admin --resource-group $(AZURE_RESOURCE_GROUP) --min-replicas 0 && \
-	  echo '>>> 再度スケールアップ...' && \
-	  sleep 5 && \
-	  az containerapp update --name client-admin --resource-group $(AZURE_RESOURCE_GROUP) --min-replicas 1"
+	@$(MAKE) azure-restart-admin
 
 # 環境の検証
 azure-verify:
@@ -452,19 +435,39 @@ azure-update-deployment:
 	@$(MAKE) azure-build
 
 	@echo ">>> イメージのプッシュ..."
+	@$(MAKE) azure-acr-login-auto
 	@$(MAKE) azure-push
 
 	@echo ">>> 環境変数の設定..."
 	@$(MAKE) azure-config-update
 
-	@echo ">>> APIコンテナを再起動中..."
-	@docker run --rm -v $(HOME)/.azure:/root/.azure mcr.microsoft.com/azure-cli /bin/bash -c "\
-	  echo '>>> 一時的にスケールダウン...' && \
-	  az containerapp update --name api --resource-group $(AZURE_RESOURCE_GROUP) --min-replicas 0 && \
-	  echo '>>> 再度スケールアップ...' && \
-	  sleep 5 && \
-	  az containerapp update --name api --resource-group $(AZURE_RESOURCE_GROUP) --min-replicas 1"
+	@echo ">>> コンテナ再起動..."
+	@$(MAKE) azure-restart-api
+	@$(MAKE) azure-restart-client
+	@echo ">>> 管理者クライアントコンテナを環境変数を修正して再起動中..."
+	@$(MAKE) azure-fix-client-admin
 
+	@echo ">>> 9. サービスURLの確認..."
+	@$(MAKE) azure-info
+
+	@echo ">>> デプロイの更新が完了しました。"
+
+# apiを再起動（ストレージへのアクセス権限を割り当てた後、api上にストレージの情報をsyncするために利用）
+# azure-update-deployment時にイメージのpush後にも必要
+azure-restart-api:
+	$(call read-env)
+	@echo ">>> API Container App をスケールダウン（再起動準備）..."
+	docker run --rm -v $(HOME)/.azure:/root/.azure mcr.microsoft.com/azure-cli \
+	az containerapp update --name api --resource-group $(AZURE_RESOURCE_GROUP) --min-replicas 0
+	@sleep 5
+	@echo ">>> API Container App をスケールアップ（再起動）..."
+	docker run --rm -v $(HOME)/.azure:/root/.azure mcr.microsoft.com/azure-cli \
+	az containerapp update --name api --resource-group $(AZURE_RESOURCE_GROUP) --min-replicas 1
+
+
+# azure-update-deployment時にイメージのpush後に必要
+azure-restart-client:
+	$(call read-env)
 	@echo ">>> クライアントコンテナを再起動中..."
 	@docker run --rm -v $(HOME)/.azure:/root/.azure mcr.microsoft.com/azure-cli /bin/bash -c "\
 	  echo '>>> 一時的にスケールダウン...' && \
@@ -472,14 +475,18 @@ azure-update-deployment:
 	  echo '>>> 再度スケールアップ...' && \
 	  sleep 5 && \
 	  az containerapp update --name client --resource-group $(AZURE_RESOURCE_GROUP) --min-replicas 1"
-	
-	@echo ">>> 管理者クライアントコンテナを再起動中..."
-	@$(MAKE) azure-fix-client-admin
 
-	@echo ">>> 9. サービスURLの確認..."
-	@$(MAKE) azure-info
+# azure-update-deployment時にイメージのpush後にも必要
+azure-restart-admin:
+	$(call read-env)
+	@echo ">>> コンテナアプリを再起動（スケールダウン後にスケールアップ）..."
+	docker run --rm -v $(HOME)/.azure:/root/.azure mcr.microsoft.com/azure-cli /bin/bash -c "\
+	  echo '>>> 一時的にスケールダウン...' && \
+	  az containerapp update --name client-admin --resource-group $(AZURE_RESOURCE_GROUP) --min-replicas 0 && \
+	  echo '>>> 再度スケールアップ...' && \
+	  sleep 5 && \
+	  az containerapp update --name client-admin --resource-group $(AZURE_RESOURCE_GROUP) --min-replicas 1"
 
-	@echo ">>> デプロイの更新が完了しました。"
 
 # リソースの完全削除
 azure-cleanup:
