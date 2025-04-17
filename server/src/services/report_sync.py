@@ -41,7 +41,7 @@ class ReportSyncService:
         try:
             for root, _, files in os.walk(report_dir):
                 for file in files:
-                    # 保持すべきファイル（JSONとrelations.csv）は残し、それ以外は削除
+                    # 保持すべきファイルは残し、それ以外は削除
                     if not file.endswith(self.PRESERVED_REPORT_FILES):
                         file_path = os.path.join(root, file)
                         os.remove(file_path)
