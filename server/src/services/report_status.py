@@ -1,6 +1,6 @@
 import json
 import threading
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 
 from src.config import settings
 from src.schemas.admin_report import ReportInput
