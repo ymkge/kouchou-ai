@@ -1,4 +1,7 @@
+import { Checkbox } from "@/components/ui/checkbox";
 import type { Argument, Cluster } from "@/type";
+import { Box, HStack, Text } from "@chakra-ui/react";
+import { useState } from "react";
 import { ChartCore } from "./ChartCore";
 
 type Props = {
@@ -14,6 +17,7 @@ export function ScatterChart({
   targetLevel,
   onHover,
 }: Props) {
+  const [showClusterLabels, setShowClusterLabels] = useState(false);
   const targetClusters = clusterList.filter(
     (cluster) => cluster.level === targetLevel,
   );
@@ -74,8 +78,19 @@ export function ScatterChart({
   });
 
   return (
-    <ChartCore
-      data={clusterData.map((data) => ({
+    <Box position="relative" width="100%" height="100%">
+      <Box position="absolute" top={2} left={2} zIndex={10} bg="white" p={2} borderRadius="md" boxShadow="sm">
+        <HStack gap={2}>
+          <Checkbox 
+            checked={showClusterLabels} 
+            onChange={() => setShowClusterLabels(!showClusterLabels)}
+          >
+            <Text fontSize="sm">クラスタ名を表示</Text>
+          </Checkbox>
+        </HStack>
+      </Box>
+      <ChartCore
+        data={clusterData.map((data) => ({
         x: data.xValues,
         y: data.yValues,
         mode: "markers",
@@ -107,7 +122,7 @@ export function ScatterChart({
           showticklabels: false,
         },
         hovermode: "closest",
-        annotations: clusterData.map((data) => ({
+        annotations: showClusterLabels ? clusterData.map((data) => ({
           x: data.centerX,
           y: data.centerY,
           text: data.cluster.label,
@@ -122,7 +137,7 @@ export function ScatterChart({
           bordercolor: clusterColorMap[data.cluster.id],
           borderpad: 4,
           borderwidth: 1,
-        })),
+        })) : [],
         showlegend: false,
       }}
       useResizeHandler={true}
@@ -134,5 +149,6 @@ export function ScatterChart({
       }}
       onHover={onHover}
     />
+    </Box>
   );
 }
