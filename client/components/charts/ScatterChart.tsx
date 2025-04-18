@@ -1,7 +1,5 @@
-import { Checkbox } from "@/components/ui/checkbox";
 import type { Argument, Cluster } from "@/type";
-import { Box, HStack, Text } from "@chakra-ui/react";
-import { useState } from "react";
+import { Box } from "@chakra-ui/react";
 import { ChartCore } from "./ChartCore";
 
 type Props = {
@@ -9,6 +7,7 @@ type Props = {
   argumentList: Argument[];
   targetLevel: number;
   onHover?: () => void;
+  showClusterLabels?: boolean;
 };
 
 export function ScatterChart({
@@ -16,8 +15,8 @@ export function ScatterChart({
   argumentList,
   targetLevel,
   onHover,
+  showClusterLabels
 }: Props) {
-  const [showClusterLabels, setShowClusterLabels] = useState(false);
   const targetClusters = clusterList.filter(
     (cluster) => cluster.level === targetLevel,
   );
@@ -79,23 +78,6 @@ export function ScatterChart({
 
   return (
     <Box width="100%" height="100%" display="flex" flexDirection="column">
-      <Box 
-        alignSelf="flex-start"
-        mb={3}
-        ml={3}
-        mt={2}
-        p={1}
-        bg="transparent"
-      >
-        <HStack gap={2}>
-          <Checkbox 
-            checked={showClusterLabels} 
-            onChange={() => setShowClusterLabels(!showClusterLabels)}
-          >
-            <Text fontSize="sm">クラスタ名を表示</Text>
-          </Checkbox>
-        </HStack>
-      </Box>
       <Box position="relative" flex="1">
         <ChartCore
         data={clusterData.map((data) => ({
