@@ -34,12 +34,6 @@ if use_azure == "true":
         raise RuntimeError("AZURE_EMBEDDING_DEPLOYMENT_NAME environment variable is not set")
 
 
-@retry(
-    retry=retry_if_exception_type(openai.RateLimitError),
-    wait=wait_exponential(multiplier=1, min=2, max=60),
-    stop=stop_after_attempt(3),
-    reraise=True,
-)
 def request_to_openai(
     messages: list[dict],
     model: str = "gpt-4",
@@ -58,20 +52,11 @@ def request_to_openai(
             timeout=30,
         )
         return response.choices[0].message.content
-    except openai.RateLimitError as e:
-        logging.warning(f"OpenAI API Rate Limit error: {str(e)}. Retrying with exponential backoff...")
-        raise
     except Exception as e:
         logging.error(f"OpenAI API error: {str(e)}")
         raise
 
 
-@retry(
-    retry=retry_if_exception_type(openai.RateLimitError),
-    wait=wait_exponential(multiplier=1, min=2, max=60),
-    stop=stop_after_attempt(3),
-    reraise=True,
-)
 def request_to_azure_chatcompletion(
     messages: list[dict],
     is_json: bool = False,
@@ -103,14 +88,17 @@ def request_to_azure_chatcompletion(
             timeout=30,
         )
         return response.choices[0].message.content
-    except openai.RateLimitError as e:
-        logging.warning(f"Azure OpenAI API Rate Limit error: {str(e)}. Retrying with exponential backoff...")
-        raise
     except Exception as e:
         logging.error(f"Azure OpenAI API error: {str(e)}")
         raise
 
 
+@retry(
+    retry=retry_if_exception_type(openai.RateLimitError),
+    wait=wait_exponential(multiplier=1, min=2, max=60),
+    stop=stop_after_attempt(3),
+    reraise=True,
+)
 def request_to_chat_openai(
     messages: list[dict],
     model: str = "gpt-4o",
@@ -130,11 +118,15 @@ def request_to_chat_openai(
     Returns:
         The content of the API response
     """
-    use_azure = os.getenv("USE_AZURE", "false").lower()
-    if use_azure == "true":
-        return request_to_azure_chatcompletion(messages, is_json)
-    else:
-        return request_to_openai(messages, model, is_json)
+    try:
+        use_azure = os.getenv("USE_AZURE", "false").lower()
+        if use_azure == "true":
+            return request_to_azure_chatcompletion(messages, is_json)
+        else:
+            return request_to_openai(messages, model, is_json)
+    except openai.RateLimitError as e:
+        logging.warning(f"OpenAI API Rate Limit error: {str(e)}. Retrying with exponential backoff...")
+        raise
 
 
 EMBDDING_MODELS = [
