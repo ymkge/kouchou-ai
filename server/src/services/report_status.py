@@ -144,44 +144,29 @@ def update_report_metadata(slug: str, title: str = None, description: str = None
         
         # Next.jsのキャッシュを破棄するAPIを呼び出す
         try:
-            # 複数のURLを試す
-            revalidate_urls = [
-                "http://client:3000/api/revalidate",  # Docker内部のサービス名
-                settings.NEXT_PUBLIC_SITE_URL + "/api/revalidate",  # 環境変数から取得したURL
-                "http://localhost:3000/api/revalidate"  # ローカルホスト
-            ]
-            
             logger.info(f"Attempting to revalidate Next.js cache for path: /{slug}")
             
-            success = False
-            for revalidate_url in revalidate_urls:
-                try:
-                    logger.info(f"Trying revalidate API at: {revalidate_url}")
-                    
-                    response = requests.post(
-                        revalidate_url,
-                        json={
-                            "path": f"/{slug}",
-                            "secret": settings.REVALIDATE_SECRET
-                        },
-                        timeout=3,  # タイムアウトを短く設定
-                        headers={
-                            "Content-Type": "application/json"
-                        }
-                    )
-                    
-                    if response.status_code == 200:
-                        logger.info(f"Successfully revalidated Next.js cache using {revalidate_url}")
-                        success = True
-                        break
-                    else:
-                        logger.warning(f"Failed to revalidate with {revalidate_url}: {response.status_code} {response.text}")
-                except Exception as e:
-                    logger.warning(f"Error calling {revalidate_url}: {e}")
-                    continue
+            # 環境変数からrevalidate URLを取得
+            revalidate_url = settings.REVALIDATE_URL
             
-            if not success:
-                logger.error(f"All revalidation attempts failed for path: /{slug}")
+            logger.info(f"Using revalidate API at: {revalidate_url}")
+            
+            response = requests.post(
+                revalidate_url,
+                json={
+                    "path": f"/{slug}",
+                    "secret": settings.REVALIDATE_SECRET
+                },
+                timeout=3,  # タイムアウトを短く設定
+                headers={
+                    "Content-Type": "application/json"
+                }
+            )
+            
+            if response.status_code == 200:
+                logger.info(f"Successfully revalidated Next.js cache")
+            else:
+                logger.error(f"Failed to revalidate: {response.status_code} {response.text}")
         except Exception as e:
             # revalidateに失敗しても、メタデータの更新は成功しているので例外は投げない
             logger.error(f"Failed to call revalidate API for {slug}: {e}")
