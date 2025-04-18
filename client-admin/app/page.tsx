@@ -258,14 +258,23 @@ function ReportCard({
       position="relative"
       transition="all 0.2s"
       role="group"
-      _hover={report.status === "ready" ? {
+      pointerEvents={isEditDialogOpen ? "none" : "auto"}
+      _hover={report.status === "ready" && !isEditDialogOpen ? {
         backgroundColor: "gray.50",
         cursor: "pointer",
       } : {}}
-      onClick={() => {
+      onClick={(e) => {
+        // ダイアログが開いている場合は何もしない
+        if (isEditDialogOpen) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+        
         if (report.status === "ready") {
           window.open(`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`, "_blank");
         }
+        return true;
       }}
     >
       <Card.Body>
@@ -608,11 +617,41 @@ function ReportCard({
         </HStack>
       </Card.Body>
       
-      {/* 編集ダイアログ */}
-      <Dialog.Root open={isEditDialogOpen} onOpenChange={({ open }) => setIsEditDialogOpen(open)}>
-        <Dialog.Backdrop />
+      <Dialog.Root
+        open={isEditDialogOpen}
+        onOpenChange={({ open }) => setIsEditDialogOpen(open)}
+        modal={true}
+        closeOnInteractOutside={false}
+        trapFocus={true}
+      >
+        <Dialog.Backdrop
+          style={{
+            zIndex: 1000,
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            backdropFilter: "blur(2px)"
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }}
+        />
         <Dialog.Positioner>
-          <Dialog.Content>
+          <Dialog.Content
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              return false;
+            }}
+            style={{
+              pointerEvents: "auto",
+              position: "relative",
+              zIndex: 1001,
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)"
+            }}
+          >
             <Dialog.CloseTrigger position="absolute" top={3} right={3} />
             <Dialog.Header>
               <Dialog.Title>レポートを編集</Dialog.Title>
