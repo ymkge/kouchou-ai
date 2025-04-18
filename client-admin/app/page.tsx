@@ -8,6 +8,7 @@ import {
   MenuRoot,
   MenuTrigger,
 } from "@/components/ui/menu";
+import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { Report } from "@/type";
 import {
@@ -714,11 +715,22 @@ function ReportCard({
                       setReports(updatedReports);
                     }
 
+                    // 成功メッセージを表示
+                    toaster.create({
+                      type: "success",
+                      title: "更新完了",
+                      description: "レポート情報が更新されました",
+                    });
+
                     // ダイアログを閉じる
                     setIsEditDialogOpen(false);
                   } catch (error) {
                     console.error("メタデータの更新に失敗しました:", error);
-                    alert("メタデータの更新に失敗しました");
+                    toaster.create({
+                      type: "error",
+                      title: "更新エラー",
+                      description: "メタデータの更新に失敗しました",
+                    });
                   }
                 }}
               >
