@@ -682,10 +682,44 @@ function ReportCard({
               </Button>
               <Button
                 ml={3}
-                onClick={() => {
-                  // TODO: 編集内容を保存する処理を実装
-                  console.log("保存:", { title: editTitle, description: editDescription });
-                  setIsEditDialogOpen(false);
+                onClick={async () => {
+                  try {
+                    const response = await fetch(
+                      `${getApiBaseUrl()}/admin/reports/${report.slug}/metadata`,
+                      {
+                        method: "PATCH",
+                        headers: {
+                          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          title: editTitle,
+                          description: editDescription,
+                        }),
+                      }
+                    );
+
+                    if (!response.ok) {
+                      const errorData = await response.json();
+                      throw new Error(errorData.detail || "メタデータの更新に失敗しました");
+                    }
+
+                    // レポート一覧を更新
+                    if (setReports && reports) {
+                      const updatedReports = reports.map((r) =>
+                        r.slug === report.slug
+                          ? { ...r, title: editTitle, description: editDescription }
+                          : r
+                      );
+                      setReports(updatedReports);
+                    }
+
+                    // ダイアログを閉じる
+                    setIsEditDialogOpen(false);
+                  } catch (error) {
+                    console.error("メタデータの更新に失敗しました:", error);
+                    alert("メタデータの更新に失敗しました");
+                  }
                 }}
               >
                 保存

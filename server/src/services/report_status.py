@@ -84,3 +84,33 @@ def toggle_report_public_state(slug: str) -> bool:
         _report_status[slug]["is_public"] = not _report_status[slug].get("is_public", True)
         save_status()
         return _report_status[slug]["is_public"]
+
+
+def update_report_metadata(slug: str, title: str = None, description: str = None) -> dict:
+    """レポートのメタデータ（タイトル、説明）を更新する
+
+    Args:
+        slug: レポートのスラッグ
+        title: 新しいタイトル（Noneの場合は更新しない）
+        description: 新しい説明（Noneの場合は更新しない）
+
+    Returns:
+        更新後のレポート情報
+
+    Raises:
+        ValueError: 指定されたスラッグのレポートが存在しない場合
+    """
+    with _lock:
+        if slug not in _report_status:
+            raise ValueError(f"slug {slug} not found in report status")
+        
+        # タイトルの更新（指定された場合のみ）
+        if title is not None:
+            _report_status[slug]["title"] = title
+        
+        # 説明の更新（指定された場合のみ）
+        if description is not None:
+            _report_status[slug]["description"] = description
+        
+        save_status()
+        return _report_status[slug]
