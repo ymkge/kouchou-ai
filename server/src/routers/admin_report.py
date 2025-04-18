@@ -3,13 +3,17 @@ import json
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.responses import FileResponse, ORJSONResponse
 from fastapi.security.api_key import APIKeyHeader
+
 from src.config import settings
 from src.schemas.admin_report import ReportInput, ReportMetadataUpdate
 from src.schemas.report import Report, ReportStatus
 from src.services.report_launcher import launch_report_generation
-from src.services.report_status import (load_status_as_reports, set_status,
-                                        toggle_report_public_state,
-                                        update_report_metadata)
+from src.services.report_status import (
+    load_status_as_reports,
+    set_status,
+    toggle_report_public_state,
+    update_report_metadata,
+)
 from src.utils.logger import setup_logger
 
 slogger = setup_logger()

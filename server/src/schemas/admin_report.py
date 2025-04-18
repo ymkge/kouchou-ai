@@ -35,5 +35,6 @@ class ReportInput(SchemaBaseModel):
 
 class ReportMetadataUpdate(SchemaBaseModel):
     """レポートのメタデータ更新用スキーマ"""
+
     title: str | None = None  # レポートのタイトル
     description: str | None = None  # レポートの調査概要

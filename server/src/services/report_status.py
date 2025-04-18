@@ -103,14 +103,14 @@ def update_report_metadata(slug: str, title: str = None, description: str = None
     with _lock:
         if slug not in _report_status:
             raise ValueError(f"slug {slug} not found in report status")
-        
+
         # タイトルの更新（指定された場合のみ）
         if title is not None:
             _report_status[slug]["title"] = title
-        
+
         # 説明の更新（指定された場合のみ）
         if description is not None:
             _report_status[slug]["description"] = description
-        
+
         save_status()
         return _report_status[slug]
