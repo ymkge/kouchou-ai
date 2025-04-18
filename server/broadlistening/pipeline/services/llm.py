@@ -1,7 +1,9 @@
 import os
+import logging
 
 import openai
 from dotenv import load_dotenv
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 # FIXME: Issue #58
 from langchain.embeddings import OpenAIEmbeddings
@@ -34,6 +36,12 @@ if use_azure == "true":
         raise RuntimeError("AZURE_EMBEDDING_DEPLOYMENT_NAME environment variable is not set")
 
 
+@retry(
+    retry=retry_if_exception_type((openai.RateLimitError, openai.APIStatusError)),
+    wait=wait_exponential(multiplier=1, min=2, max=60),
+    stop=stop_after_attempt(3),
+    reraise=True,
+)
 def request_to_openai(
     messages: list[dict],
     model: str = "gpt-4",
@@ -41,18 +49,28 @@ def request_to_openai(
 ) -> dict:
     openai.api_type = "openai"
     response_format = {"type": "json_object"} if is_json else None
-    response = openai.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=0,
-        n=1,
-        seed=0,
-        response_format=response_format,
-        timeout=30,
-    )
-    return response.choices[0].message.content
+    try:
+        response = openai.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=0,
+            n=1,
+            seed=0,
+            response_format=response_format,
+            timeout=30,
+        )
+        return response.choices[0].message.content
+    except (openai.RateLimitError, openai.APIStatusError) as e:
+        logging.warning(f"OpenAI API error: {str(e)}. Retrying...")
+        raise
 
 
+@retry(
+    retry=retry_if_exception_type((openai.RateLimitError, openai.APIStatusError)),
+    wait=wait_exponential(multiplier=1, min=2, max=60),
+    stop=stop_after_attempt(3),
+    reraise=True,
+)
 def request_to_azure_chatcompletion(
     messages: list[dict],
     is_json: bool = False,
@@ -73,17 +91,20 @@ def request_to_azure_chatcompletion(
     else:
         response_format = None
 
-    response = client.chat.completions.create(
-        model=deployment,
-        messages=messages,
-        temperature=0,
-        n=1,
-        seed=0,
-        response_format=response_format,
-        timeout=30,
-    )
-
-    return response.choices[0].message.content
+    try:
+        response = client.chat.completions.create(
+            model=deployment,
+            messages=messages,
+            temperature=0,
+            n=1,
+            seed=0,
+            response_format=response_format,
+            timeout=30,
+        )
+        return response.choices[0].message.content
+    except (openai.RateLimitError, openai.APIStatusError) as e:
+        logging.warning(f"Azure OpenAI API error: {str(e)}. Retrying...")
+        raise
 
 
 def request_to_chat_openai(
@@ -91,6 +112,20 @@ def request_to_chat_openai(
     model: str = "gpt-4o",
     is_json: bool = False,
 ) -> dict:
+    """
+    Send a request to OpenAI chat completion API with retry logic for rate limit errors.
+    
+    This function will automatically retry on RateLimitError (429) with exponential backoff.
+    Maximum 3 retry attempts will be made with increasing wait times.
+    
+    Args:
+        messages: List of message dictionaries to send to the API
+        model: Model to use (default: "gpt-4o")
+        is_json: Whether to request JSON response format
+        
+    Returns:
+        The content of the API response
+    """
     use_azure = os.getenv("USE_AZURE", "false").lower()
     if use_azure == "true":
         return request_to_azure_chatcompletion(messages, is_json)
