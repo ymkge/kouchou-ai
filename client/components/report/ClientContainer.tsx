@@ -2,7 +2,7 @@
 
 import { SelectChartButton } from "@/components/charts/SelectChartButton";
 import { Chart } from "@/components/report/Chart";
-import { DensityFilterSettingDialog } from "@/components/report/DisplaySettingDialog";
+import { DisplaySettingDialog } from "@/components/report/DisplaySettingDialog";
 import type { Cluster, Result } from "@/type";
 import { useEffect, useState } from "react";
 
@@ -55,7 +55,7 @@ export function ClientContainer({ result }: Props) {
   return (
     <>
       {openDensityFilterSetting && (
-        <DensityFilterSettingDialog
+        <DisplaySettingDialog
           currentMaxDensity={maxDensity}
           currentMinValue={minValue}
           onClose={() => {

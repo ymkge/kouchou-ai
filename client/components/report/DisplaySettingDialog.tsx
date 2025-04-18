@@ -19,7 +19,7 @@ type Props = {
   onToggleClusterLabels?: (show: boolean) => void;
 };
 
-export function DensityFilterSettingDialog({
+export function DisplaySettingDialog({
   onClose,
   onChangeFilter,
   currentMaxDensity,
