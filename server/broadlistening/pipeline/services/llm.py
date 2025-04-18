@@ -35,7 +35,7 @@ if use_azure == "true":
 
 
 @retry(
-    retry=retry_if_exception_type((openai.RateLimitError, openai.APIStatusError)),
+    retry=retry_if_exception_type(openai.RateLimitError),
     wait=wait_exponential(multiplier=1, min=2, max=60),
     stop=stop_after_attempt(3),
     reraise=True,
@@ -58,13 +58,16 @@ def request_to_openai(
             timeout=30,
         )
         return response.choices[0].message.content
-    except (openai.RateLimitError, openai.APIStatusError) as e:
-        logging.warning(f"OpenAI API error: {str(e)}. Retrying...")
+    except openai.RateLimitError as e:
+        logging.warning(f"OpenAI API Rate Limit error: {str(e)}. Retrying with exponential backoff...")
+        raise
+    except Exception as e:
+        logging.error(f"OpenAI API error: {str(e)}")
         raise
 
 
 @retry(
-    retry=retry_if_exception_type((openai.RateLimitError, openai.APIStatusError)),
+    retry=retry_if_exception_type(openai.RateLimitError),
     wait=wait_exponential(multiplier=1, min=2, max=60),
     stop=stop_after_attempt(3),
     reraise=True,
@@ -100,8 +103,11 @@ def request_to_azure_chatcompletion(
             timeout=30,
         )
         return response.choices[0].message.content
-    except (openai.RateLimitError, openai.APIStatusError) as e:
-        logging.warning(f"Azure OpenAI API error: {str(e)}. Retrying...")
+    except openai.RateLimitError as e:
+        logging.warning(f"Azure OpenAI API Rate Limit error: {str(e)}. Retrying with exponential backoff...")
+        raise
+    except Exception as e:
+        logging.error(f"Azure OpenAI API error: {str(e)}")
         raise
 
 
