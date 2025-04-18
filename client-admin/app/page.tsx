@@ -14,15 +14,18 @@ import {
   Box,
   Button,
   Card,
+  Dialog,
   Flex,
   HStack,
   Heading,
   Icon,
+  Input,
   Popover,
   Portal,
   Spinner,
   Steps,
   Text,
+  Textarea,
   VStack
 } from "@chakra-ui/react";
 import {
@@ -218,6 +221,11 @@ function ReportCard({
         : stepKeys.indexOf(progress);
 
   const [lastProgress, setLastProgress] = useState<string | null>(null);
+  
+  // 編集ダイアログの状態管理
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState(report.title);
+  const [editDescription, setEditDescription] = useState(report.description || "");
 
   // エラー状態の判定
   const isErrorState = progress === "error" || report.status === "error";
@@ -547,6 +555,17 @@ function ReportCard({
                   レポートを複製して新規作成(開発中)
                 </MenuItem>
                 <MenuItem
+                  value="edit"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditTitle(report.title);
+                    setEditDescription(report.description || "");
+                    setIsEditDialogOpen(true);
+                  }}
+                >
+                  レポートを編集する
+                </MenuItem>
+                <MenuItem
                   value="delete"
                   color="fg.error"
                   onClick={async (e) => {
@@ -588,6 +607,54 @@ function ReportCard({
           </HStack>
         </HStack>
       </Card.Body>
+      
+      {/* 編集ダイアログ */}
+      <Dialog.Root open={isEditDialogOpen} onOpenChange={({ open }) => setIsEditDialogOpen(open)}>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.CloseTrigger position="absolute" top={3} right={3} />
+            <Dialog.Header>
+              <Dialog.Title>レポートを編集</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.Body>
+              <VStack gap={4} align="stretch">
+                <Box>
+                  <Text mb={2} fontWeight="bold">タイトル</Text>
+                  <Input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="レポートのタイトルを入力"
+                  />
+                </Box>
+                <Box>
+                  <Text mb={2} fontWeight="bold">調査概要</Text>
+                  <Textarea
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    placeholder="調査の概要を入力"
+                  />
+                </Box>
+              </VStack>
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                キャンセル
+              </Button>
+              <Button
+                ml={3}
+                onClick={() => {
+                  // TODO: 編集内容を保存する処理を実装
+                  console.log("保存:", { title: editTitle, description: editDescription });
+                  setIsEditDialogOpen(false);
+                }}
+              >
+                保存
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Dialog.Root>
     </Card.Root>
   );
 }
