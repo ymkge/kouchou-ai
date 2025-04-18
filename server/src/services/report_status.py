@@ -4,6 +4,7 @@ import threading
 from datetime import UTC, datetime
 
 import requests
+
 from src.config import settings
 from src.schemas.admin_report import ReportInput
 from src.schemas.report import Report, ReportStatus
@@ -118,22 +119,22 @@ def update_report_metadata(slug: str, title: str = None, description: str = None
             _report_status[slug]["description"] = description
 
         save_status()
-        
+
         # hierarchical_result.json ファイルも更新する
         report_path = settings.REPORT_DIR / slug / "hierarchical_result.json"
         if report_path.exists():
             try:
-                with open(report_path, "r") as f:
+                with open(report_path) as f:
                     report_data = json.load(f)
-                
+
                 # タイトルの更新（指定された場合のみ）
                 if title is not None and "config" in report_data:
                     report_data["config"]["question"] = title
-                
+
                 # 概要の更新（指定された場合のみ）
                 if description is not None:
                     report_data["overview"] = description
-                
+
                 # 更新したデータを書き込む
                 with open(report_path, "w") as f:
                     json.dump(report_data, f, ensure_ascii=False, indent=2)
@@ -141,34 +142,29 @@ def update_report_metadata(slug: str, title: str = None, description: str = None
                 # ファイルの更新に失敗しても、ステータスの更新は成功しているので例外は投げない
                 # ただしログには残す
                 logger.error(f"Failed to update hierarchical_result.json for {slug}: {e}")
-        
+
         # Next.jsのキャッシュを破棄するAPIを呼び出す
         try:
             logger.info(f"Attempting to revalidate Next.js cache for path: /{slug}")
-            
+
             # 環境変数からrevalidate URLを取得
             revalidate_url = settings.REVALIDATE_URL
-            
+
             logger.info(f"Using revalidate API at: {revalidate_url}")
-            
+
             response = requests.post(
                 revalidate_url,
-                json={
-                    "path": f"/{slug}",
-                    "secret": settings.REVALIDATE_SECRET
-                },
+                json={"path": f"/{slug}", "secret": settings.REVALIDATE_SECRET},
                 timeout=3,  # タイムアウトを短く設定
-                headers={
-                    "Content-Type": "application/json"
-                }
+                headers={"Content-Type": "application/json"},
             )
-            
+
             if response.status_code == 200:
-                logger.info(f"Successfully revalidated Next.js cache")
+                logger.info("Successfully revalidated Next.js cache")
             else:
                 logger.error(f"Failed to revalidate: {response.status_code} {response.text}")
         except Exception as e:
             # revalidateに失敗しても、メタデータの更新は成功しているので例外は投げない
             logger.error(f"Failed to call revalidate API for {slug}: {e}")
-        
+
         return _report_status[slug]
