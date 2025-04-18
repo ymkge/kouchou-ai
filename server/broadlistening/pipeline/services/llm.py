@@ -122,20 +122,6 @@ def request_to_chat_openai(
     model: str = "gpt-4o",
     is_json: bool = False,
 ) -> dict:
-    """
-    Send a request to OpenAI chat completion API with retry logic for rate limit errors.
-
-    This function will automatically retry on RateLimitError (429) with exponential backoff.
-    Maximum 3 retry attempts will be made with increasing wait times.
-
-    Args:
-        messages: List of message dictionaries to send to the API
-        model: Model to use (default: "gpt-4o")
-        is_json: Whether to request JSON response format
-
-    Returns:
-        The content of the API response
-    """
     use_azure = os.getenv("USE_AZURE", "false").lower()
     if use_azure == "true":
         return request_to_azure_chatcompletion(messages, is_json)

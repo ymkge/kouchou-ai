@@ -50,23 +50,6 @@ class TestLLMService:
 
         assert response == "This is a test response"
 
-    def test_request_to_openai_rate_limit_error(self):
-        """request_to_openai: レート制限エラーが発生した場合は例外を再発生させる"""
-        messages = [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Hello, world!"},
-        ]
-
-        # openai.chat.completions.createをモック化してRateLimitErrorを発生させる
-        rate_limit_error = openai.RateLimitError(
-            message="Rate limit exceeded",
-            response=MagicMock(),
-            body=MagicMock(),
-        )
-        with patch("openai.chat.completions.create", side_effect=rate_limit_error):
-            with pytest.raises(openai.RateLimitError):
-                request_to_openai(messages, model="gpt-4")
-
     def test_request_to_openai_rate_limit_error_retry(self):
         """request_to_openai: レート制限エラーが発生した場合は3回までリトライする"""
         messages = [
