@@ -1,13 +1,11 @@
-import os
 import logging
+import os
 
-import openai
 from dotenv import load_dotenv
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-
-# FIXME: Issue #58
-from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings import OpenAIEmbeddings  # FIXME: Issue #58
+import openai
 from openai import AzureOpenAI
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 # from langchain_openai import AzureOpenAIEmbeddings
 
