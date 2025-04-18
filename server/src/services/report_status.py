@@ -1,4 +1,5 @@
 import json
+import logging
 import threading
 from datetime import UTC, datetime
 
@@ -113,4 +114,30 @@ def update_report_metadata(slug: str, title: str = None, description: str = None
             _report_status[slug]["description"] = description
 
         save_status()
+        
+        # hierarchical_result.json ファイルも更新する
+        report_path = settings.REPORT_DIR / slug / "hierarchical_result.json"
+        if report_path.exists():
+            try:
+                with open(report_path, "r") as f:
+                    report_data = json.load(f)
+                
+                # タイトルの更新（指定された場合のみ）
+                if title is not None and "config" in report_data:
+                    report_data["config"]["question"] = title
+                
+                # 概要の更新（指定された場合のみ）
+                if description is not None:
+                    report_data["overview"] = description
+                
+                # 更新したデータを書き込む
+                with open(report_path, "w") as f:
+                    json.dump(report_data, f, ensure_ascii=False, indent=2)
+            except Exception as e:
+                # ファイルの更新に失敗しても、ステータスの更新は成功しているので例外は投げない
+                # ただしログには残す
+                import logging
+                logger = logging.getLogger("uvicorn")
+                logger.error(f"Failed to update hierarchical_result.json for {slug}: {e}")
+        
         return _report_status[slug]
