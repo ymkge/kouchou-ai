@@ -548,259 +548,7 @@ export default function Page() {
                       </Field.Root>
                     )}
 
-                    <Field.Root mt={4}>
-                      <Field.Label>クラスタ数設定</Field.Label>
-                      <HStack w={"100%"}>
-                        <Button
-                          onClick={() => {
-                            setClusterLv1(Math.max(2, clusterLv1 - 1));
-                          }}
-                          variant="outline"
-                        >
-                          -
-                        </Button>
-                        <Input
-                          type="number"
-                          value={clusterLv1.toString()}
-                          min={2}
-                          max={20}
-                          onChange={(e) => {
-                            const v = Number(e.target.value);
-                            if (!Number.isNaN(v)) {
-                              const newClusterLv1 = Math.max(2, Math.min(20, v));
-                              setClusterLv1(newClusterLv1);
-
-                              // 第一階層のクラスタ数 * 2 > 第二階層のクラスタ数の場合のみ、第二階層の値を更新
-                              const newClusterLv2 = newClusterLv1 * 2;
-                              if (newClusterLv2 > clusterLv2) {
-                                setClusterLv2(newClusterLv2);
-                                setAutoAdjusted(true);
-                              }
-                              
-                              // 推奨クラスタ数表示を更新（nullでない場合のみ）
-                              if (recommendedClusters) {
-                                setRecommendedClusters({
-                                  lv1: newClusterLv1,
-                                  lv2: newClusterLv2 > clusterLv2 ? newClusterLv2 : clusterLv2
-                                });
-                              }
-                            }
-                          }}
-                        />
-                        <Button
-                          onClick={() => {
-                            const newClusterLv1 = Math.min(20, clusterLv1 + 1);
-                            setClusterLv1(newClusterLv1);
-
-                            // 第一階層のクラスタ数 * 2 > 第二階層のクラスタ数の場合のみ、第二階層の値を更新
-                            const newClusterLv2 = newClusterLv1 * 2;
-                            if (newClusterLv2 > clusterLv2) {
-                              setClusterLv2(newClusterLv2);
-                              setAutoAdjusted(true);
-                            }
-                            
-                            // 推奨クラスタ数表示を更新（nullでない場合のみ）
-                            if (recommendedClusters) {
-                              setRecommendedClusters({
-                                lv1: newClusterLv1,
-                                lv2: newClusterLv2 > clusterLv2 ? newClusterLv2 : clusterLv2
-                              });
-                            }
-                          }}
-                          variant="outline"
-                        >
-                          +
-                        </Button>
-                        <ChevronRightIcon width="100px" />
-                        <Button
-                          onClick={() => {
-                            const newClusterLv2 = Math.max(2, clusterLv2 - 1);
-                            setClusterLv2(newClusterLv2);
-
-                            // 第二階層の値が第一階層の値の2倍未満の場合は自動調整
-                            if (newClusterLv2 < clusterLv1 * 2) {
-                              const adjustedValue = clusterLv1 * 2;
-                              setClusterLv2(adjustedValue);
-                              setAutoAdjusted(true);
-                              
-                              // 推奨クラスタ数表示を更新（nullでない場合のみ）
-                              if (recommendedClusters) {
-                                setRecommendedClusters({
-                                  lv1: recommendedClusters.lv1,
-                                  lv2: adjustedValue
-                                });
-                              }
-                            } else {
-                              setAutoAdjusted(false);
-                              
-                              // 推奨クラスタ数表示を更新（nullでない場合のみ）
-                              if (recommendedClusters) {
-                                setRecommendedClusters({
-                                  lv1: recommendedClusters.lv1,
-                                  lv2: newClusterLv2
-                                });
-                              }
-                            }
-                          }}
-                          variant="outline"
-                        >
-                          -
-                        </Button>
-                        <Input
-                          type="number"
-                          value={clusterLv2.toString()}
-                          min={2}
-                          max={1000}
-                          onChange={(e) => {
-                            // 入力中も最大値を制限
-                            const inputValue = e.target.value;
-                            if (inputValue === "") {
-                              return; // 空の入力は無視
-                            }
-
-                            const v = Number(inputValue);
-                            if (!Number.isNaN(v)) {
-                              // 最大値を1000に制限
-                              const limitedValue = Math.min(1000, v);
-                              setClusterLv2(limitedValue);
-                              
-                              // 推奨クラスタ数表示を更新（nullでない場合のみ）
-                              if (recommendedClusters) {
-                                setRecommendedClusters({
-                                  lv1: recommendedClusters.lv1,
-                                  lv2: limitedValue
-                                });
-                              }
-                            }
-                          }}
-                          onBlur={(e) => {
-                            // フォーカスが外れたときに値の検証と自動調整を行う
-                            const v = Number(e.target.value);
-                            if (!Number.isNaN(v)) {
-                              let newValue = Math.max(2, Math.min(1000, v));
-
-                              // 第二階層の値が第一階層の値の2倍未満の場合は自動調整
-                              if (newValue < clusterLv1 * 2) {
-                                newValue = clusterLv1 * 2;
-                                setClusterLv2(newValue);
-                                setAutoAdjusted(true);
-                              } else {
-                                setAutoAdjusted(false);
-                              }
-                              
-                              // 推奨クラスタ数表示を更新（nullでない場合のみ）
-                              if (recommendedClusters) {
-                                setRecommendedClusters({
-                                  lv1: recommendedClusters.lv1,
-                                  lv2: newValue
-                                });
-                              }
-                            }
-                          }}
-                        />
-                        <Button
-                          onClick={() => {
-                            const newClusterLv2 = Math.min(1000, clusterLv2 + 1);
-                            setClusterLv2(newClusterLv2);
-
-                            // 第二階層の値が第一階層の値の2倍未満の場合は自動調整
-                            if (newClusterLv2 < clusterLv1 * 2) {
-                              const adjustedValue = clusterLv1 * 2;
-                              setClusterLv2(adjustedValue);
-                              setAutoAdjusted(true);
-                              
-                              // 推奨クラスタ数表示を更新（nullでない場合のみ）
-                              if (recommendedClusters) {
-                                setRecommendedClusters({
-                                  lv1: recommendedClusters.lv1,
-                                  lv2: adjustedValue
-                                });
-                              }
-                            } else {
-                              setAutoAdjusted(false);
-                              
-                              // 推奨クラスタ数表示を更新（nullでない場合のみ）
-                              if (recommendedClusters) {
-                                setRecommendedClusters({
-                                  lv1: recommendedClusters.lv1,
-                                  lv2: newClusterLv2
-                                });
-                              }
-                            }
-                          }}
-                          variant="outline"
-                        >
-                          +
-                        </Button>
-                      </HStack>
-                      <Field.HelperText>
-                        階層ごとの意見グループ生成数です。初期値はコメント数に基づいた推奨クラスタ数です。
-                      </Field.HelperText>
-                      {autoAdjusted && (
-                        <Text color="orange.500" fontSize="sm" mt={2}>
-                          第2階層の意見グループ数が自動調整されました。第2階層の意見グループ数は第1階層の意見グループ数の2倍以上に設定してください。
-                        </Text>
-                      )}
-                    </Field.Root>
-                  </VStack>
-                </Tabs.Content>
-
-                <Tabs.Content value="spreadsheet">
-                  <VStack alignItems="stretch" w="full" gap={4}>
-                    <Field.Root>
-                      <Field.Label>スプレッドシートURL</Field.Label>
-                      <HStack
-                        w="full"
-                        flexDir={["column", "column", "row"]}
-                        alignItems={["stretch", "stretch", "center"]}
-                        gap={[2, 2, 4]}
-                      >
-                        <Input
-                          flex="1"
-                          value={spreadsheetUrl}
-                          onChange={(e) => setSpreadsheetUrl(e.target.value)}
-                          placeholder="https://docs.google.com/spreadsheets/d/xxxxxxxxxxxx/edit"
-                          disabled={spreadsheetImported} // インポート済みの場合はURL入力も無効化
-                        />
-                        <Button
-                          onClick={importSpreadsheet}
-                          loading={spreadsheetLoading}
-                          disabled={!canImport}
-                          whiteSpace="nowrap"
-                          width={["full", "full", "auto"]}
-                        >
-                          {spreadsheetImported ? "取得済み" : "データを取得"}
-                        </Button>
-                      </HStack>
-                      <Field.HelperText>
-                        公開されているGoogleスプレッドシートのURLを入力してください
-                        <br />
-                      </Field.HelperText>
-                      {csvColumns.length > 0 && (
-                        <Field.Root mt={4}>
-                          <Field.Label>コメントカラム選択</Field.Label>
-                          <NativeSelect.Root w={"60%"}>
-                            <NativeSelect.Field
-                              value={selectedCommentColumn}
-                              onChange={(e) =>
-                                setSelectedCommentColumn(e.target.value)
-                              }
-                            >
-                              <option value="">選択してください</option>
-                              {csvColumns.map((col) => (
-                                <option key={col} value={col}>
-                                  {col}
-                                </option>
-                              ))}
-                            </NativeSelect.Field>
-                            <NativeSelect.Indicator />
-                          </NativeSelect.Root>
-                          <Field.HelperText>
-                            分析対象のコメントが含まれるカラムを選んでください（それ以外のカラムは無視されます）。
-                          </Field.HelperText>
-                        </Field.Root>
-                      )}
-
+                    {recommendedClusters && (
                       <Field.Root mt={4}>
                         <Field.Label>クラスタ数設定</Field.Label>
                         <HStack w={"100%"}>
@@ -995,6 +743,262 @@ export default function Page() {
                           </Text>
                         )}
                       </Field.Root>
+                    )}
+                  </VStack>
+                </Tabs.Content>
+
+                <Tabs.Content value="spreadsheet">
+                  <VStack alignItems="stretch" w="full" gap={4}>
+                    <Field.Root>
+                      <Field.Label>スプレッドシートURL</Field.Label>
+                      <HStack
+                        w="full"
+                        flexDir={["column", "column", "row"]}
+                        alignItems={["stretch", "stretch", "center"]}
+                        gap={[2, 2, 4]}
+                      >
+                        <Input
+                          flex="1"
+                          value={spreadsheetUrl}
+                          onChange={(e) => setSpreadsheetUrl(e.target.value)}
+                          placeholder="https://docs.google.com/spreadsheets/d/xxxxxxxxxxxx/edit"
+                          disabled={spreadsheetImported} // インポート済みの場合はURL入力も無効化
+                        />
+                        <Button
+                          onClick={importSpreadsheet}
+                          loading={spreadsheetLoading}
+                          disabled={!canImport}
+                          whiteSpace="nowrap"
+                          width={["full", "full", "auto"]}
+                        >
+                          {spreadsheetImported ? "取得済み" : "データを取得"}
+                        </Button>
+                      </HStack>
+                      <Field.HelperText>
+                        公開されているGoogleスプレッドシートのURLを入力してください
+                        <br />
+                      </Field.HelperText>
+                      {csvColumns.length > 0 && (
+                        <Field.Root mt={4}>
+                          <Field.Label>コメントカラム選択</Field.Label>
+                          <NativeSelect.Root w={"60%"}>
+                            <NativeSelect.Field
+                              value={selectedCommentColumn}
+                              onChange={(e) =>
+                                setSelectedCommentColumn(e.target.value)
+                              }
+                            >
+                              <option value="">選択してください</option>
+                              {csvColumns.map((col) => (
+                                <option key={col} value={col}>
+                                  {col}
+                                </option>
+                              ))}
+                            </NativeSelect.Field>
+                            <NativeSelect.Indicator />
+                          </NativeSelect.Root>
+                          <Field.HelperText>
+                            分析対象のコメントが含まれるカラムを選んでください（それ以外のカラムは無視されます）。
+                          </Field.HelperText>
+                        </Field.Root>
+                      )}
+                      
+                      {recommendedClusters && (
+                        <Field.Root mt={4}>
+                          <Field.Label>クラスタ数設定</Field.Label>
+                          <HStack w={"100%"}>
+                            <Button
+                              onClick={() => {
+                                setClusterLv1(Math.max(2, clusterLv1 - 1));
+                              }}
+                              variant="outline"
+                            >
+                              -
+                            </Button>
+                            <Input
+                              type="number"
+                              value={clusterLv1.toString()}
+                              min={2}
+                              max={20}
+                              onChange={(e) => {
+                                const v = Number(e.target.value);
+                                if (!Number.isNaN(v)) {
+                                  const newClusterLv1 = Math.max(2, Math.min(20, v));
+                                  setClusterLv1(newClusterLv1);
+
+                                  // 第一階層のクラスタ数 * 2 > 第二階層のクラスタ数の場合のみ、第二階層の値を更新
+                                  const newClusterLv2 = newClusterLv1 * 2;
+                                  if (newClusterLv2 > clusterLv2) {
+                                    setClusterLv2(newClusterLv2);
+                                    setAutoAdjusted(true);
+                                  }
+                                  
+                                  // 推奨クラスタ数表示を更新（nullでない場合のみ）
+                                  if (recommendedClusters) {
+                                    setRecommendedClusters({
+                                      lv1: newClusterLv1,
+                                      lv2: newClusterLv2 > clusterLv2 ? newClusterLv2 : clusterLv2
+                                    });
+                                  }
+                                }
+                              }}
+                            />
+                            <Button
+                              onClick={() => {
+                                const newClusterLv1 = Math.min(20, clusterLv1 + 1);
+                                setClusterLv1(newClusterLv1);
+
+                                // 第一階層のクラスタ数 * 2 > 第二階層のクラスタ数の場合のみ、第二階層の値を更新
+                                const newClusterLv2 = newClusterLv1 * 2;
+                                if (newClusterLv2 > clusterLv2) {
+                                  setClusterLv2(newClusterLv2);
+                                  setAutoAdjusted(true);
+                                }
+                                
+                                // 推奨クラスタ数表示を更新（nullでない場合のみ）
+                                if (recommendedClusters) {
+                                  setRecommendedClusters({
+                                    lv1: newClusterLv1,
+                                    lv2: newClusterLv2 > clusterLv2 ? newClusterLv2 : clusterLv2
+                                  });
+                                }
+                              }}
+                              variant="outline"
+                            >
+                              +
+                            </Button>
+                            <ChevronRightIcon width="100px" />
+                            <Button
+                              onClick={() => {
+                                const newClusterLv2 = Math.max(2, clusterLv2 - 1);
+                                setClusterLv2(newClusterLv2);
+
+                                // 第二階層の値が第一階層の値の2倍未満の場合は自動調整
+                                if (newClusterLv2 < clusterLv1 * 2) {
+                                  const adjustedValue = clusterLv1 * 2;
+                                  setClusterLv2(adjustedValue);
+                                  setAutoAdjusted(true);
+                                  
+                                  // 推奨クラスタ数表示を更新（nullでない場合のみ）
+                                  if (recommendedClusters) {
+                                    setRecommendedClusters({
+                                      lv1: recommendedClusters.lv1,
+                                      lv2: adjustedValue
+                                    });
+                                  }
+                                } else {
+                                  setAutoAdjusted(false);
+                                  
+                                  // 推奨クラスタ数表示を更新（nullでない場合のみ）
+                                  if (recommendedClusters) {
+                                    setRecommendedClusters({
+                                      lv1: recommendedClusters.lv1,
+                                      lv2: newClusterLv2
+                                    });
+                                  }
+                                }
+                              }}
+                              variant="outline"
+                            >
+                              -
+                            </Button>
+                            <Input
+                              type="number"
+                              value={clusterLv2.toString()}
+                              min={2}
+                              max={1000}
+                              onChange={(e) => {
+                                // 入力中も最大値を制限
+                                const inputValue = e.target.value;
+                                if (inputValue === "") {
+                                  return; // 空の入力は無視
+                                }
+
+                                const v = Number(inputValue);
+                                if (!Number.isNaN(v)) {
+                                  // 最大値を1000に制限
+                                  const limitedValue = Math.min(1000, v);
+                                  setClusterLv2(limitedValue);
+                                  
+                                  // 推奨クラスタ数表示を更新（nullでない場合のみ）
+                                  if (recommendedClusters) {
+                                    setRecommendedClusters({
+                                      lv1: recommendedClusters.lv1,
+                                      lv2: limitedValue
+                                    });
+                                  }
+                                }
+                              }}
+                              onBlur={(e) => {
+                                // フォーカスが外れたときに値の検証と自動調整を行う
+                                const v = Number(e.target.value);
+                                if (!Number.isNaN(v)) {
+                                  let newValue = Math.max(2, Math.min(1000, v));
+
+                                  // 第二階層の値が第一階層の値の2倍未満の場合は自動調整
+                                  if (newValue < clusterLv1 * 2) {
+                                    newValue = clusterLv1 * 2;
+                                    setClusterLv2(newValue);
+                                    setAutoAdjusted(true);
+                                  } else {
+                                    setAutoAdjusted(false);
+                                  }
+                                  
+                                  // 推奨クラスタ数表示を更新（nullでない場合のみ）
+                                  if (recommendedClusters) {
+                                    setRecommendedClusters({
+                                      lv1: recommendedClusters.lv1,
+                                      lv2: newValue
+                                    });
+                                  }
+                                }
+                              }}
+                            />
+                            <Button
+                              onClick={() => {
+                                const newClusterLv2 = Math.min(1000, clusterLv2 + 1);
+                                setClusterLv2(newClusterLv2);
+
+                                // 第二階層の値が第一階層の値の2倍未満の場合は自動調整
+                                if (newClusterLv2 < clusterLv1 * 2) {
+                                  const adjustedValue = clusterLv1 * 2;
+                                  setClusterLv2(adjustedValue);
+                                  setAutoAdjusted(true);
+                                  
+                                  // 推奨クラスタ数表示を更新（nullでない場合のみ）
+                                  if (recommendedClusters) {
+                                    setRecommendedClusters({
+                                      lv1: recommendedClusters.lv1,
+                                      lv2: adjustedValue
+                                    });
+                                  }
+                                } else {
+                                  setAutoAdjusted(false);
+                                  
+                                  // 推奨クラスタ数表示を更新（nullでない場合のみ）
+                                  if (recommendedClusters) {
+                                    setRecommendedClusters({
+                                      lv1: recommendedClusters.lv1,
+                                      lv2: newClusterLv2
+                                    });
+                                  }
+                                }
+                              }}
+                              variant="outline"
+                            >
+                              +
+                            </Button>
+                          </HStack>
+                          <Field.HelperText>
+                            階層ごとの意見グループ生成数です。初期値はコメント数に基づいた推奨クラスタ数です。
+                          </Field.HelperText>
+                          {autoAdjusted && (
+                            <Text color="orange.500" fontSize="sm" mt={2}>
+                              第2階層の意見グループ数が自動調整されました。第2階層の意見グループ数は第1階層の意見グループ数の2倍以上に設定してください。
+                            </Text>
+                          )}
+                        </Field.Root>
+                      )}
                     </Field.Root>
                     {spreadsheetImported && (
                       <Text color="green.500" fontSize="sm">
