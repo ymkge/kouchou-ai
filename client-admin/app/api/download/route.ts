@@ -1,4 +1,3 @@
-// app/api/download/route.ts
 import type { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -33,7 +32,7 @@ export async function GET(req: NextRequest) {
     status: 200,
     headers: {
       "Content-Type": "application/zip",
-      "Content-Disposition": "attachment; filename=" + ZIP_FILE_NAME,
+      "Content-Disposition": `attachment; filename=${ZIP_FILE_NAME}`,
     },
   });
 }

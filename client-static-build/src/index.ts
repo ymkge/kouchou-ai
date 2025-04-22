@@ -20,7 +20,6 @@ const app = express();
 app.post("/build", async (req, res) => {
   try {
     console.log("Build request received");
-    // 1. ビルド実行
     const { stdout, stderr } = await execAsync("npm run build:static", {
       cwd: clientDir,
       env: {
@@ -33,7 +32,6 @@ app.post("/build", async (req, res) => {
     console.log("Build stdout:", stdout);
     if (stderr) console.warn("Build stderr:", stderr);
 
-    // 2. zip ストリームを作成
     const archive = archiver("zip", { zlib: { level: 9 } });
     const zipStream = new PassThrough();
 
@@ -43,10 +41,8 @@ app.post("/build", async (req, res) => {
       `attachment; filename=${ZIP_FILE_NAME}`,
     );
 
-    // 3. ストリームをレスポンスに流す
     archive.pipe(zipStream).pipe(res);
 
-    // 4. zip に outDir を追加して完了
     archive.directory(outDir, false);
     await archive.finalize();
   } catch (err) {
