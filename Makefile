@@ -502,6 +502,13 @@ azure-restart-admin:
 # リソースの完全削除
 azure-cleanup:
 	$(call read-env)
+	@echo "警告: この操作はリソースグループ $(AZURE_RESOURCE_GROUP) を完全に削除します。"
+	@echo "この操作は元に戻せません。すべてのサービスやデータが失われます。"
+	@read -p "本当に削除しますか？ [y/N]: " confirm; \
+	if [ "$$confirm" != "y" ] && [ "$$confirm" != "Y" ]; then \
+	    echo "操作をキャンセルしました。"; \
+	    exit 1; \
+	fi
 	docker run -it --rm -v $(HOME)/.azure:/root/.azure mcr.microsoft.com/azure-cli az group delete --name $(AZURE_RESOURCE_GROUP) --yes
 
 # ヘルスチェック設定とイメージプルポリシーの適用
