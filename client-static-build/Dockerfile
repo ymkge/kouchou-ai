@@ -27,7 +27,7 @@ ENV NEXT_DISABLE_FETCH_DURING_BUILD=true
 ENV NODE_ENV=production
 
 COPY ./client /client
-COPY ./server /server
+COPY ./server/public /server/public
 COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /client/node_modules /client/node_modules
