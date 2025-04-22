@@ -34,7 +34,7 @@ export function ClusterSettingsSection({
           type="number"
           value={clusterLv1.toString()}
           min={2}
-          max={20}
+          max={40}
           onChange={(e) => {
             const v = Number(e.target.value);
             if (!Number.isNaN(v)) {
