@@ -12,11 +12,12 @@ const __dirname = dirname(__filename)
 
 const clientDir = join(__dirname, '../../client')
 const outDir = join(clientDir, 'out')
+
 const ZIP_FILE_NAME = 'kouchou-ai.zip'
 
 const app = express()
 
-app.get('/build', async (req, res) => {
+app.post('/build', async (req, res) => {
   try {
     console.log('Build request received')
     // 1. ビルド実行

@@ -744,6 +744,23 @@ function ReportCard({
   );
 }
 
+function DownloadBuildButton() {
+  const handleDownload = () => {
+    const a = document.createElement('a')
+    a.href = '/api/download'
+    a.click()
+  }
+
+  return (
+    <Button
+      size="xl"
+      onClick={handleDownload}
+    >
+      ビルドしてダウンロード
+    </Button>
+  )
+}
+
 export default function Page() {
   const [reports, setReports] = useState<Report[]>();
 
@@ -798,6 +815,7 @@ export default function Page() {
           <Link href="/create">
             <Button size="xl">新しいレポートを作成する</Button>
           </Link>
+          <DownloadBuildButton />
         </HStack>
       </Box>
     </div>
