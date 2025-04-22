@@ -128,13 +128,15 @@ function darkenColor(elem: Element, originalColor: string) {
   if (getColor(elem) !== originalColor) return;
   const darkenedColor = originalColor.replace(
     /rgb\((\d+), (\d+), (\d+)\)/,
-    (match, r, g, b) => {
-      return `rgb(${Math.max(0, Number.parseInt(r) - 30)}, ${Math.max(0, Number.parseInt(g) - 30)}, ${Math.max(0, Number.parseInt(b) - 30)})`;
-    },
+    (match, r, g, b) => `rgb(${dark(r)}, ${dark(g)}, ${dark(b)})`,
   );
   const newStyle =
     elem.attributes
       .getNamedItem("style")
       ?.value.replace(originalColor, darkenedColor) || "";
   elem.setAttribute("style", newStyle);
+}
+
+function dark(rgb: string) {
+  return Math.max(0, Number.parseInt(rgb) - 30);
 }
