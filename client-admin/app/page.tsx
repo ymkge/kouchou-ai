@@ -369,7 +369,7 @@ function ReportCard({
               display="flex"
               alignItems="center"
               justifyContent="center"
-              backgroundColor="rgba(0, 0, 0, 0.05)"
+              backgroundColor="blackAlpha.100"
               opacity="0"
               transition="opacity 0.2s"
               _hover={{ opacity: 1 }}
@@ -626,13 +626,11 @@ function ReportCard({
         trapFocus={true}
       >
         <Dialog.Backdrop
-          style={{
-            zIndex: 1000,
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            backdropFilter: "blur(2px)"
-          }}
+          zIndex={1000}
+          position="fixed"
+          inset={0}
+          backgroundColor="rgba(0, 0, 0, 0.4)"
+          backdropFilter="blur(2px)"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -646,12 +644,10 @@ function ReportCard({
               e.stopPropagation();
               return false;
             }}
-            style={{
-              pointerEvents: "auto",
-              position: "relative",
-              zIndex: 1001,
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)"
-            }}
+            pointerEvents="auto"
+            position="relative"
+            zIndex={1001}
+            boxShadow="md"
           >
             <Dialog.CloseTrigger position="absolute" top={3} right={3} />
             <Dialog.Header>
