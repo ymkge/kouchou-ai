@@ -265,13 +265,6 @@ function ReportCard({
         cursor: "pointer",
       } : {}}
       onClick={(e) => {
-        // ダイアログが開いている場合は何もしない
-        if (isEditDialogOpen) {
-          e.preventDefault();
-          e.stopPropagation();
-          return false;
-        }
-        
         if (report.status === "ready") {
           window.open(`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`, "_blank");
         }
@@ -629,21 +622,11 @@ function ReportCard({
           zIndex={1000}
           position="fixed"
           inset={0}
-          backgroundColor="rgba(0, 0, 0, 0.4)"
+          backgroundColor="blackAlpha.100"
           backdropFilter="blur(2px)"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-          }}
         />
         <Dialog.Positioner>
           <Dialog.Content
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              return false;
-            }}
             pointerEvents="auto"
             position="relative"
             zIndex={1001}
