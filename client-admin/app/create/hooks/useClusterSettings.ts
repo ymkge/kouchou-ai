@@ -10,8 +10,8 @@ export function useClusterSettings(initialLv1 = 5, initialLv2 = 50) {
 
   // コメント数からクラスタ数を計算
   const calculateRecommendedClusters = useCallback((commentCount: number) => {
-    const lv1 = Math.max(2, Math.min(20, Math.round(Math.cbrt(commentCount))));
-    const lv2 = Math.max(2, Math.min(1000, Math.round(lv1 * lv1)));
+    const lv1 = Math.max(2, Math.min(10, Math.round(Math.cbrt(commentCount))));
+    const lv2 = Math.max(4, Math.min(1000, Math.round(lv1 * lv1)));
     return { lv1, lv2 };
   }, []);
 
@@ -26,7 +26,7 @@ export function useClusterSettings(initialLv1 = 5, initialLv2 = 50) {
 
   // クラスタLv1の値を変更
   const handleLv1Change = useCallback((newValue: number) => {
-    const limitedValue = Math.max(2, Math.min(20, newValue));
+    const limitedValue = Math.max(2, Math.min(40, newValue));
     setClusterLv1(limitedValue);
 
     // 第一階層のクラスタ数 * 2 > 第二階層のクラスタ数の場合のみ、第二階層の値を更新
@@ -52,7 +52,7 @@ export function useClusterSettings(initialLv1 = 5, initialLv2 = 50) {
 
   // クラスタLv2の値を変更
   const handleLv2Change = useCallback((newValue: number) => {
-    let limitedValue = Math.max(2, Math.min(1000, newValue));
+    let limitedValue = Math.max(4, Math.min(1000, newValue));
 
     // 第二階層の値が第一階層の値の2倍未満の場合は自動調整
     if (limitedValue < clusterLv1 * 2) {
