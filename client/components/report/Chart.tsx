@@ -1,7 +1,7 @@
 import { ScatterChart } from "@/components/charts/ScatterChart";
 import { TreemapChart } from "@/components/charts/TreemapChart";
 import { Tooltip } from "@/components/ui/tooltip";
-import type { Cluster, Result } from "@/type";
+import type { Result } from "@/type";
 import { Box, Button, HStack, Icon } from "@chakra-ui/react";
 import { Minimize2 } from "lucide-react";
 
@@ -26,13 +26,6 @@ export function Chart({
   treemapLevel,
   onTreeZoom,
 }: ReportProps) {
-  function goUp() {
-    const parentLevel = result.clusters.filter(
-      (cluster: Cluster) => cluster.id === treemapLevel,
-    )[0].parent;
-    onTreeZoom(parentLevel);
-  }
-
   if (isFullscreen) {
     return (
       <Box
@@ -53,15 +46,6 @@ export function Chart({
           right={5}
           zIndex={1}
         >
-          {/* {selectedChart === "treemap" && treemapLevel !== "0" && (
-            <Tooltip content={"1つ上の階層に戻る"} openDelay={0} closeDelay={0}>
-              <Button onClick={goUp} h={"50px"} borderWidth={2}>
-                <Icon>
-                  <MoveUpIcon />
-                </Icon>
-              </Button>
-            </Tooltip>
-          )} */}
           <Tooltip content={"全画面終了"} openDelay={0} closeDelay={0}>
             <Button onClick={onExitFullscreen} h={"50px"} borderWidth={2}>
               <Icon>
