@@ -58,7 +58,7 @@ export function ClusterSettingsSection({
         <Input
           type="number"
           value={clusterLv2.toString()}
-          min={4}
+          min={2}
           max={1000}
           onChange={(e) => {
             const inputValue = e.target.value;
