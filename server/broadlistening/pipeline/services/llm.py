@@ -46,24 +46,38 @@ def request_to_openai(
 ) -> dict:
     openai.api_type = "openai"
     
-    # Set response format based on parameters
-    response_format = None
-    if is_json:
-        response_format = {"type": "json_object"}
-    if json_schema: # is_jsonよりも、json_schema優先
-        response_format = json_schema
-
     try:
-        response = openai.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=0,
-            n=1,
-            seed=0,
-            response_format=response_format,
-            timeout=30,
-        )
-        return response.choices[0].message.content
+        if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
+            # Use beta.chat.completions.create for Pydantic BaseModel
+            response = openai.beta.chat.completions.parse(
+                model=model,
+                messages=messages,
+                temperature=0,
+                n=1,
+                seed=0,
+                response_format=json_schema,
+                timeout=30,
+            )
+            return response.choices[0].message.content
+
+        else:
+            response_format = None
+            if is_json:
+                response_format = {"type": "json_object"}
+            elif json_schema:
+                response_format = json_schema
+            
+            response = openai.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0,
+                n=1,
+                seed=0,
+                response_format=response_format,
+                timeout=30,
+            )
+
+            return response.choices[0].message.content
     except openai.RateLimitError as e:
         logging.warning(f"OpenAI API rate limit hit: {e}")
         raise
@@ -98,23 +112,37 @@ def request_to_azure_chatcompletion(
     )
 
     # Set response format based on parameters
-    response_format = None
-    if is_json:
-        response_format = {"type": "json_object"}
-    if json_schema: # is_jsonよりも、json_schema優先
-        response_format = json_schema
 
     try:
-        response = client.chat.completions.create(
-            model=deployment,
-            messages=messages,
-            temperature=0,
-            n=1,
-            seed=0,
-            response_format=response_format,
-            timeout=30,
-        )
-        return response.choices[0].message.content
+        if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
+            # Use beta.chat.completions.create for Pydantic BaseModel (Azure)
+            response = client.beta.chat.completions.parse(
+                model=deployment,
+                messages=messages,
+                temperature=0,
+                n=1,
+                seed=0,
+                response_model=json_schema,
+                timeout=30,
+            )
+            return response
+        else:
+            response_format = None
+            if is_json:
+                response_format = {"type": "json_object"}
+            elif json_schema:
+                response_format = json_schema
+            
+            response = client.chat.completions.create(
+                model=deployment,
+                messages=messages,
+                temperature=0,
+                n=1,
+                seed=0,
+                response_format=response_format,
+                timeout=30,
+            )
+            return response.choices[0].message.content
     except openai.RateLimitError as e:
         logging.warning(f"OpenAI API rate limit hit: {e}")
         raise
@@ -190,7 +218,7 @@ def _test():
     print(request_to_azure_embed("Hello", "text-embedding-3-large"))
 
 
-def _test2():
+def _jsonschema_test():
     # JSON schema request example
     response_format = {
         "type": "json_schema",
@@ -220,24 +248,25 @@ def _test2():
     print("JSON Schema response example:")
     print(response)
 
-def _test3():
+def _basemodel_test():
     # pydanticのBaseModelを使ってOpenAI APIにスキーマを指定してリクエストするテスト
     from pydantic import BaseModel, Field
+    class CalendarEvent(BaseModel):
+        name: str
+        date: str
+        participants: list[str]
 
-    class TranslationResponseModel(BaseModel):
-        translation: str = Field(..., description="英訳結果")
-        politeness: str = Field(..., description="丁寧さのレベル（例: casual, polite, honorific）")
-
-    messages = [
-        {"role": "system", "content": "あなたは翻訳者です。日本語を英語に翻訳してください。翻訳と丁寧さのレベルをJSON形式で返してください。"},
-        {"role": "user", "content": "今日は天気がいいですね。"}
+    messages=[
+        {"role": "system", "content": "Extract the event information."},
+        {"role": "user", "content": "Alice and Bob are going to a science fair on Friday."},
     ]
-    
+
     response = request_to_chat_openai(
         messages=messages,
         model="gpt-4o",
-        json_schema=TranslationResponseModel
+        json_schema=CalendarEvent
     )
+    
     print("Pydantic(BaseModel) schema response example:")
     print(response)
 
@@ -245,5 +274,6 @@ def _test3():
 if __name__ == "__main__":
     #_test()
     #_test()
-    #_test2()
-    #_test3()
+    #_jsonschema_test()
+    #_basemodel_test()
+    pass
