@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from openai import AzureOpenAI, OpenAI
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-
 DOTENV_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../.env"))
 load_dotenv(DOTENV_PATH)
 
