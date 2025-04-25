@@ -64,7 +64,7 @@ def request_to_openai(
             response_format = None
             if is_json:
                 response_format = {"type": "json_object"}
-            elif json_schema:
+            if json_schema: # 両方有効化されていたら、json_schemaを優先
                 response_format = json_schema
             
             response = openai.chat.completions.create(
@@ -130,9 +130,9 @@ def request_to_azure_chatcompletion(
             response_format = None
             if is_json:
                 response_format = {"type": "json_object"}
-            elif json_schema:
+            if json_schema: # 両方有効化されていたら、json_schemaを優先
                 response_format = json_schema
-            
+
             response = client.chat.completions.create(
                 model=deployment,
                 messages=messages,
