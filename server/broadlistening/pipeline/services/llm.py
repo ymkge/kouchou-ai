@@ -3,12 +3,8 @@ import os
 
 import openai
 from dotenv import load_dotenv
-from langchain.embeddings import OpenAIEmbeddings  # FIXME: Issue #58
-from openai import AzureOpenAI
+from openai import AzureOpenAI, OpenAI
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
-
-# from langchain_openai import AzureOpenAIEmbeddings
-
 
 DOTENV_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../.env"))
 load_dotenv(DOTENV_PATH)
@@ -147,7 +143,9 @@ def request_to_embed(args, model):
 
     else:
         _validate_model(model)
-        embeds = OpenAIEmbeddings(model=model).embed_documents(args)
+        client = OpenAI()
+        response = client.embeddings.create(input=args, model=model)
+        embeds = [item.embedding for item in response.data]
     return embeds
 
 
@@ -179,4 +177,5 @@ def _test():
 
 
 if __name__ == "__main__":
+    _test()
     _test()
