@@ -252,9 +252,9 @@ def _basemodel_test():
     # pydanticのBaseModelを使ってOpenAI APIにスキーマを指定してリクエストするテスト
     from pydantic import BaseModel, Field
     class CalendarEvent(BaseModel):
-        name: str
-        date: str
-        participants: list[str]
+        name: str = Field(..., description="イベント名")
+        date: str = Field(..., description="日付")
+        participants: list[str] = Field(..., description="参加者")
 
     messages=[
         {"role": "system", "content": "Extract the event information."},
