@@ -1,11 +1,11 @@
 import logging
 import os
 
-import openai
 from dotenv import load_dotenv
+from pydantic import BaseModel
+import openai
 from openai import AzureOpenAI, OpenAI
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
-from pydantic import BaseModel
 
 
 DOTENV_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../.env"))
@@ -42,7 +42,7 @@ def request_to_openai(
     messages: list[dict],
     model: str = "gpt-4",
     is_json: bool = False,
-    json_schema: dict|BaseModel = None,
+    json_schema: dict | type[BaseModel] = None,
 ) -> dict:
     openai.api_type = "openai"
     
@@ -98,7 +98,7 @@ def request_to_openai(
 def request_to_azure_chatcompletion(
     messages: list[dict],
     is_json: bool = False,
-    json_schema: dict|BaseModel = None,
+    json_schema: dict | type[BaseModel] = None,
 ) -> dict:
     azure_endpoint = os.getenv("AZURE_CHATCOMPLETION_ENDPOINT")
     deployment = os.getenv("AZURE_CHATCOMPLETION_DEPLOYMENT_NAME")
@@ -158,7 +158,7 @@ def request_to_chat_openai(
     messages: list[dict],
     model: str = "gpt-4o",
     is_json: bool = False,
-    json_schema: dict = None,
+    json_schema: dict | type[BaseModel] = None,
 ) -> dict:
     use_azure = os.getenv("USE_AZURE", "false").lower()
     if use_azure == "true":
