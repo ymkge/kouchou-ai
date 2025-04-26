@@ -62,11 +62,12 @@
 3. コードレビューを受け、必要に応じて変更を加えてください
 4. メンテナーのapproveを得ると、変更がマージされます
 
-### 現在のメンテナー（2025/04/19時点）
+### 現在のメンテナー（2025/04/26時点）
 - [@nanocloudx](https://github.com/nanocloudx)
 - [@nishio](https://github.com/nishio)
 - [@nasuka](https://github.com/nasuka)
 - [@shingo-ohki](https://github.com/shingo-ohki)
+- [@mtane0412](https://github.com/mtane0412)
 
 上記のうち1名がapproveした場合にmainへのマージを行います。メンテナーは将来的に増やしていく予定です。
 
