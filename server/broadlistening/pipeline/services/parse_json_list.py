@@ -77,10 +77,16 @@ def parse_response(response):
 def parse_extraction_response(response: str) -> list[str]:
     """
     structured outputで出力したextraction responseをパースする。
+    responseは以下のような形式の文字列。
+    {"arguments": ["arg1", "arg2", "arg3"]}
     """
     try:
         response_dict = json.loads(response)
-        return response_dict["arguments"]
+        arguments = response_dict["arguments"]
+        # argumentsがリストでない場合は空のリストを返す
+        if not isinstance(arguments, list):
+            return []
+        return arguments
     except json.JSONDecodeError:
         print("Failed to parse extraction response, json.JSONDecodeError", response)
         return []
