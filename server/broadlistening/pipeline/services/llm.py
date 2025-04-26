@@ -1,12 +1,11 @@
 import logging
 import os
 
-from dotenv import load_dotenv
-from pydantic import BaseModel
 import openai
+from dotenv import load_dotenv
 from openai import AzureOpenAI, OpenAI
+from pydantic import BaseModel
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
-
 
 DOTENV_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../.env"))
 load_dotenv(DOTENV_PATH)
@@ -45,7 +44,7 @@ def request_to_openai(
     json_schema: dict | type[BaseModel] = None,
 ) -> dict:
     openai.api_type = "openai"
-    
+
     try:
         if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
             # Use beta.chat.completions.create for Pydantic BaseModel
@@ -64,9 +63,9 @@ def request_to_openai(
             response_format = None
             if is_json:
                 response_format = {"type": "json_object"}
-            if json_schema: # 両方有効化されていたら、json_schemaを優先
+            if json_schema:  # 両方有効化されていたら、json_schemaを優先
                 response_format = json_schema
-            
+
             response = openai.chat.completions.create(
                 model=model,
                 messages=messages,
@@ -110,7 +109,6 @@ def request_to_azure_chatcompletion(
         azure_endpoint=azure_endpoint,
         api_key=api_key,
     )
-
     # Set response format based on parameters
 
     try:
@@ -130,7 +128,7 @@ def request_to_azure_chatcompletion(
             response_format = None
             if is_json:
                 response_format = {"type": "json_object"}
-            if json_schema: # 両方有効化されていたら、json_schemaを優先
+            if json_schema:  # 両方有効化されていたら、json_schemaを優先
                 response_format = json_schema
 
             response = client.chat.completions.create(
@@ -228,52 +226,49 @@ def _jsonschema_test():
                 "type": "object",
                 "properties": {
                     "translation": {"type": "string", "description": "英訳結果"},
-                    "politeness": {"type": "string", "description": "丁寧さのレベル（例: casual, polite, honorific）"}
+                    "politeness": {"type": "string", "description": "丁寧さのレベル（例: casual, polite, honorific）"},
                 },
-                "required": ["translation", "politeness"]
-            }
-        }
+                "required": ["translation", "politeness"],
+            },
+        },
     }
 
     messages = [
-        {"role": "system", "content": "あなたは翻訳者です。日本語を英語に翻訳してください。翻訳と丁寧さのレベルをJSON形式で返してください。"},
-        {"role": "user", "content": "これは素晴らしい日です。"}
+        {
+            "role": "system",
+            "content": "あなたは翻訳者です。日本語を英語に翻訳してください。翻訳と丁寧さのレベルをJSON形式で返してください。",
+        },
+        {"role": "user", "content": "これは素晴らしい日です。"},
     ]
-    
-    response = request_to_chat_openai(
-        messages=messages,
-        model="gpt-4o",
-        json_schema=response_format
-    )
+
+    response = request_to_chat_openai(messages=messages, model="gpt-4o", json_schema=response_format)
     print("JSON Schema response example:")
     print(response)
+
 
 def _basemodel_test():
     # pydanticのBaseModelを使ってOpenAI APIにスキーマを指定してリクエストするテスト
     from pydantic import BaseModel, Field
+
     class CalendarEvent(BaseModel):
         name: str = Field(..., description="イベント名")
         date: str = Field(..., description="日付")
         participants: list[str] = Field(..., description="参加者")
 
-    messages=[
+    messages = [
         {"role": "system", "content": "Extract the event information."},
         {"role": "user", "content": "Alice and Bob are going to a science fair on Friday."},
     ]
 
-    response = request_to_chat_openai(
-        messages=messages,
-        model="gpt-4o",
-        json_schema=CalendarEvent
-    )
-    
+    response = request_to_chat_openai(messages=messages, model="gpt-4o", json_schema=CalendarEvent)
+
     print("Pydantic(BaseModel) schema response example:")
     print(response)
 
 
 if __name__ == "__main__":
-    #_test()
-    #_test()
-    #_jsonschema_test()
-    #_basemodel_test()
+    # _test()
+    # _test()
+    # _jsonschema_test()
+    # _basemodel_test()
     pass

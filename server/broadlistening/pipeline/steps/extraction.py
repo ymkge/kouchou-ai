@@ -4,14 +4,19 @@ import logging
 import re
 
 import pandas as pd
+from pydantic import BaseModel
 from tqdm import tqdm
 
 from services.category_classification import classify_args
 from services.llm import request_to_chat_openai
-from services.parse_json_list import parse_response
+from services.parse_json_list import parse_extraction_response
 from utils import update_progress
 
 COMMA_AND_SPACE_AND_RIGHT_BRACKET = re.compile(r",\s*(\])")
+
+
+class ExtractionResponse(BaseModel):
+    arguments: list[str]
 
 
 def _validate_property_columns(property_columns: list[str], comments: pd.DataFrame) -> None:
@@ -117,18 +122,18 @@ def extract_by_llm(input, prompt, model):
         {"role": "system", "content": prompt},
         {"role": "user", "content": input},
     ]
-    response = request_to_chat_openai(messages=messages, model=model)
+    response = request_to_chat_openai(messages=messages, model=model, json_schema=ExtractionResponse)
     return response
 
 
-def extract_arguments(input, prompt, model, retries=1):
+def extract_arguments(input, prompt, model):
     messages = [
         {"role": "system", "content": prompt},
         {"role": "user", "content": input},
     ]
     try:
         response = request_to_chat_openai(messages=messages, model=model, is_json=False)
-        items = parse_response(response)
+        items = parse_extraction_response(response)
         items = filter(None, items)  # omit empty strings
         return items
     except json.decoder.JSONDecodeError as e:

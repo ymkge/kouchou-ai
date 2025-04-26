@@ -74,6 +74,24 @@ def parse_response(response):
         return items
 
 
+def parse_extraction_response(response: str) -> list[str]:
+    """
+    structured outputで出力したextraction responseをパースする。
+    """
+    try:
+        response_dict = json.loads(response)
+        return response_dict["arguments"]
+    except json.JSONDecodeError:
+        print("Failed to parse extraction response, json.JSONDecodeError", response)
+        return []
+    except KeyError:
+        print("Failed to parse extraction response, no 'arguments' key", response)
+        return []
+    except Exception as e:
+        print("Failed to parse extraction response, unknown error", response, e)
+        return []
+
+
 if __name__ == "__main__":
     import doctest
 
