@@ -82,11 +82,11 @@ def parse_extraction_response(response: str) -> list[str]:
     """
     try:
         response_dict = json.loads(response)
-        arguments = response_dict["arguments"]
+        extracted_opinions = response_dict["extractedOpinionList"]
         # argumentsがリストでない場合は空のリストを返す
-        if not isinstance(arguments, list):
+        if not isinstance(extracted_opinions, list):
             return []
-        return arguments
+        return extracted_opinions
     except json.JSONDecodeError:
         print("Failed to parse extraction response, json.JSONDecodeError", response)
         return []
