@@ -1,14 +1,13 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Button,
-    Field,
-    HStack,
-    Input,
-    NativeSelect,
-    Textarea,
-    VStack
+  Button,
+  Field,
+  HStack,
+  Input,
+  NativeSelect,
+  Textarea,
+  VStack
 } from "@chakra-ui/react";
-import { usePromptSettings } from "../hooks/usePromptSettings";
 
 /**
  * AI設定セクションコンポーネント
@@ -23,6 +22,7 @@ export function AISettingsSection({
   onDecreaseWorkers,
   onPubcomModeChange,
   getModelDescription,
+  promptSettings,
 }: {
   model: string;
   workers: number;
@@ -33,9 +33,17 @@ export function AISettingsSection({
   onDecreaseWorkers: () => void;
   onPubcomModeChange: (checked: boolean | "indeterminate") => void;
   getModelDescription: () => string;
+  promptSettings: {
+    extraction: string;
+    initialLabelling: string;
+    mergeLabelling: string;
+    overview: string;
+    setExtraction: (value: string) => void;
+    setInitialLabelling: (value: string) => void;
+    setMergeLabelling: (value: string) => void;
+    setOverview: (value: string) => void;
+  };
 }) {
-  // プロンプト設定のカスタムフック
-  const promptSettings = usePromptSettings();
 
   return (
     <VStack gap={10}>

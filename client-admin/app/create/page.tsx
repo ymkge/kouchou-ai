@@ -252,6 +252,7 @@ export default function Page() {
               onDecreaseWorkers={aiSettings.decreaseWorkers}
               onPubcomModeChange={aiSettings.handlePubcomModeChange}
               getModelDescription={aiSettings.getModelDescription}
+              promptSettings={promptSettings}
             />
           </Presence>
 
