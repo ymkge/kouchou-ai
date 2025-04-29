@@ -10,8 +10,13 @@
   - 多数派攻撃に対する防御機能（予定）
 
 ## 前提条件
-* docker
-* OpenAI APIキー
+* 一般ユーザー向け：
+  * 安定版リリースをダウンロード（[Windows](./docs/windows-setup.md)/[Mac](./docs/mac-setup.md)/[Linux](./docs/linux-setup.md)の各ガイドを参照）
+  * OpenAI APIキー
+* 開発者向け：
+  * docker
+  * git
+  * OpenAI APIキー
 
 ## セットアップ・起動
 ### 前提
@@ -31,14 +36,20 @@
 * デフォルト設定は上記に基づいて設定されますが、コメント数に応じて調整することで最適な分析結果が得られます
 
 ### 手順
-* リポジトリをクローン
-* `cp .env.example .env` をコンソールで実行
-  * コピー後に各環境変数を設定。各環境変数の意味は.env.exampleに記載。
-* `docker compose up` をコンソールで実行
-  * ブラウザで http://localhost:3000 にアクセスすることでレポート一覧画面にアクセス可能
-  * ブラウザで http://localhost:4000 にアクセスすることで管理画面にアクセス可能
-  * 環境変数（.env）を編集した場合は、`docker compose down` を実行した後、 `docker compose up --build` を実行してアプリケーションを起動してください
-    * 一部の環境変数はDockerイメージのビルド時に埋め込まれているため、環境変数を変更した場合はビルドの再実行が必要となります
+* 開発者でない方は以下のユーザーガイドを参照してください：
+  * [Windows環境でのユーザーガイド](./docs/windows-setup.md)
+  * [Mac環境でのユーザーガイド](./docs/mac-setup.md)
+  * [Linux環境でのユーザーガイド](./docs/linux-setup.md)
+
+* 開発者向け：
+  * リポジトリをクローン
+  * `cp .env.example .env` をコンソールで実行
+    * コピー後に各環境変数を設定。各環境変数の意味は.env.exampleに記載。
+  * `docker compose up` をコンソールで実行
+    * ブラウザで http://localhost:3000 にアクセスすることでレポート一覧画面にアクセス可能
+    * ブラウザで http://localhost:4000 にアクセスすることで管理画面にアクセス可能
+    * 環境変数（.env）を編集した場合は、`docker compose down` を実行した後、 `docker compose up --build` を実行してアプリケーションを起動してください
+      * 一部の環境変数はDockerイメージのビルド時に埋め込まれているため、環境変数を変更した場合はビルドの再実行が必要となります
 
 ### Google Analytics の設定
 * Google Analytics 4（GA4）を使用して、ユーザーのアクセス解析を行うことができます

@@ -1,11 +1,11 @@
-# Windows環境でのユーザーガイド
+# Mac環境でのユーザーガイド
 
-このドキュメントでは、開発者でない人がWindows環境で広聴AI（kouchou-ai）を使うための手順を説明します。
+このドキュメントでは、開発者でない人がMac環境で広聴AI（kouchou-ai）を使うための手順を説明します。
 ソフトウェア開発に必要な要素を取り除いて最小限にしたものです。
 
 ## 前提条件
 
-- Windows 10/11
+- macOS Catalina (10.15) 以降
 - インターネット接続
 - OpenAI APIキー（[取得方法](https://platform.openai.com/api-keys)）
 
@@ -13,9 +13,9 @@
 
 ### 1. Docker Desktopのインストール
 
-1. [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/)をダウンロードしてインストールします。
+1. [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/)をダウンロードしてインストールします。
 2. インストール後、Docker Desktopを起動します。
-3. タスクバーのDockerアイコンが実行中（緑色）になっていることを確認します。
+3. メニューバーのDockerアイコンが実行中（緑色）になっていることを確認します。
 
 ### 2. 広聴AIのダウンロード
 
@@ -29,9 +29,12 @@
 
 ### 4. セットアップの実行
 
-1. 展開したフォルダ内の`setup_win.bat`ファイルをダブルクリックします。
-2. プロンプトが表示されたら、OpenAI APIキーを入力します。
-3. セットアップが自動的に進行し、Dockerコンテナが起動します。
+1. ターミナルを開きます。
+2. 展開したフォルダに移動します：`cd 展開したフォルダのパス`
+3. セットアップスクリプトに実行権限を付与します：`chmod +x setup_mac.sh`
+4. 以下のコマンドを実行してセットアップを開始します：`./setup_mac.sh`
+5. プロンプトが表示されたら、OpenAI APIキーを入力します。
+6. セットアップが自動的に進行し、Dockerコンテナが起動します。
 
 ### 5. アプリケーションへのアクセス
 
@@ -47,30 +50,26 @@
 #### 通常の起動・停止
 
 - アプリケーションの起動:  
-  フォルダ内の `start_win.bat` をダブルクリックします（または Docker デスクトップから操作）
+  `./start_mac.sh` を実行します（または Docker デスクトップから操作）
 
 - アプリケーションの停止:  
-  `stop_win.bat` をダブルクリックします（または Docker デスクトップから操作）
+  `./stop_mac.sh` を実行します（または Docker デスクトップから操作）
 
 #### OpenAI APIキーを変更したい場合
 
-OpenAI APIキーを再設定したい場合は、再度 `setup_win.bat` を実行してください。
+OpenAI APIキーを再設定したい場合は、再度 `./setup_mac.sh` を実行してください。
 
-1. 既存のアプリケーションが起動中の場合は `stop_win.bat` で停止してください。  
-2. `setup_win.bat` を実行し、新しい APIキーを入力します。  
+1. 既存のアプリケーションが起動中の場合は `./stop_mac.sh` で停止してください。  
+2. `./setup_mac.sh` を実行し、新しい APIキーを入力します。  
 3. 自動的に再ビルドと起動が行われます。
 
-> ※ `setup_win.bat` の再実行では、既存の `.env` ファイルが上書きされます。
+> ※ `setup_mac.sh` の再実行では、既存の `.env` ファイルが上書きされます。
 
 ## トラブルシューティング
 
 ### Docker Desktopが起動していない場合
 
-エラーメッセージ「Docker Desktopが実行されていません」が表示された場合は、Docker Desktopを起動してから再度`setup_win.bat`を実行してください。
-
-### WSL2の有効化が必要な場合
-
-Docker Desktopの初回起動時にWSL2の有効化を求められた場合は、指示に従ってWSL2を有効化してください。詳細は[Microsoft公式ドキュメント](https://learn.microsoft.com/ja-jp/windows/wsl/install)を参照してください。
+エラーメッセージ「Docker Desktopが実行されていません」が表示された場合は、Docker Desktopを起動してから再度セットアップスクリプトを実行してください。
 
 ### メモリ不足エラーが発生する場合
 
