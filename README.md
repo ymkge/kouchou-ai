@@ -12,6 +12,7 @@
 ## 前提条件
 * 一般ユーザー向け：
   * 安定版リリースをダウンロード（[Windows](./docs/windows-setup.md)/[Mac](./docs/mac-setup.md)/[Linux](./docs/linux-setup.md)の各ガイドを参照）
+  * Docker（各ガイドに従ってインストール）
   * OpenAI APIキー
 * 開発者向け：
   * docker
