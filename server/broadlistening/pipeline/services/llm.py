@@ -1,5 +1,6 @@
 import logging
 import os
+import threading
 
 import openai
 from dotenv import load_dotenv
@@ -176,7 +177,10 @@ def _validate_model(model):
         raise RuntimeError(f"Invalid embedding model: {model}, available models: {EMBDDING_MODELS}")
 
 
-def request_to_embed(args, model):
+def request_to_embed(args, model, is_embedded_at_local=False):
+    if is_embedded_at_local:
+        return request_to_local_embed(args)
+
     use_azure = os.getenv("USE_AZURE", "false").lower()
     if use_azure == "true":
         return request_to_azure_embed(args, model)
@@ -204,6 +208,22 @@ def request_to_azure_embed(args, model):
     response = client.embeddings.create(input=args, model=deployment)
     return [item.embedding for item in response.data]
 
+__local_emb_model = None
+__local_emb_model_loading_lock = threading.Lock()
+def request_to_local_embed(args):
+    global __local_emb_model
+    # memo: モデルを遅延ロード＆キャッシュするために、グローバル変数を使用
+    
+    with __local_emb_model_loading_lock:
+        # memo: スレッドセーフにするためにロックを使用
+        if __local_emb_model is None:
+            from sentence_transformers import SentenceTransformer
+            model_name = 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2'
+            __local_emb_model = SentenceTransformer(model_name)
+
+    result = __local_emb_model.encode(args)
+    return result.tolist()
+
 
 def _test():
     # messages = [
@@ -215,7 +235,37 @@ def _test():
     # print(request_to_embed("Hello", "text-embedding-3-large"))
     print(request_to_azure_embed("Hello", "text-embedding-3-large"))
 
+def _local_emb_test():
+    data = [
+        # 料理関連のグループ
+        "トマトソースのパスタを作るのが好きです",
+        "私はイタリアンの料理が得意です",
+        "スパゲッティカルボナーラは簡単においしく作れます",
+        
+        # 天気関連のグループ
+        "今日は晴れて気持ちがいい天気です",
+        "明日の天気予報では雨が降るようです",
+        "週末は天気が良くなりそうで外出するのに最適です",
+        
+        # 技術関連のグループ
+        "新しいスマートフォンは処理速度が速くなりました",
+        "最新のノートパソコンはバッテリー持ちが良いです",
+        "ワイヤレスイヤホンの音質が向上しています",
+        
+        # ランダムなトピック（相関が低いはず）
+        "猫は可愛い動物です",
+        "チャーハンは簡単に作れる料理です",
+        "図書館で本を借りてきました"
+    ]
+    emb = request_to_local_embed(data)
+    print(emb)
 
+    # コサイン類似度行列の出力
+    import numpy as np
+    from sklearn.metrics.pairwise import cosine_similarity
+    cos_sim = cosine_similarity(emb)
+    print(cos_sim)
+    
 def _jsonschema_test():
     # JSON schema request example
     response_format = {
@@ -271,4 +321,5 @@ if __name__ == "__main__":
     # _test()
     # _jsonschema_test()
     # _basemodel_test()
+    # _local_emb_test()
     pass
