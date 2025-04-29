@@ -17,8 +17,8 @@ on:
 
 jobs:
   e2e-tests:
-    # スケジュールまたはe2e-test-requiredラベルがある場合に実行
-    if: github.event_name == 'schedule' || contains(github.event.pull_request.labels.*.name, 'e2e-test-required')
+    # スケジュールまたはPRの場合に実行（テスト用に一時的にラベル条件を削除）
+    if: github.event_name == 'schedule' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
