@@ -57,7 +57,7 @@ const stepKeys = [
 const steps = [
   { id: 1, title: "抽出", description: "データの抽出" },
   { id: 2, title: "埋め込み", description: "埋め込み表現の生成" },
-  { id: 3, title: "クラスタリング", description: "階層的クラスタリングの実施" },
+  { id: 3, title: "意見グループ化", description: "階層的意見グループ化の実施" },
   { id: 4, title: "初期ラベリング", description: "初期ラベルの付与" },
   { id: 5, title: "統合ラベリング", description: "ラベルの統合" },
   { id: 6, title: "概要生成", description: "概要の作成" },
