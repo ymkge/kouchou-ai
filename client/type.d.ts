@@ -72,6 +72,7 @@ type Config = {
   intro: string; // イントロダクションの説明文
   output_dir: string; // 結果の出力ディレクトリ名
   previous?: Config; // 過去の設定情報
+  is_embedded_at_local: boolean; // ローカルで埋め込みを生成するかどうか
   extraction: {
     workers: number; // 並列処理数
     limit: number; // データ抽出の上限数
