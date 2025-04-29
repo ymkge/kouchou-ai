@@ -297,7 +297,7 @@ export function Analysis({ result }: ReportProps) {
                       {result.config.hierarchical_merge_labelling.model})
                     </TimelineTitle>
                     <TimelineDescription>
-                      意見グループ化の結果に対して、意見グループをマージしながらタイトル・説明文を生成（ラベリング）するステップです。
+                      意見グループを統合し、統合されたグループのタイトルと説明文を生成（ラベリング）するステップです。
                       <br />
                       このステップでは、下層の意見グループのタイトル及び説明文と、意見に基づいて上層の意見グループのタイトル及び説明文を生成します。
                     </TimelineDescription>
