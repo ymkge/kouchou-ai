@@ -7,12 +7,30 @@ docker info > nul 2>&1
 if %errorlevel% neq 0 (
   echo Docker Desktop is not running.
   echo Please start Docker Desktop and try again.
+  echo 注意: Dockerのインストール直後は再起動が必要な場合があります。
   pause
   exit /b
 )
 
 REM Enter OpenAI API key
+echo OpenAI APIキーを入力してください。
+echo 注意: Ctrl+Vが機能しない場合は、右クリックして「貼り付け」を選択してください。
 set /p OPENAI_API_KEY=Enter your OpenAI API key: 
+
+REM Validate OpenAI API key format
+echo APIキーの形式を確認しています...
+echo %OPENAI_API_KEY% | findstr /r "^sk-" > nul
+if %errorlevel% neq 0 (
+  echo 警告: 入力されたAPIキーの形式が正しくない可能性があります。
+  echo 通常、OpenAI APIキーは「sk-」で始まります。
+  echo 続行しますか？ (Y/N)
+  set /p CONTINUE=
+  if /i "%CONTINUE%" neq "Y" (
+    echo セットアップを中止します。正しいAPIキーを用意してから再度実行してください。
+    pause
+    exit /b
+  )
+)
 
 REM Generate .env file
 echo # Auto-generated .env file > .env
