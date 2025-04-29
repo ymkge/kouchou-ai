@@ -261,7 +261,6 @@ def _local_emb_test():
     print(emb)
 
     # コサイン類似度行列の出力
-    import numpy as np
     from sklearn.metrics.pairwise import cosine_similarity
     cos_sim = cosine_similarity(emb)
     print(cos_sim)
