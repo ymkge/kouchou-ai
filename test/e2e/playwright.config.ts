@@ -26,7 +26,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'cd ../client-admin && npm run dev',
+    command: 'cd ../../client-admin && npm run dev',
     port: 4000,
     reuseExistingServer: !process.env.CI,
   },
