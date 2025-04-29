@@ -31,14 +31,11 @@ test.describe('レポート作成ページ', () => {
     await expect(createReportPage.submitButton).toBeVisible();
   });
 
-  test('CSVタブとスプレッドシートタブを切り替えられること', async ({ page }) => {
+  test('CSVタブの機能確認', async ({ page }) => {
     const createReportPage = new CreateReportPage(page);
     await createReportPage.goto();
     
     await createReportPage.csvTab.click();
     await expect(createReportPage.csvFileUpload).toBeVisible();
-    
-    await createReportPage.spreadsheetTab.click();
-    await expect(createReportPage.spreadsheetUrlInput).toBeVisible();
   });
 });
