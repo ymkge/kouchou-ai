@@ -107,7 +107,7 @@ function getDenseClusters(
   maxDensity: number,
   minValue: number,
 ): { filtered: Cluster[]; isEmpty: boolean } {
-  // 全クラスターの中で一番大きい level を deepestLevel として取得します。
+  // 全意見グループの中で一番大きい level を deepestLevel として取得します。
   const deepestLevel = clusters.reduce(
     (maxLevel, cluster) => Math.max(maxLevel, cluster.level),
     0,

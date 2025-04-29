@@ -70,7 +70,6 @@ export function ScatterChart({
     {} as Record<string, string>,
   );
 
-  // クラスタごとのデータを構築
   const clusterData = targetClusters.map((cluster) => {
     const clusterArguments = argumentList.filter((arg) =>
       arg.cluster_ids.includes(cluster.id),
@@ -82,7 +81,6 @@ export function ScatterChart({
         `<b>${cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`,
     );
 
-    // クラスタ中心の座標を計算
     const centerX = xValues.reduce((sum, val) => sum + val, 0) / xValues.length;
     const centerY = yValues.reduce((sum, val) => sum + val, 0) / yValues.length;
 

@@ -2,7 +2,6 @@ import { Button, Field, HStack, Input, Text } from "@chakra-ui/react";
 import { ChevronRightIcon } from "lucide-react";
 import { ClusterSettings } from "../types";
 
-// クラスタ設定コンポーネント
 export function ClusterSettingsSection({
   clusterLv1,
   clusterLv2,
@@ -22,7 +21,7 @@ export function ClusterSettingsSection({
 
   return (
     <Field.Root mt={4}>
-      <Field.Label>クラスタ数設定</Field.Label>
+      <Field.Label>意見グループ数設定</Field.Label>
       <HStack w={"100%"}>
         <Button
           onClick={() => onLv1Change(clusterLv1 - 1)}
@@ -83,7 +82,7 @@ export function ClusterSettingsSection({
         </Button>
       </HStack>
       <Field.HelperText>
-        階層ごとの意見グループ生成数です。初期値はコメント数に基づいた推奨クラスタ数です。
+        階層ごとの意見グループ生成数です。初期値はコメント数に基づいた推奨意見グループ数です。
       </Field.HelperText>
       {autoAdjusted && (
         <Text color="orange.500" fontSize="sm" mt={2}>

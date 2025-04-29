@@ -83,7 +83,6 @@ export function useInputData(
         }
       }
 
-      // 推奨クラスタ数を設定
       onDataLoaded(commentData.comments.length);
 
       toaster.create({

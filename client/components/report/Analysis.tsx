@@ -226,10 +226,10 @@ export function Analysis({ result }: ReportProps) {
                 {p.step === "hierarchical_clustering" && (
                   <TimelineContent>
                     <TimelineTitle fontWeight={"bold"}>
-                      クラスタリング
+                      意見グループ化
                     </TimelineTitle>
                     <TimelineDescription>
-                      埋め込みベクトルの値に基づいて意見の階層クラスタリングを行うステップです。
+                      埋め込みベクトルの値に基づいて意見の意見グループ化を行うステップです。
                       <br />
                     </TimelineDescription>
                     <HStack>
@@ -238,7 +238,7 @@ export function Analysis({ result }: ReportProps) {
                         size={"xs"}
                         onClick={() =>
                           setSelectedData({
-                            title: `クラスタリング - ${p.step}`,
+                            title: `意見グループ化 - ${p.step}`,
                             body: result.config.hierarchical_clustering
                               .source_code,
                           })
@@ -256,9 +256,9 @@ export function Analysis({ result }: ReportProps) {
                       {result.config.hierarchical_initial_labelling.model})
                     </TimelineTitle>
                     <TimelineDescription>
-                      クラスタリングの結果に対して、各クラスタに適切なタイトル・説明文を生成（ラベリング）するステップです。
+                      意見グループ化の結果に対して、各意見グループに適切なタイトル・説明文を生成（ラベリング）するステップです。
                       <br />
-                      このステップでは、最も細かい粒度のクラスタ（最下層のクラスタ）に対して、各クラスタに属する意見に基づいてクラスタのタイトルと説明文を生成します。
+                      このステップでは、最も細かい粒度の意見グループ（最下層の意見グループ）に対して、各意見グループに属する意見に基づいて意見グループのタイトルと説明文を生成します。
                     </TimelineDescription>
                     <HStack>
                       <Button
@@ -297,9 +297,9 @@ export function Analysis({ result }: ReportProps) {
                       {result.config.hierarchical_merge_labelling.model})
                     </TimelineTitle>
                     <TimelineDescription>
-                      階層的クラスタリングの結果に対して、クラスタをマージしながらタイトル・説明文を生成（ラベリング）するステップです。
+                      意見グループを統合し、統合されたグループのタイトルと説明文を生成（ラベリング）するステップです。
                       <br />
-                      このステップでは、下層のクラスタのタイトル及び説明文と、意見に基づいて上層のクラスタのタイトル及び説明文を生成します。
+                      このステップでは、下層の意見グループのタイトル及び説明文と、意見に基づいて上層の意見グループのタイトル及び説明文を生成します。
                     </TimelineDescription>
                     <HStack>
                       <Button
@@ -337,9 +337,9 @@ export function Analysis({ result }: ReportProps) {
                       要約 ({result.config.hierarchical_overview.model})
                     </TimelineTitle>
                     <TimelineDescription>
-                      クラスタの概要を作成するステップです。
+                      意見グループの概要を作成するステップです。
                       <br />
-                      各クラスタのタイトル及び説明文をもとに、全体の概要をまとめます。
+                      各意見グループのタイトル及び説明文をもとに、全体の概要をまとめます。
                     </TimelineDescription>
                     <HStack>
                       <Button
