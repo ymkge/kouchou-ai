@@ -32,38 +32,6 @@ if %errorlevel% neq 0 (
   )
 )
 
-REM Validate OpenAI API key with API call
-echo APIキーの有効性を確認しています...
-set "ENDPOINT=https://api.openai.com/v1/models"
-REM ステータスコードだけを一時ファイルへ書き出す
-curl -s -o NUL -w "%%{http_code}" ^
-     -H "Authorization: Bearer %OPENAI_API_KEY%" ^
-     %ENDPOINT% > "%TEMP%\status.tmp"
-set /p CODE=<"%TEMP%\status.tmp"
-del "%TEMP%\status.tmp"
-
-if "%CODE%"=="200" (
-  echo [OK] APIキーは有効です。
-) else if "%CODE%"=="401" (
-  echo [警告] APIキーが無効、または失効しています。（コード: %CODE%）
-  echo 続行しますか？ (Y/N)
-  set /p CONTINUE=
-  if /i "%CONTINUE%" neq "Y" (
-    echo セットアップを中止します。正しいAPIキーを用意してから再度実行してください。
-    pause
-    exit /b
-  )
-) else (
-  echo [警告] 予期しない応答: %CODE%
-  echo 続行しますか？ (Y/N)
-  set /p CONTINUE=
-  if /i "%CONTINUE%" neq "Y" (
-    echo セットアップを中止します。正しいAPIキーを用意してから再度実行してください。
-    pause
-    exit /b
-  )
-)
-
 REM Generate .env file
 echo # Auto-generated .env file > .env
 echo OPENAI_API_KEY=%OPENAI_API_KEY% >> .env
