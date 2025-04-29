@@ -229,7 +229,7 @@ export function Analysis({ result }: ReportProps) {
                       意見グループ化
                     </TimelineTitle>
                     <TimelineDescription>
-                      埋め込みベクトルの値に基づいて意見の階層意見グループ化を行うステップです。
+                      埋め込みベクトルの値に基づいて意見の意見グループ化を行うステップです。
                       <br />
                     </TimelineDescription>
                     <HStack>
@@ -297,7 +297,7 @@ export function Analysis({ result }: ReportProps) {
                       {result.config.hierarchical_merge_labelling.model})
                     </TimelineTitle>
                     <TimelineDescription>
-                      階層的意見グループ化の結果に対して、意見グループをマージしながらタイトル・説明文を生成（ラベリング）するステップです。
+                      意見グループ化の結果に対して、意見グループをマージしながらタイトル・説明文を生成（ラベリング）するステップです。
                       <br />
                       このステップでは、下層の意見グループのタイトル及び説明文と、意見に基づいて上層の意見グループのタイトル及び説明文を生成します。
                     </TimelineDescription>
