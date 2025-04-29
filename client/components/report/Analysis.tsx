@@ -200,7 +200,11 @@ export function Analysis({ result }: ReportProps) {
                 {p.step === "embedding" && (
                   <TimelineContent>
                     <TimelineTitle fontWeight={"bold"}>
-                      埋め込み ({result.config.embedding.model})
+                      埋め込み (
+                      {result.config.is_embedded_at_local
+                        ? "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+                        : result.config.embedding.model}
+                      )
                     </TimelineTitle>
                     <TimelineDescription>
                       抽出された意見に対して埋め込み（ベクトル表現）を生成するステップです。
