@@ -7,8 +7,8 @@ from services.llm import request_to_embed
 def embedding(config):
     model = config["embedding"]["model"]
     is_embedded_at_local = config["is_embedded_at_local"]
-    #print("start embedding")
-    #print(f"embedding model: {model}, is_embedded_at_local: {is_embedded_at_local}")
+    # print("start embedding")
+    # print(f"embedding model: {model}, is_embedded_at_local: {is_embedded_at_local}")
 
     dataset = config["output_dir"]
     path = f"outputs/{dataset}/embeddings.pkl"
