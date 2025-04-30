@@ -178,6 +178,8 @@ make client-dev -j 3
 
 広聴 AI は OSS として開発されており、開発者の方からのコントリビュートを募集しています。
 詳しくは、[CONTRIBUTING.md](CONTRIBUTING.md)を参照ください。
+また、本プロジェクトでは AI エンジニア「[Devin](https://cognition.ai)」との協働開発を行っています。
+現時点での Devin とのコラボレーションについては、模索中ですが [Devin とのコラボレーション](docs/DEVIN_COLLABORATION.md)を参照してください。
 
 ## 機能要望・バグ報告について
 
