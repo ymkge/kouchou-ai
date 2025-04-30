@@ -4,7 +4,6 @@ import { Header } from "@/components/Header";
 import { Analysis } from "@/components/report/Analysis";
 import { BackButton } from "@/components/report/BackButton";
 import { ClientContainer } from "@/components/report/ClientContainer";
-import { ClusterOverview } from "@/components/report/ClusterOverview";
 import { Overview } from "@/components/report/Overview";
 import type { Meta, Report, Result } from "@/type";
 import { Separator } from "@chakra-ui/react";
@@ -97,15 +96,10 @@ export default async function Page({ params }: PageProps) {
   return (
     <>
       <div className={"container"}>
-        <Header meta={meta} />
-        <Overview result={result} />
-        <ClientContainer result={result} />
-        {result.clusters
-          .filter((c) => c.level === 1)
-          .map((c) => (
-            <ClusterOverview key={c.id} cluster={c} />
-          ))}
-        <Analysis result={result} />
+      <Header meta={meta} />
+      <Overview result={result} />
+      <ClientContainer result={result} />
+      <Analysis result={result} />
         <BackButton />
         <Separator my={12} maxW={"750px"} mx={"auto"} />
         <About meta={meta} />
