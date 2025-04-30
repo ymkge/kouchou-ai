@@ -4,9 +4,6 @@ import { resolve } from "node:path";
 
 let ignoreFiles = [];
 
-// BASE_PATH環境変数を取得
-const basePath = process.env.STATIC_EXPORT_BASE_PATH || "";
-
 if (process.env.NEXT_PUBLIC_OUTPUT_MODE === "export") {
   // static build 時にビルド対象から除外するファイル
   ignoreFiles = ["app/[slug]/opengraph-image.tsx"];
