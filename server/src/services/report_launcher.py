@@ -25,6 +25,7 @@ def _build_config(report_input: ReportInput) -> dict[str, Any]:
         "intro": report_input.intro,
         "model": report_input.model,
         "is_pubcom": report_input.is_pubcom,
+        "is_embedded_at_local": report_input.is_embedded_at_local,
         "extraction": {
             "prompt": report_input.prompt.extraction,
             "workers": report_input.workers,
