@@ -142,6 +142,7 @@ export default function Page() {
         prompt: promptData,
         is_pubcom: aiSettings.isPubcomMode,
         inputType: inputData.inputType,
+        is_embedded_at_local: aiSettings.isEmbeddedAtLocal,
       });
       
       toaster.create({
@@ -241,6 +242,7 @@ export default function Page() {
               model={aiSettings.model}
               workers={aiSettings.workers}
               isPubcomMode={aiSettings.isPubcomMode}
+              isEmbeddedAtLocal={aiSettings.isEmbeddedAtLocal}
               onModelChange={aiSettings.handleModelChange}
               onWorkersChange={(e) => {
                 const v = Number(e.target.value);
@@ -251,7 +253,12 @@ export default function Page() {
               onIncreaseWorkers={aiSettings.increaseWorkers}
               onDecreaseWorkers={aiSettings.decreaseWorkers}
               onPubcomModeChange={aiSettings.handlePubcomModeChange}
+              onEmbeddedAtLocalChange={(checked) => {
+                if (checked === "indeterminate") return;
+                aiSettings.setIsEmbeddedAtLocal(checked);
+              }}
               getModelDescription={aiSettings.getModelDescription}
+              promptSettings={promptSettings}
             />
           </Presence>
 

@@ -8,6 +8,7 @@ export function useAISettings() {
   const [model, setModel] = useState<string>("gpt-4o-mini");
   const [workers, setWorkers] = useState<number>(30);
   const [isPubcomMode, setIsPubcomMode] = useState<boolean>(true);
+  const [isEmbeddedAtLocal, setIsEmbeddedAtLocal] = useState<boolean>(false);
 
   /**
    * ワーカー数変更時のハンドラー
@@ -66,12 +67,14 @@ export function useAISettings() {
     setModel("gpt-4o-mini");
     setWorkers(30);
     setIsPubcomMode(true);
+    setIsEmbeddedAtLocal(false);
   };
 
   return {
     model,
     workers,
     isPubcomMode,
+    isEmbeddedAtLocal,
     handleModelChange,
     handleWorkersChange,
     increaseWorkers,
@@ -79,5 +82,6 @@ export function useAISettings() {
     handlePubcomModeChange,
     getModelDescription,
     resetAISettings,
+    setIsEmbeddedAtLocal,
   };
 }

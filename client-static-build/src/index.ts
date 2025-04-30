@@ -54,6 +54,10 @@ app.post("/build", async (req, res) => {
   }
 });
 
+app.get("/healthcheck", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 const PORT = 3200;
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);

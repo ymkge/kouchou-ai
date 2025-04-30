@@ -16,6 +16,7 @@ export async function createReport({
   prompt,
   is_pubcom,
   inputType,
+  is_embedded_at_local,
 }: {
   input: string;
   question: string;
@@ -27,6 +28,7 @@ export async function createReport({
   prompt: PromptSettings;
   is_pubcom: boolean;
   inputType: string;
+  is_embedded_at_local: boolean;
 }): Promise<void> {
   try {
     const response = await fetch(
@@ -48,6 +50,7 @@ export async function createReport({
           prompt,
           is_pubcom,
           inputType,
+          is_embedded_at_local,
         }),
       }
     );

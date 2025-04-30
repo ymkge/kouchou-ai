@@ -1,14 +1,13 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Button,
-    Field,
-    HStack,
-    Input,
-    NativeSelect,
-    Textarea,
-    VStack
+  Button,
+  Field,
+  HStack,
+  Input,
+  NativeSelect,
+  Textarea,
+  VStack
 } from "@chakra-ui/react";
-import { usePromptSettings } from "../hooks/usePromptSettings";
 
 /**
  * AI設定セクションコンポーネント
@@ -23,6 +22,9 @@ export function AISettingsSection({
   onDecreaseWorkers,
   onPubcomModeChange,
   getModelDescription,
+  promptSettings,
+  isEmbeddedAtLocal,
+  onEmbeddedAtLocalChange,
 }: {
   model: string;
   workers: number;
@@ -33,9 +35,19 @@ export function AISettingsSection({
   onDecreaseWorkers: () => void;
   onPubcomModeChange: (checked: boolean | "indeterminate") => void;
   getModelDescription: () => string;
+  promptSettings: {
+    extraction: string;
+    initialLabelling: string;
+    mergeLabelling: string;
+    overview: string;
+    setExtraction: (value: string) => void;
+    setInitialLabelling: (value: string) => void;
+    setMergeLabelling: (value: string) => void;
+    setOverview: (value: string) => void;
+  };
+  isEmbeddedAtLocal: boolean;
+  onEmbeddedAtLocalChange: (checked: boolean | "indeterminate") => void;
 }) {
-  // プロンプト設定のカスタムフック
-  const promptSettings = usePromptSettings();
 
   return (
     <VStack gap={10}>
@@ -146,6 +158,22 @@ export function AISettingsSection({
         />
         <Field.HelperText>
           AIに提示する要約プロンプトです(通常は変更不要です)
+        </Field.HelperText>
+      </Field.Root>
+      <Field.Root>
+        <Checkbox
+          checked={isEmbeddedAtLocal}
+          onCheckedChange={(details) => {
+            const { checked } = details;
+            if (checked === "indeterminate") return;
+            onEmbeddedAtLocalChange(checked);
+          }}
+        >
+          埋め込み処理をサーバ内で行う
+        </Checkbox>
+        <Field.HelperText>
+          埋め込み処理をサーバ内で行うことで、APIの利用料金を削減します。
+          精度に関しては未検証であり、OpenAIを使った場合と大きく異なる結果になる可能性があります。
         </Field.HelperText>
       </Field.Root>
     </VStack>

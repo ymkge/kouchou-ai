@@ -31,6 +31,7 @@ class ReportInput(SchemaBaseModel):
     comments: list[Comment]  # コメントのリスト
     is_pubcom: bool = False  # CSV出力モード出力フラグ
     inputType: Literal["file", "spreadsheet"] = "file"  # 入力タイプ
+    is_embedded_at_local: bool = False  # エンベデッド処理をローカルで行うかどうか
 
 
 class ReportMetadataUpdate(SchemaBaseModel):
