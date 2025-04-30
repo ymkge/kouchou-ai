@@ -130,6 +130,7 @@ export function ScatterChart({
           showticklabels: false,
         },
         hovermode: "closest",
+        dragmode: "pan", // ドラッグによる移動（パン）を有効化
         annotations: showClusterLabels ? clusterData.map((data) => ({
           x: data.centerX,
           y: data.centerY,
@@ -152,7 +153,8 @@ export function ScatterChart({
       style={{ width: "100%", height: "100%" }}
       config={{
         responsive: true,
-        displayModeBar: false,
+        displayModeBar: "hover", // 操作時にツールバーを表示
+        scrollZoom: true, // マウスホイールによるズームを有効化
         locale: "ja",
       }}
       onHover={onHover}
