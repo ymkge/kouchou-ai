@@ -26,11 +26,11 @@ class Config:
         else:
             print("GITHUB_TOKENからトークンを正常に取得しました。")
         
-        self.qd_api_key = os.getenv("QD_API_KEY")
-        print("QD_API_KEYの状態:", "取得済み" if self.qd_api_key else "見つかりません")
+        # self.qd_api_key = os.getenv("QD_API_KEY")
+        # print("QD_API_KEYの状態:", "取得済み" if self.qd_api_key else "見つかりません")
         
-        self.qd_url = os.getenv("QD_URL")
-        print("QD_URLの状態:", "取得済み" if self.qd_url else "見つかりません")
+        # self.qd_url = os.getenv("QD_URL")
+        # print("QD_URLの状態:", "取得済み" if self.qd_url else "見つかりません")
         
         self.github_repo = os.getenv("GITHUB_REPOSITORY")
         print("GITHUB_REPOSITORYの状態:", "取得済み" if self.github_repo else "見つかりません")
