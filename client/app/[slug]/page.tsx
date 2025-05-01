@@ -69,7 +69,7 @@ export async function generateMetadata({
     const metaData: Metadata = {
       title: `${result.config.question} - ${meta.reporter}`,
       description: `${result.overview}`,
-      metadataBase: new URL(host),
+      metadataBase: new URL(host + basePath),
     };
 
     if (isStaticExport) {
