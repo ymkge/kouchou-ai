@@ -22,6 +22,7 @@ export default function Page() {
     success: boolean;
     message: string;
     use_azure: boolean;
+    available_models: string[];
   } | null>(null);
 
   const verifyChatGptApiKey = async () => {
@@ -105,12 +106,28 @@ export default function Page() {
                         : "検証失敗"}
                     </Text>
                     <Text mb={1}>{verificationResult.message}</Text>
-                    <Text>
+                    <Text mb={1}>
                       使用モード:{" "}
                       {verificationResult.use_azure
                         ? "Azure OpenAI Service"
                         : "OpenAI API"}
                     </Text>
+                    {verificationResult.success && verificationResult.available_models && verificationResult.available_models.length > 0 && (
+                      <Box mt={2}>
+                        <Text fontWeight="bold" mb={1}>利用可能なモデル:</Text>
+                        <Box 
+                          maxH="200px" 
+                          overflowY="auto" 
+                          p={2} 
+                          borderWidth="1px" 
+                          borderRadius="md"
+                        >
+                          {verificationResult.available_models.map((model: string, index: number) => (
+                            <Text key={index} fontSize="sm">{model}</Text>
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
                   </VStack>
                 </HStack>
               </Box>

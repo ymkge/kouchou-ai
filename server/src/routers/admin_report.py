@@ -162,29 +162,45 @@ async def update_report_metadata_endpoint(
 
 @router.get("/admin/environment/verify-chatgpt")
 async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)):
-    """Verify the ChatGPT API key configuration by making a test request.
+    """Verify the ChatGPT API key configuration by retrieving available models.
 
     Checks both OpenAI and Azure OpenAI configurations based on the USE_AZURE setting.
+    Uses the models.list() API to verify the API key and retrieve available models.
 
     Returns:
-        dict: Status of the verification and any error messages
+        dict: Status of the verification, available models, and any error messages
     """
     try:
         use_azure = os.getenv("USE_AZURE", "false").lower() == "true"
+        available_models = []
 
-        test_messages = [
-            {"role": "system", "content": "This is a test message to verify API key."},
-            {"role": "user", "content": "Hello"},
-        ]
+        if use_azure:
+            azure_endpoint = os.getenv("AZURE_CHATCOMPLETION_ENDPOINT")
+            api_key = os.getenv("AZURE_CHATCOMPLETION_API_KEY")
+            api_version = os.getenv("AZURE_CHATCOMPLETION_VERSION")
 
-        from broadlistening.pipeline.services.llm import request_to_chat_openai
+            from openai import AzureOpenAI
 
-        _ = request_to_chat_openai(messages=test_messages, model="gpt-4o" if not use_azure else None)
+            client = AzureOpenAI(
+                api_version=api_version,
+                azure_endpoint=azure_endpoint,
+                api_key=api_key,
+            )
+            
+            models = client.models.list()
+            available_models = [model.id for model in models]
+        else:
+            from openai import OpenAI
+            
+            client = OpenAI()
+            models = client.models.list()
+            available_models = [model.id for model in models]
 
         return {
             "success": True,
             "message": "ChatGPT API key is valid",
             "use_azure": use_azure,
+            "available_models": available_models,
         }
 
     except openai.AuthenticationError as e:
@@ -192,10 +208,12 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)):
             "success": False,
             "message": f"Authentication failed: {str(e)}",
             "use_azure": use_azure,
+            "available_models": [],
         }
     except Exception as e:
         return {
             "success": False,
             "message": f"Error: {str(e)}",
             "use_azure": use_azure,
+            "available_models": [],
         }
