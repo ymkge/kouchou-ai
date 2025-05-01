@@ -15,8 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
     const meta: Meta = await metaResponse.json();
 
     const isStaticExport = process.env.NEXT_PUBLIC_OUTPUT_MODE === "export";
-    const basePath = process.env.STATIC_EXPORT_BASE_PATH || "";
-    const siteUrl = process.env.STATIC_EXPORT_SITE_URL ?? "";
+    const basePath = process.env.NEXT_PUBLIC_STATIC_EXPORT_BASE_PATH || "";
+    const siteUrl = process.env.NEXT_PUBLIC_STATIC_EXPORT_SITE_URL ?? "";
     const defaultHost = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
     const host = isStaticExport

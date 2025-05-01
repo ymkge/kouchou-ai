@@ -9,6 +9,16 @@ import {
 import { Button, Heading, Image, Text } from "@chakra-ui/react";
 import { CircleHelpIcon } from "lucide-react";
 
+const isStaticExport = process.env.NEXT_PUBLIC_OUTPUT_MODE === "export";
+const basePath = process.env.NEXT_PUBLIC_STATIC_EXPORT_BASE_PATH || "";
+const siteUrl = process.env.NEXT_PUBLIC_STATIC_EXPORT_SITE_URL ?? "";
+const defaultHost = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+const host = isStaticExport
+  ? (siteUrl || defaultHost)
+  : defaultHost;
+const imageUrl = `${host}${isStaticExport ? basePath : ""}/images/broadlistening.png`;
+
 export function BroadlisteningGuide() {
   return (
     <DialogRoot size="xl" placement="center" motionPreset="slide-in-bottom">
@@ -35,7 +45,7 @@ export function BroadlisteningGuide() {
           </Text>
           <Image
             mb={4}
-            src={"/images/broadlistening.png"}
+            src={imageUrl}
             alt={"ブロードリスニングのイメージ"}
           />
           <Text>
