@@ -26,18 +26,23 @@ export const getRelativeUrl = (path: string): string => {
 
 /**
  * サーバーから画像のURLを取得する
- * @param src 画像のパス
- * @returns 画像のパス
+ * 絶対URLの場合はそのまま返し、相対パスの場合は環境に応じたベースパスを付与する
+ *
+ * @param src 画像のパス (例: "/images/example.png" または "https://example.com/image.png")
+ * @returns 適切に処理された画像のパス
  */
-export const getImageFromServerSrc = (src: string) => {
+export const getImageFromServerSrc = (src: string): string => {
+  // 空文字列の場合は早期リターン
   if (!src) return '';
   
   try {
-    // 絶対URLの場合はそのまま返す
+    // 絶対URLの場合はそのまま返す（有効なURLかどうかを検証）
     new URL(src);
     return src;
-  } catch {
-    // 相対パスの場合
+  } catch (error) {
+    // 相対パスの場合の処理
+    
+    // 静的エクスポートモードの場合
     if (process.env.NEXT_PUBLIC_OUTPUT_MODE === "export") {
       const basePath = getBasePath();
       
@@ -50,6 +55,14 @@ export const getImageFromServerSrc = (src: string) => {
 
     // 開発環境やサーバーサイドレンダリング時
     const basePath = process.env.NEXT_PUBLIC_API_BASEPATH || '';
-    return `${basePath}${src}`;
+    
+    // パスが既にbasePathで始まっていないことを確認
+    if (basePath && src.startsWith(basePath)) {
+      return src;
+    }
+    
+    // パスが / で始まることを確認
+    const normalizedSrc = src.startsWith('/') ? src : `/${src}`;
+    return `${basePath}${normalizedSrc}`;
   }
 };
