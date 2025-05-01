@@ -1,4 +1,4 @@
-import { getAbsoluteUrl } from "@/app/utils/image-src";
+import { getRelativeUrl } from "@/app/utils/image-src";
 import {
   DialogBody,
   DialogCloseTrigger,
@@ -36,7 +36,7 @@ export function BroadlisteningGuide() {
           </Text>
           <Image
             mb={4}
-            src={getAbsoluteUrl("/images/broadlistening.png")}
+            src={getRelativeUrl("/images/broadlistening.png")}
             alt={"ブロードリスニングのイメージ"}
           />
           <Text>
