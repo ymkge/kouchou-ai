@@ -155,6 +155,12 @@ class IssueProcessor:
         self.content_moderator = content_moderator
         self.qdrant_handler = qdrant_handler
         self.openai_client = openai_client
+        self.available_labels = [
+            'Admin', 'Algorithm', 'API', 'bug', 'Client', 'dependencies', 'design', 
+            'docker', 'documentation', 'duplicate', 'e2e-test-required', 'enhancement', 
+            'github_actions', 'good first issue', 'help wanted', 'high priority', 
+            'invalid', 'javascript', 'python', 'question', 'wontfix'
+        ]
 
     def process_issue(self, issue_content: str, issue_title: str = ""):
         """Issueを処理する"""
@@ -164,6 +170,8 @@ class IssueProcessor:
 
         if issue_title:
             self._check_and_add_title_labels(issue_title)
+        
+        self._analyze_and_add_content_labels(issue_content)
 
         self.qdrant_handler.add_issue(issue_content, self.github_handler.issue.number)
         
@@ -221,6 +229,48 @@ class IssueProcessor:
             
             if emoji in emoji_to_label:
                 self.github_handler.add_label(emoji_to_label[emoji])
+                
+    def _analyze_and_add_content_labels(self, issue_content: str):
+        """OpenAIを使ってIssueの内容からラベルを判定する"""
+        prompt = f"""
+        以下はGitHubのIssueの内容です。この内容を分析して、最も適切なラベルを選んでください。
+        
+        Issue内容:
+        {issue_content}
+        
+        選択可能なラベル:
+        {', '.join(self.available_labels)}
+        
+        このIssueに付与すべきラベルを3つまで選んでJSON形式で返してください。
+        例: {{"labels": ["bug", "javascript", "high priority"]}}
+        
+        Issueの内容に合わないラベルは選ばないでください。適切なラベルが1つか2つしかない場合は、無理に3つ選ぶ必要はありません。
+        """
+        
+        try:
+            response = self.openai_client.chat.completions.create(
+                model=GPT_MODEL,
+                messages=[{"role": "system", "content": prompt}],
+                response_format={"type": "json_object"},
+                max_tokens=1024
+            )
+            
+            result = response.choices[0].message.content
+            print(f"OpenAIからのレスポンス: {result}")
+            
+            import json
+            try:
+                labels_data = json.loads(result)
+                if "labels" in labels_data and isinstance(labels_data["labels"], list):
+                    for label in labels_data["labels"]:
+                        if label in self.available_labels:
+                            self.github_handler.add_label(label)
+                            print(f"ラベルを追加しました: {label}")
+            except json.JSONDecodeError as e:
+                print(f"JSONのパースに失敗しました: {e}")
+                
+        except Exception as e:
+            print(f"OpenAIによるラベル判定中にエラーが発生しました: {e}")
 
     def _handle_violation(self):
         """違反を処理する"""
