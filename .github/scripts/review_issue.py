@@ -258,6 +258,7 @@ class IssueProcessor:
                 '🐛': 'bug',
                 '✨': 'enhancement',
                 '📚': 'documentation',
+                '🎨': 'design',
                 '❓': 'question',
                 '🔥': 'high priority',
                 '🐍': 'python',
