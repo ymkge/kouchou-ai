@@ -162,30 +162,30 @@ async def update_report_metadata_endpoint(
 @router.get("/admin/environment/verify-chatgpt")
 async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)):
     """Verify the ChatGPT API key configuration by making a test request.
-    
+
     Checks both OpenAI and Azure OpenAI configurations based on the USE_AZURE setting.
-    
+
     Returns:
         dict: Status of the verification and any error messages
     """
     try:
         use_azure = os.getenv("USE_AZURE", "false").lower() == "true"
-        
+
         test_messages = [
             {"role": "system", "content": "This is a test message to verify API key."},
             {"role": "user", "content": "Hello"},
         ]
-        
+
         from broadlistening.pipeline.services.llm import request_to_chat_openai
-        
+
         _ = request_to_chat_openai(messages=test_messages, model="gpt-4o" if not use_azure else None)
-        
+
         return {
             "success": True,
             "message": "ChatGPT API key is valid",
             "use_azure": use_azure,
         }
-        
+
     except openai.AuthenticationError as e:
         return {
             "success": False,

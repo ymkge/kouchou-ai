@@ -74,7 +74,7 @@ export default function Page() {
 
             <Button
               onClick={verifyChatGptApiKey}
-              isLoading={isVerifying}
+              loading={isVerifying}
               loadingText="検証中..."
               mb={4}
             >
