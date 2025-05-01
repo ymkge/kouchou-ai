@@ -133,7 +133,7 @@ class IssueProcessor:
             'Admin', 'Algorithm', 'API', 'bug', 'Client', 'dependencies', 'design', 
             'docker', 'documentation', # 'duplicate', 
             'e2e-test-required', 'enhancement', 
-            'github_actions', 'good first issue', 'help wanted', 'high priority', 
+            'github_actions', 'good first issue', 'help wanted', 
             'invalid', 'javascript', 'python', 'question', 'wontfix'
         ]
 
@@ -176,8 +176,6 @@ class IssueProcessor:
                 'py': 'python',
                 'question': 'question',
                 'help': 'help wanted',
-                'priority': 'high priority',
-                'high priority': 'high priority',
                 'invalid': 'invalid',
                 'wontfix': 'wontfix'
             }
@@ -195,7 +193,6 @@ class IssueProcessor:
                 '📚': 'documentation',
                 '🎨': 'design',
                 '❓': 'question',
-                '🔥': 'high priority',
                 '🐍': 'python',
                 '🌐': 'javascript',
                 '🐳': 'docker',
@@ -218,7 +215,7 @@ class IssueProcessor:
         {', '.join(self.available_labels)}
         
         このIssueに付与すべきラベルを3つまで選んでJSON形式で返してください。
-        例: {{"labels": ["bug", "javascript", "high priority"]}}
+        例: {{"labels": ["bug", "javascript", "enhancement"]}}
         
         Issueの内容に合わないラベルは選ばないでください。適切なラベルが1つか2つしかない場合は、無理に3つ選ぶ必要はありません。
         """
