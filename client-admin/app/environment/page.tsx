@@ -98,13 +98,13 @@ export default function Page() {
                       <CircleAlertIcon size={24} />
                     )}
                   </Box>
-                  <VStack align="flex-start" spacing={1}>
-                    <Text fontWeight="bold">
+                  <VStack align="flex-start">
+                    <Text fontWeight="bold" mb={1}>
                       {verificationResult.success
                         ? "検証成功"
                         : "検証失敗"}
                     </Text>
-                    <Text>{verificationResult.message}</Text>
+                    <Text mb={1}>{verificationResult.message}</Text>
                     <Text>
                       使用モード:{" "}
                       {verificationResult.use_azure

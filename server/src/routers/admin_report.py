@@ -159,6 +159,7 @@ async def update_report_metadata_endpoint(
         slogger.error(f"Exception: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error") from e
 
+
 @router.get("/admin/environment/verify-chatgpt")
 async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)):
     """Verify the ChatGPT API key configuration by making a test request.
