@@ -54,9 +54,10 @@ class GithubHandler:
         try:
             labels_to_create = [
                 'Admin', 'Algorithm', 'API', 'bug', 'Client', 'dependencies', 'design', 
-                'docker', 'documentation', 'duplicate', 'e2e-test-required', 'enhancement', 
+                'docker', 'documentation', # 'duplicate', 
+                'e2e-test-required', 'enhancement', 
                 'github_actions', 'good first issue', 'help wanted', 'high priority', 
-                'invalid', 'javascript', 'python', 'question', 'wontfix', 'toxic'
+                'invalid', 'javascript', 'python', 'question', 'wontfix' # , 'toxic'
             ]
             
             for label in labels_to_create:
@@ -155,7 +156,8 @@ class IssueProcessor:
         self.openai_client = openai_client
         self.available_labels = [
             'Admin', 'Algorithm', 'API', 'bug', 'Client', 'dependencies', 'design', 
-            'docker', 'documentation', 'duplicate', 'e2e-test-required', 'enhancement', 
+            'docker', 'documentation', # 'duplicate', 
+            'e2e-test-required', 'enhancement', 
             'github_actions', 'good first issue', 'help wanted', 'high priority', 
             'invalid', 'javascript', 'python', 'question', 'wontfix'
         ]
