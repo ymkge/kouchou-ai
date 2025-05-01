@@ -2,6 +2,7 @@
 
 import { SelectChartButton } from "@/components/charts/SelectChartButton";
 import { Chart } from "@/components/report/Chart";
+import { ClusterOverview } from "@/components/report/ClusterOverview";
 import { DisplaySettingDialog } from "@/components/report/DisplaySettingDialog";
 import type { Cluster, Result } from "@/type";
 import { useEffect, useState } from "react";
@@ -53,6 +54,11 @@ export function ClientContainer({ result }: Props) {
     }
   }
 
+  // 表示するクラスタを選択
+  const clustersToDisplay = selectedChart === "scatterDensity"
+    ? filteredResult.clusters.filter(c => c.level === Math.max(...filteredResult.clusters.map(c => c.level)))
+    : result.clusters.filter(c => c.level === 1);
+
   return (
     <>
       {openDensityFilterSetting && (
@@ -98,6 +104,11 @@ export function ClientContainer({ result }: Props) {
         treemapLevel={treemapLevel}
         onTreeZoom={setTreemapLevel}
       />
+      
+      {/* クラスタの概要を表示 */}
+      {clustersToDisplay.map((c) => (
+        <ClusterOverview key={c.id} cluster={c} />
+      ))}
     </>
   );
 }
