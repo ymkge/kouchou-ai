@@ -209,6 +209,22 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)):
             "use_azure": use_azure,
             "available_models": [],
         }
+    except openai.RateLimitError as e:
+        error_str = str(e).lower()
+        if "insufficient_quota" in error_str or "quota exceeded" in error_str:
+            return {
+                "success": False,
+                "message": f"Error: {str(e)}",
+                "error_type": "insufficient_quota",
+                "use_azure": use_azure,
+                "available_models": [],
+            }
+        return {
+            "success": False,
+            "message": f"Rate limit exceeded: {str(e)}",
+            "use_azure": use_azure,
+            "available_models": [],
+        }
     except Exception as e:
         return {
             "success": False,

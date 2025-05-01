@@ -23,6 +23,7 @@ export default function Page() {
     message: string;
     use_azure: boolean;
     available_models: string[];
+    error_type?: string;
   } | null>(null);
 
   const verifyChatGptApiKey = async () => {
@@ -106,6 +107,11 @@ export default function Page() {
                         : "検証失敗"}
                     </Text>
                     <Text mb={1}>{verificationResult.message}</Text>
+                    {verificationResult.error_type === "insufficient_quota" && (
+                      <Text mb={1} color="orange.600" fontWeight="bold">
+                        デポジット残高不足: APIキーのデポジット残高が不足しています。残高を追加してください。
+                      </Text>
+                    )}
                     <Text mb={1}>
                       使用モード:{" "}
                       {verificationResult.use_azure
