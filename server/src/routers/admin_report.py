@@ -186,12 +186,11 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)):
                 azure_endpoint=azure_endpoint,
                 api_key=api_key,
             )
-            
             models = client.models.list()
             available_models = [model.id for model in models]
         else:
             from openai import OpenAI
-            
+
             client = OpenAI()
             models = client.models.list()
             available_models = [model.id for model in models]
