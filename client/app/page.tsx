@@ -14,19 +14,12 @@ export async function generateMetadata(): Promise<Metadata> {
     const metaResponse = await fetch(`${getApiBaseUrl()}/meta/metadata.json`);
     const meta: Meta = await metaResponse.json();
 
-    const isStaticExport = process.env.NEXT_PUBLIC_OUTPUT_MODE === "export";
-    const basePath = process.env.NEXT_PUBLIC_STATIC_EXPORT_BASE_PATH || "";
-    const siteUrl = process.env.NEXT_PUBLIC_STATIC_EXPORT_SITE_URL ?? "";
-    const defaultHost = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-    const host = isStaticExport
-      ? (siteUrl || defaultHost)
-      : defaultHost;
+    const { getBaseUrl } = await import("@/app/utils/image-src");
 
     return {
       title: `${meta.reporter} - 広聴AI(デジタル民主主義2030ブロードリスニング)`,
       description: `${meta.message}`,
-      metadataBase: new URL(host + basePath),
+      metadataBase: new URL(getBaseUrl()),
       openGraph: {
         images: ['/meta/ogp.png'],
       },

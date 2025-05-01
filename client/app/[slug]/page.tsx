@@ -55,24 +55,17 @@ export async function generateMetadata({
       return {};
     }
 
-    const isStaticExport = process.env.NEXT_PUBLIC_OUTPUT_MODE === "export";
-    const basePath = process.env.NEXT_PUBLIC_STATIC_EXPORT_BASE_PATH || "";
-    const siteUrl = process.env.NEXT_PUBLIC_STATIC_EXPORT_SITE_URL ?? "";
-    const defaultHost = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-    const host = isStaticExport
-      ? (siteUrl || defaultHost)
-      : defaultHost;
-
+    const { getBaseUrl } = await import("@/app/utils/image-src");
+    
     const meta: Meta = await metaResponse.json();
     const result: Result = await resultResponse.json();
     const metaData: Metadata = {
       title: `${result.config.question} - ${meta.reporter}`,
       description: `${result.overview}`,
-      metadataBase: new URL(host + basePath),
+      metadataBase: new URL(getBaseUrl()),
     };
 
-    if (isStaticExport) {
+    if (process.env.NEXT_PUBLIC_OUTPUT_MODE === "export") {
       metaData.openGraph = {
         images: [`${slug}/opengraph-image.png`],
       };

@@ -1,3 +1,4 @@
+import { getAbsoluteUrl } from "@/app/utils/image-src";
 import {
   DialogBody,
   DialogCloseTrigger,
@@ -8,16 +9,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button, Heading, Image, Text } from "@chakra-ui/react";
 import { CircleHelpIcon } from "lucide-react";
-
-const isStaticExport = process.env.NEXT_PUBLIC_OUTPUT_MODE === "export";
-const basePath = process.env.NEXT_PUBLIC_STATIC_EXPORT_BASE_PATH || "";
-const siteUrl = process.env.NEXT_PUBLIC_STATIC_EXPORT_SITE_URL ?? "";
-const defaultHost = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-const host = isStaticExport
-  ? (siteUrl || defaultHost)
-  : defaultHost;
-const imageUrl = `${host}${isStaticExport ? basePath : ""}/images/broadlistening.png`;
 
 export function BroadlisteningGuide() {
   return (
@@ -45,7 +36,7 @@ export function BroadlisteningGuide() {
           </Text>
           <Image
             mb={4}
-            src={imageUrl}
+            src={getAbsoluteUrl("/images/broadlistening.png")}
             alt={"ブロードリスニングのイメージ"}
           />
           <Text>
