@@ -133,8 +133,8 @@ class IssueProcessor:
             'Admin', 'Algorithm', 'API', 'bug', 'Client', 'dependencies', 'design', 
             'docker', 'documentation', # 'duplicate', 
             'e2e-test-required', 'enhancement', 
-            'github_actions', 'good first issue', 'help wanted', 
-            'invalid', 'javascript', 'python', 'question', 'wontfix'
+            'github_actions', 'good first issue', 
+            'invalid', 'javascript', 'python', 'question'
         ]
 
     def process_issue(self, issue_content: str, issue_title: str = ""):
@@ -175,9 +175,7 @@ class IssueProcessor:
                 'python': 'python',
                 'py': 'python',
                 'question': 'question',
-                'help': 'help wanted',
-                'invalid': 'invalid',
-                'wontfix': 'wontfix'
+                'invalid': 'invalid'
             }
             
             if tag in tag_to_label:
