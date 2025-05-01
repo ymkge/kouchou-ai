@@ -49,72 +49,7 @@ class GithubHandler:
         self.repo = self.github.get_repo(config.github_repo)
         self.issue = self.repo.get_issue(config.issue_number)
 
-    def create_labels(self):
-        """ラベルを作成する（既に存在する場合は無視）"""
-        try:
-            labels_to_create = [
-                'Admin', 'Algorithm', 'API', 'bug', 'Client', 'dependencies', 'design', 
-                'docker', 'documentation', # 'duplicate', 
-                'e2e-test-required', 'enhancement', 
-                'github_actions', 'good first issue', 'help wanted', 'high priority', 
-                'invalid', 'javascript', 'python', 'question', 'wontfix' # , 'toxic'
-            ]
-            
-            for label in labels_to_create:
-                color = "708090"  # デフォルトのグレー
-                
-                if label == "Admin":
-                    color = "0075ca"  # 青
-                elif label == "github_actions":
-                    color = "5319e7"  # 紫
-                elif label == "docker":
-                    color = "0db7ed"  # Docker青
-                elif label == "dependencies":
-                    color = "6b5b95"  # 薄紫
-                
-                elif label == "Algorithm":
-                    color = "c5def5"  # 薄い青
-                elif label == "API":
-                    color = "1d76db"  # 濃い青
-                elif label == "Client":
-                    color = "fbca04"  # 黄色
-                elif label == "javascript":
-                    color = "f7df1e"  # JavaScript黄色
-                elif label == "python":
-                    color = "3572A5"  # Python青
-                
-                elif label == "documentation":
-                    color = "0075ca"  # 青
-                elif label == "e2e-test-required":
-                    color = "bfdadc"  # 薄い青緑
-                
-                elif label == "bug":
-                    color = "d73a4a"  # 赤系
-                elif label == "enhancement":
-                    color = "a2eeef"  # 水色系
-                elif label == "design":
-                    color = "cc33cc"  # ピンク
-                elif label == "high priority":
-                    color = "ff9900"  # オレンジ
-                elif label == "invalid":
-                    color = "e4e669"  # 黄緑
-                elif label == "wontfix":
-                    color = "ffffff"  # 白
-                
-                elif label == "good first issue":
-                    color = "7057ff"  # 紫
-                elif label == "help wanted":
-                    color = "008672"  # 緑
-                elif label == "question":
-                    color = "d876e3"  # ピンク
-                
-                # elif label == "toxic":
-                #     color = "ff0000"  # 赤
-                # elif label == "duplicate":
-                
-                self.repo.create_label(name=label, color=color)
-        except:
-            pass
+
 
     def add_label(self, label: str):
         """Issueにラベルを追加する"""
@@ -327,7 +262,6 @@ def setup():
     """セットアップを行い、必要なオブジェクトを返す"""
     config = Config()
     github_handler = GithubHandler(config)
-    github_handler.create_labels()
 
     openai_client = openai.Client()
     # content_moderator = ContentModerator(openai_client)
