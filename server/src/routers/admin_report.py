@@ -188,7 +188,7 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)):
             )
             models = client.models.list()
             available_models = [model.id for model in models]
-            
+
             try:
                 client.chat.completions.create(
                     model=os.getenv("AZURE_CHATCOMPLETION_DEPLOYMENT_NAME", "gpt-35-turbo"),
@@ -212,7 +212,7 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)):
             client = OpenAI()
             models = client.models.list()
             available_models = [model.id for model in models]
-            
+
             try:
                 client.chat.completions.create(
                     model="gpt-3.5-turbo",
