@@ -535,15 +535,15 @@ function ReportCard({
               >
                 <Box
                   display="flex"
-                  flexDirection="column"
-                  gap={2}
-                  minW="70px"
+                  flexDirection="row"
+                  gap={1}
+                  minW="auto"
                   onClick={e => e.stopPropagation()}
                   onMouseDown={e => e.stopPropagation()}
                   onPointerDown={e => e.stopPropagation()}
                 >
-                  <RadioCardItem value="public" label="公開" px={2} py={1} minW="60px" fontSize="sm" />
-                  <RadioCardItem value="private" label="非公開" px={2} py={1} minW="60px" fontSize="sm" />
+                  <RadioCardItem value="public" label="公開" px={2} py={0.5} minW="40px" fontSize="sm" style={{whiteSpace: 'nowrap'}} />
+                  <RadioCardItem value="private" label="非公開" px={2} py={0.5} minW="60px" fontSize="sm" style={{whiteSpace: 'nowrap'}} />
                 </Box>
               </RadioCardRoot>
             )}
