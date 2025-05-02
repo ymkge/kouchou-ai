@@ -533,20 +533,18 @@ function ReportCard({
                   }
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                    minWidth: "90px"
-                  }}
+                <Box
+                  display="flex"
+                  flexDirection="column"
+                  gap={2}
+                  minW="70px"
                   onClick={e => e.stopPropagation()}
                   onMouseDown={e => e.stopPropagation()}
                   onPointerDown={e => e.stopPropagation()}
                 >
-                  <RadioCardItem value="public" label="公開" />
-                  <RadioCardItem value="private" label="非公開" />
-                </div>
+                  <RadioCardItem value="public" label="公開" px={2} py={1} minW="60px" fontSize="sm" />
+                  <RadioCardItem value="private" label="非公開" px={2} py={1} minW="60px" fontSize="sm" />
+                </Box>
               </RadioCardRoot>
             )}
             <MenuRoot>
