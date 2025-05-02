@@ -36,7 +36,7 @@ async def get_reports(api_key: str = Depends(verify_admin_api_key)) -> list[Repo
 
 
 @router.post("/admin/reports", status_code=202)
-async def create_report(report: ReportInput, api_key: str = Depends(verify_admin_api_key)):
+async def create_report(report: ReportInput, api_key: str = Depends(verify_admin_api_key)) -> ORJSONResponse:
     try:
         launch_report_generation(report)
         return ORJSONResponse(
@@ -55,7 +55,7 @@ async def create_report(report: ReportInput, api_key: str = Depends(verify_admin
 
 
 @router.get("/admin/comments/{slug}/csv")
-async def download_comments_csv(slug: str, api_key: str = Depends(verify_admin_api_key)):
+async def download_comments_csv(slug: str, api_key: str = Depends(verify_admin_api_key)) -> FileResponse:
     csv_path = settings.REPORT_DIR / slug / "final_result_with_comments.csv"
     if not csv_path.exists():
         raise HTTPException(status_code=404, detail="CSV file not found")
@@ -63,7 +63,7 @@ async def download_comments_csv(slug: str, api_key: str = Depends(verify_admin_a
 
 
 @router.get("/admin/reports/{slug}/status/step-json", dependencies=[Depends(verify_admin_api_key)])
-async def get_current_step(slug: str):
+async def get_current_step(slug: str) -> dict:
     status_file = settings.REPORT_DIR / slug / "hierarchical_status.json"
     try:
         # ステータスファイルが存在しない場合は "loading" を返す
@@ -96,7 +96,7 @@ async def get_current_step(slug: str):
 
 
 @router.delete("/admin/reports/{slug}")
-async def delete_report(slug: str, api_key: str = Depends(verify_admin_api_key)):
+async def delete_report(slug: str, api_key: str = Depends(verify_admin_api_key)) -> ORJSONResponse:
     try:
         set_status(slug, ReportStatus.DELETED.value)
         return ORJSONResponse(
@@ -161,7 +161,7 @@ async def update_report_metadata_endpoint(
 
 
 @router.get("/admin/environment/verify-chatgpt")
-async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)):
+async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -> dict:
     """Verify the ChatGPT API key configuration by retrieving available models.
 
     Checks both OpenAI and Azure OpenAI configurations based on the USE_AZURE setting.
