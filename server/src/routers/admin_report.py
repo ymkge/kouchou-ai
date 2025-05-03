@@ -166,13 +166,15 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
 
     Checks both OpenAI and Azure OpenAI configurations based on the USE_AZURE setting.
     Uses the models.list() API to verify the API key and retrieve available models.
+    For OpenAI (not Azure), also checks account balance using the billing API.
 
     Returns:
-        dict: Status of the verification, available models, and any error messages
+        dict: Status of the verification, available models, balance info, and any error messages
     """
     try:
         use_azure = os.getenv("USE_AZURE", "false").lower() == "true"
         available_models = []
+        balance_info = None
 
         if use_azure:
             azure_endpoint = os.getenv("AZURE_CHATCOMPLETION_ENDPOINT")
@@ -216,39 +218,58 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
                 raise  # Re-raise to be caught by the outer exception handler
         else:
             from openai import OpenAI
+            import requests
 
             client = OpenAI()
             models = client.models.list()
             available_models = [model.id for model in models]
 
             try:
-                client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "user", "content": "Hi"}
-                    ],
-                    max_tokens=1
+                openai_api_key = os.getenv("OPENAI_API_KEY")
+                headers = {
+                    "Authorization": f"Bearer {openai_api_key}",
+                    "Content-Type": "application/json"
+                }
+                response = requests.get(
+                    "https://api.openai.com/v1/dashboard/billing/credit_grants",
+                    headers=headers
                 )
-            except openai.RateLimitError as e:
-                error_str = str(e).lower()
-                if (
-                    "insufficient_quota" in error_str
-                    or "quota exceeded" in error_str
-                ):
+                
+                if response.status_code == 200:
+                    balance_data = response.json()
+                    total_available = balance_data.get("total_available", 0)
+                    grants = balance_data.get("grants", [])
+                    
+                    balance_info = {
+                        "total_available": total_available,
+                        "grants": grants
+                    }
+                    
+                    if total_available <= 0.01:  # Consider balances below 1 cent as insufficient
+                        return {
+                            "success": False,
+                            "message": "Insufficient account balance",
+                            "error_type": "insufficient_quota",
+                            "use_azure": use_azure,
+                            "available_models": available_models,
+                            "balance_info": balance_info
+                        }
+                elif response.status_code == 401:
                     return {
                         "success": False,
-                        "message": f"Error: {str(e)}",
-                        "error_type": "insufficient_quota",
+                        "message": "Authentication failed when checking account balance",
                         "use_azure": use_azure,
                         "available_models": available_models,
                     }
-                raise  # Re-raise to be caught by the outer exception handler
+            except Exception as e:
+                slogger.error(f"Error checking account balance: {str(e)}", exc_info=True)
 
         return {
             "success": True,
             "message": "ChatGPT API key is valid",
             "use_azure": use_azure,
             "available_models": available_models,
+            "balance_info": balance_info
         }
 
     except openai.AuthenticationError as e:
