@@ -3,7 +3,7 @@ LLMモデルリスト取得サービス
 """
 import os
 import httpx
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 from src.config import settings
 from src.utils.logger import setup_logger
@@ -16,7 +16,7 @@ class ModelOption:
         self.value = value
         self.label = label
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         return {
             "value": self.value,
             "label": self.label
@@ -30,17 +30,17 @@ OPENAI_MODELS = [
 ]
 
 
-async def get_openai_models() -> List[Dict[str, str]]:
+async def get_openai_models() -> list[dict[str, str]]:
     """OpenAIのモデルリストを取得"""
     return [model.to_dict() for model in OPENAI_MODELS]
 
 
-async def get_azure_models() -> List[Dict[str, str]]:
+async def get_azure_models() -> list[dict[str, str]]:
     """Azureのモデルリストを取得（OpenAIと同じ）"""
     return [model.to_dict() for model in OPENAI_MODELS]
 
 
-async def get_openrouter_models() -> List[Dict[str, str]]:
+async def get_openrouter_models() -> list[dict[str, str]]:
     """OpenRouterのモデルリストをAPIから取得"""
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -76,7 +76,7 @@ async def get_openrouter_models() -> List[Dict[str, str]]:
         ]
 
 
-async def get_local_llm_models(host: Optional[str] = None, port: Optional[int] = None) -> List[Dict[str, str]]:
+async def get_local_llm_models(host: str | None = None, port: int | None = None) -> list[dict[str, str]]:
     """LocalLLMのモデルリストをAPIから取得"""
     if not host:
         host = "localhost"
@@ -117,7 +117,7 @@ async def get_local_llm_models(host: Optional[str] = None, port: Optional[int] =
         ]
 
 
-async def get_models_by_provider(provider: str, host: Optional[str] = None, port: Optional[int] = None) -> List[Dict[str, str]]:
+async def get_models_by_provider(provider: str, host: str | None = None, port: int | None = None) -> list[dict[str, str]]:
     """プロバイダーに応じたモデルリストを取得"""
     if provider == "openai":
         return await get_openai_models()

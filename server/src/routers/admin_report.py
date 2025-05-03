@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Security, Query
 from fastapi.responses import FileResponse, ORJSONResponse
@@ -163,10 +163,10 @@ async def update_report_metadata_endpoint(
 @router.get("/admin/models")
 async def get_models(
     provider: str = Query(..., description="LLMプロバイダー名"),
-    host: Optional[str] = Query(None, description="LocalLLM用ホスト"),
-    port: Optional[int] = Query(None, description="LocalLLM用ポート"),
+    host: str | None = Query(None, description="LocalLLM用ホスト"),
+    port: int | None = Query(None, description="LocalLLM用ポート"),
     api_key: str = Depends(verify_admin_api_key)
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     """指定されたプロバイダーのモデルリストを取得するエンドポイント
 
     Args:
