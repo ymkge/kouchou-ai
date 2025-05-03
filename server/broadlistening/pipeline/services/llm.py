@@ -42,7 +42,7 @@ def request_to_openai(
     messages: list[dict],
     model: str = "gpt-4",
     is_json: bool = False,
-    json_schema: dict | type[BaseModel] = None,
+    json_schema: dict | type[BaseModel] | None = None,
 ) -> dict:
     openai.api_type = "openai"
 
@@ -98,7 +98,7 @@ def request_to_openai(
 def request_to_azure_chatcompletion(
     messages: list[dict],
     is_json: bool = False,
-    json_schema: dict | type[BaseModel] = None,
+    json_schema: dict | type[BaseModel] | None = None,
 ) -> dict:
     azure_endpoint = os.getenv("AZURE_CHATCOMPLETION_ENDPOINT")
     deployment = os.getenv("AZURE_CHATCOMPLETION_DEPLOYMENT_NAME")
@@ -153,12 +153,82 @@ def request_to_azure_chatcompletion(
         raise
 
 
+def request_to_local_llm(
+    messages: list[dict],
+    model: str,
+    is_json: bool = False,
+    json_schema: dict | type[BaseModel] | None = None,
+    host: str = "localhost",
+    port: int = 11434,
+) -> dict:
+    """ローカルLLM（OllamaやLM Studio）にリクエストを送信する関数
+    
+    OpenAI互換APIを使用して、指定されたホスト/ポートのローカルLLMにリクエストを送信します。
+    
+    Args:
+        messages: チャットメッセージのリスト
+        model: 使用するモデル名
+        is_json: JSONレスポンスを要求するかどうか
+        json_schema: JSONスキーマ（Pydanticモデルまたは辞書）
+        host: ローカルLLMのホスト名
+        port: ローカルLLMのポート番号
+        
+    Returns:
+        LLMからのレスポンス
+    """
+    base_url = f"http://{host}:{port}/v1"
+    
+    try:
+        client = OpenAI(
+            base_url=base_url,
+            api_key="not-needed"  # OllamaとLM Studioは認証不要
+        )
+        
+        if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
+            try:
+                response = client.beta.chat.completions.parse(
+                    model=model,
+                    messages=messages,
+                    temperature=0,
+                    n=1,
+                    seed=0,
+                    response_model=json_schema,
+                    timeout=30,
+                )
+                return response
+            except Exception as e:
+                logging.warning(f"LocalLLM beta API error: {e}, falling back to standard API")
+                pass
+        
+        response_format = None
+        if is_json:
+            response_format = {"type": "json_object"}
+        if json_schema and not isinstance(json_schema, type):
+            response_format = json_schema
+            
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=0,
+            n=1,
+            seed=0,
+            response_format=response_format,
+            timeout=30,
+        )
+        
+        return response.choices[0].message.content
+    except Exception as e:
+        logging.error(f"LocalLLM API error: {e}")
+        raise
+
 def request_to_chat_openai(
     messages: list[dict],
     model: str = "gpt-4o",
     is_json: bool = False,
-    json_schema: dict | type[BaseModel] = None,
+    json_schema: dict | type[BaseModel] | None = None,
     provider: str = "openai",
+    local_llm_host: str | None = None,
+    local_llm_port: int | None = None,
 ) -> dict:
     if provider == "azure":
         return request_to_azure_chatcompletion(messages, is_json, json_schema)
@@ -167,7 +237,9 @@ def request_to_chat_openai(
     elif provider == "openrouter":
         raise NotImplementedError("OpenRouter support is not implemented yet")
     elif provider == "local":
-        raise NotImplementedError("LocalLLM support is not implemented yet")
+        host = local_llm_host or "localhost"
+        port = local_llm_port or 11434
+        return request_to_local_llm(messages, model, is_json, json_schema, host, port)
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
@@ -183,7 +255,37 @@ def _validate_model(model):
         raise RuntimeError(f"Invalid embedding model: {model}, available models: {EMBDDING_MODELS}")
 
 
-def request_to_embed(args, model, is_embedded_at_local=False, provider="openai"):
+def request_to_local_llm_embed(args, model, host="localhost", port=11434):
+    """ローカルLLM（OllamaやLM Studio）を使用して埋め込みを取得する関数
+    
+    OpenAI互換APIを使用して、指定されたホスト/ポートのローカルLLMから埋め込みを取得します。
+    
+    Args:
+        args: 埋め込みを取得するテキスト
+        model: 使用するモデル名
+        host: ローカルLLMのホスト名
+        port: ローカルLLMのポート番号
+        
+    Returns:
+        埋め込みベクトルのリスト
+    """
+    base_url = f"http://{host}:{port}/v1"
+    
+    try:
+        client = OpenAI(
+            base_url=base_url,
+            api_key="not-needed"  # OllamaとLM Studioは認証不要
+        )
+        
+        response = client.embeddings.create(input=args, model=model)
+        embeds = [item.embedding for item in response.data]
+        return embeds
+    except Exception as e:
+        logging.error(f"LocalLLM embedding API error: {e}")
+        logging.warning("Falling back to local embedding")
+        return request_to_local_embed(args)
+
+def request_to_embed(args, model, is_embedded_at_local=False, provider="openai", local_llm_host: str | None = None, local_llm_port: int | None = None):
     if is_embedded_at_local:
         return request_to_local_embed(args)
 
@@ -198,7 +300,9 @@ def request_to_embed(args, model, is_embedded_at_local=False, provider="openai")
     elif provider == "openrouter":
         raise NotImplementedError("OpenRouter embedding support is not implemented yet")
     elif provider == "local":
-        raise NotImplementedError("LocalLLM embedding support is not implemented yet")
+        host = local_llm_host or "localhost"
+        port = local_llm_port or 11434
+        return request_to_local_llm_embed(args, model, host, port)
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
