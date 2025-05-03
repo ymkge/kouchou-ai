@@ -8,3 +8,4 @@ class Metadata(SchemaBaseModel):
     privacyLink: str | None = None
     termsLink: str | None = None
     brandColor: str | None = None
+    is_default: bool = False
