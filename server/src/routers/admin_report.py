@@ -230,7 +230,7 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
     except openai.AuthenticationError as e:
         return {
             "success": False,
-            "message": f"認証エラー: APIキーが無効または期限切れです",
+            "message": "認証エラー: APIキーが無効または期限切れです",
             "error_detail": str(e),
             "use_azure": use_azure,
             "available_models": [],
