@@ -24,14 +24,7 @@ export default function Page() {
     use_azure: boolean;
     available_models: string[];
     error_type?: string;
-    balance_info?: {
-      total_available: number;
-      grants: Array<{
-        grant_amount: number;
-        used_amount: number;
-        expires_at: number;
-      }>;
-    };
+    error_detail?: string;
   } | null>(null);
 
   const verifyChatGptApiKey = async () => {
@@ -121,23 +114,10 @@ export default function Page() {
                       </Text>
                     )}
                     
-                    {!verificationResult.use_azure && verificationResult.balance_info && (
-                      <Box mt={2} mb={2} p={3} borderWidth="1px" borderRadius="md" backgroundColor="blue.50">
-                        <Text fontWeight="bold" mb={1}>アカウント残高情報:</Text>
-                        <Text>利用可能な残高: ${verificationResult.balance_info.total_available.toFixed(2)}</Text>
-                        {verificationResult.balance_info.grants && verificationResult.balance_info.grants.length > 0 && (
-                          <Box mt={2}>
-                            <Text fontWeight="bold" fontSize="sm">クレジット詳細:</Text>
-                            {verificationResult.balance_info.grants.map((grant, index) => (
-                              <Box key={index} mt={1} fontSize="sm">
-                                <Text>付与額: ${grant.grant_amount.toFixed(2)}</Text>
-                                <Text>使用額: ${grant.used_amount.toFixed(2)}</Text>
-                                <Text>有効期限: {new Date(grant.expires_at * 1000).toLocaleDateString()}</Text>
-                              </Box>
-                            ))}
-                          </Box>
-                        )}
-                      </Box>
+                    {verificationResult.error_detail && (
+                      <Text mb={1} fontSize="sm" color="gray.600">
+                        詳細: {verificationResult.error_detail}
+                      </Text>
                     )}
                     <Text mb={1}>
                       使用モード:{" "}

@@ -162,19 +162,22 @@ async def update_report_metadata_endpoint(
 
 @router.get("/admin/environment/verify-chatgpt")
 async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -> dict:
-    """Verify the ChatGPT API key configuration by retrieving available models.
+    """Verify the ChatGPT API key configuration by making a simple chat request.
 
     Checks both OpenAI and Azure OpenAI configurations based on the USE_AZURE setting.
-    Uses the models.list() API to verify the API key and retrieve available models.
-    For OpenAI (not Azure), also checks account balance using the billing API.
+    Makes a simple chat request to verify the API key is valid and properly configured.
 
     Returns:
-        dict: Status of the verification, available models, balance info, and any error messages
+        dict: Status of the verification and any error messages in Japanese
     """
     try:
         use_azure = os.getenv("USE_AZURE", "false").lower() == "true"
         available_models = []
-        balance_info = None
+
+        test_messages = [
+            {"role": "system", "content": "This is a test message to verify API key."},
+            {"role": "user", "content": "Hello"},
+        ]
 
         if use_azure:
             azure_endpoint = os.getenv("AZURE_CHATCOMPLETION_ENDPOINT")
@@ -188,74 +191,47 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
                 azure_endpoint=azure_endpoint,
                 api_key=api_key,
             )
-            models = client.models.list()
-            available_models = [model.id for model in models]
-
+            
             try:
-                client.chat.completions.create(
-                    model=os.getenv("AZURE_CHATCOMPLETION_DEPLOYMENT_NAME", "gpt-35-turbo"),
-                    messages=[{"role": "user", "content": "Hi"}],
-                    max_tokens=1,
-                )
-            except openai.RateLimitError as e:
-                error_str = str(e).lower()
-                if "insufficient_quota" in error_str or "quota exceeded" in error_str:
-                    return {
-                        "success": False,
-                        "message": f"Error: {str(e)}",
-                        "error_type": "insufficient_quota",
-                        "use_azure": use_azure,
-                        "available_models": available_models,
-                    }
-                raise  # Re-raise to be caught by the outer exception handler
+                models = client.models.list()
+                available_models = [model.id for model in models]
+            except Exception as e:
+                slogger.error(f"Error listing Azure models: {str(e)}", exc_info=True)
+            
+            client.chat.completions.create(
+                model=os.getenv("AZURE_CHATCOMPLETION_DEPLOYMENT_NAME", "gpt-35-turbo"),
+                messages=test_messages,
+                max_tokens=1,
+            )
         else:
-            import requests
             from openai import OpenAI
 
             client = OpenAI()
-            models = client.models.list()
-            available_models = [model.id for model in models]
-
+            
             try:
-                openai_api_key = os.getenv("OPENAI_API_KEY")
-                headers = {"Authorization": f"Bearer {openai_api_key}", "Content-Type": "application/json"}
-                response = requests.get("https://api.openai.com/v1/dashboard/billing/credit_grants", headers=headers)
-                if response.status_code == 200:
-                    balance_data = response.json()
-                    total_available = balance_data.get("total_available", 0)
-                    grants = balance_data.get("grants", [])
-                    balance_info = {"total_available": total_available, "grants": grants}
-                    if total_available <= 0.01:  # Consider balances below 1 cent as insufficient
-                        return {
-                            "succｗｗess": False,
-                            "message": "Insufficient account balance",
-                            "error_type": "insufficient_quota",
-                            "use_azure": use_azure,
-                            "available_models": available_models,
-                            "balance_info": balance_info,
-                        }
-                elif response.status_code == 401:
-                    return {
-                        "success": False,
-                        "message": "Authentication failed when checking account balance",
-                        "use_azure": use_azure,
-                        "available_models": available_models,
-                    }
+                models = client.models.list()
+                available_models = [model.id for model in models]
             except Exception as e:
-                slogger.error(f"Error checking account balance: {str(e)}", exc_info=True)
+                slogger.error(f"Error listing OpenAI models: {str(e)}", exc_info=True)
+            
+            client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=test_messages,
+                max_tokens=1,
+            )
 
         return {
             "success": True,
-            "message": "ChatGPT API key is valid",
+            "message": "ChatGPT API キーは有効です",
             "use_azure": use_azure,
             "available_models": available_models,
-            "balance_info": balance_info,
         }
 
     except openai.AuthenticationError as e:
         return {
             "success": False,
-            "message": f"Authentication failed: {str(e)}",
+            "message": f"認証エラー: APIキーが無効または期限切れです",
+            "error_detail": str(e),
             "use_azure": use_azure,
             "available_models": [],
         }
@@ -264,21 +240,24 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
         if "insufficient_quota" in error_str or "quota exceeded" in error_str:
             return {
                 "success": False,
-                "message": f"Error: {str(e)}",
+                "message": "残高不足エラー: APIキーのデポジット残高が不足しています。残高を追加してください。",
+                "error_detail": str(e),
                 "error_type": "insufficient_quota",
                 "use_azure": use_azure,
                 "available_models": [],
             }
         return {
             "success": False,
-            "message": f"Rate limit exceeded: {str(e)}",
+            "message": "レート制限エラー: APIリクエストの制限を超えました。しばらく待ってから再試行してください。",
+            "error_detail": str(e),
             "use_azure": use_azure,
             "available_models": [],
         }
     except Exception as e:
         return {
             "success": False,
-            "message": f"Error: {str(e)}",
+            "message": f"エラーが発生しました: {str(e)}",
+            "error_detail": str(e),
             "use_azure": use_azure,
             "available_models": [],
         }
