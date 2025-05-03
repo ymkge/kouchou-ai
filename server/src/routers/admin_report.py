@@ -227,7 +227,7 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
                     balance_info = {"total_available": total_available, "grants": grants}
                     if total_available <= 0.01:  # Consider balances below 1 cent as insufficient
                         return {
-                            "success": False,
+                            "succｗｗess": False,
                             "message": "Insufficient account balance",
                             "error_type": "insufficient_quota",
                             "use_azure": use_azure,
