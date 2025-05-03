@@ -158,12 +158,18 @@ def request_to_chat_openai(
     model: str = "gpt-4o",
     is_json: bool = False,
     json_schema: dict | type[BaseModel] = None,
+    provider: str = "openai",
 ) -> dict:
-    use_azure = os.getenv("USE_AZURE", "false").lower()
-    if use_azure == "true":
+    if provider == "azure":
         return request_to_azure_chatcompletion(messages, is_json, json_schema)
-    else:
+    elif provider == "openai":
         return request_to_openai(messages, model, is_json, json_schema)
+    elif provider == "openrouter":
+        raise NotImplementedError("OpenRouter support is not implemented yet")
+    elif provider == "local":
+        raise NotImplementedError("LocalLLM support is not implemented yet")
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
 
 
 EMBDDING_MODELS = [
@@ -177,20 +183,24 @@ def _validate_model(model):
         raise RuntimeError(f"Invalid embedding model: {model}, available models: {EMBDDING_MODELS}")
 
 
-def request_to_embed(args, model, is_embedded_at_local=False):
+def request_to_embed(args, model, is_embedded_at_local=False, provider="openai"):
     if is_embedded_at_local:
         return request_to_local_embed(args)
 
-    use_azure = os.getenv("USE_AZURE", "false").lower()
-    if use_azure == "true":
+    if provider == "azure":
         return request_to_azure_embed(args, model)
-
-    else:
+    elif provider == "openai":
         _validate_model(model)
         client = OpenAI()
         response = client.embeddings.create(input=args, model=model)
         embeds = [item.embedding for item in response.data]
-    return embeds
+        return embeds
+    elif provider == "openrouter":
+        raise NotImplementedError("OpenRouter embedding support is not implemented yet")
+    elif provider == "local":
+        raise NotImplementedError("LocalLLM embedding support is not implemented yet")
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
 
 
 def request_to_azure_embed(args, model):

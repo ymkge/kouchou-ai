@@ -137,12 +137,15 @@ export default function Page() {
         intro: basicInfo.intro,
         comments,
         cluster: [clusterSettings.clusterLv1, clusterSettings.clusterLv2],
+        provider: aiSettings.provider,
         model: aiSettings.model,
         workers: aiSettings.workers,
         prompt: promptData,
         is_pubcom: aiSettings.isPubcomMode,
         inputType: inputData.inputType,
         is_embedded_at_local: aiSettings.isEmbeddedAtLocal,
+        local_llm_host: aiSettings.provider === "local" ? aiSettings.localLLMHost : undefined,
+        local_llm_port: aiSettings.provider === "local" ? aiSettings.localLLMPort : undefined,
       });
       
       toaster.create({
@@ -239,10 +242,14 @@ export default function Page() {
           {/* AI詳細設定セクション */}
           <Presence present={open} w={"full"}>
             <AISettingsSection
+              provider={aiSettings.provider}
               model={aiSettings.model}
               workers={aiSettings.workers}
               isPubcomMode={aiSettings.isPubcomMode}
               isEmbeddedAtLocal={aiSettings.isEmbeddedAtLocal}
+              localLLMHost={aiSettings.localLLMHost}
+              localLLMPort={aiSettings.localLLMPort}
+              onProviderChange={aiSettings.handleProviderChange}
               onModelChange={aiSettings.handleModelChange}
               onWorkersChange={(e) => {
                 const v = Number(e.target.value);
@@ -257,7 +264,12 @@ export default function Page() {
                 if (checked === "indeterminate") return;
                 aiSettings.setIsEmbeddedAtLocal(checked);
               }}
+              setLocalLLMHost={aiSettings.setLocalLLMHost}
+              setLocalLLMPort={aiSettings.setLocalLLMPort}
               getModelDescription={aiSettings.getModelDescription}
+              getProviderDescription={aiSettings.getProviderDescription}
+              getCurrentModels={aiSettings.getCurrentModels}
+              requiresConnectionSettings={aiSettings.requiresConnectionSettings}
               promptSettings={promptSettings}
             />
           </Presence>

@@ -1,14 +1,77 @@
 import { useState } from "react";
 
+export type Provider = "openai" | "azure" | "openrouter" | "local";
+
+export interface ModelOption {
+  value: string;
+  label: string;
+}
+
+export interface ProviderConfig {
+  models: ModelOption[];
+  description: string;
+  requiresConnection?: boolean;
+}
+
 /**
  * AIモデル設定を管理するカスタムフック
  */
 export function useAISettings() {
-  // AIモデル関連の状態
+  const [provider, setProvider] = useState<Provider>("openai");
   const [model, setModel] = useState<string>("gpt-4o-mini");
   const [workers, setWorkers] = useState<number>(30);
   const [isPubcomMode, setIsPubcomMode] = useState<boolean>(true);
   const [isEmbeddedAtLocal, setIsEmbeddedAtLocal] = useState<boolean>(false);
+  
+  const [localLLMHost, setLocalLLMHost] = useState<string>("localhost");
+  const [localLLMPort, setLocalLLMPort] = useState<number>(11434);
+  
+  const providerConfigs: Record<Provider, ProviderConfig> = {
+    openai: {
+      models: [
+        { value: "gpt-4o-mini", label: "GPT-4o mini" },
+        { value: "gpt-4o", label: "GPT-4o" },
+        { value: "o3-mini", label: "o3-mini" }
+      ],
+      description: "OpenAI APIを使用します。OpenAIのAPIキーが必要です。"
+    },
+    azure: {
+      models: [
+        { value: "gpt-4", label: "GPT-4" },
+        { value: "gpt-35-turbo", label: "GPT-3.5 Turbo" }
+      ],
+      description: "Azure OpenAI Serviceを使用します。Azureの設定が必要です。"
+    },
+    openrouter: {
+      models: [
+        { value: "openai/gpt-4o", label: "OpenAI GPT-4o" },
+        { value: "anthropic/claude-3-opus", label: "Anthropic Claude 3 Opus" },
+        { value: "anthropic/claude-3-sonnet", label: "Anthropic Claude 3 Sonnet" }
+      ],
+      description: "OpenRouterを使用して複数のモデルにアクセスします。（将来対応予定）"
+    },
+    local: {
+      models: [
+        { value: "llama3", label: "Llama 3" },
+        { value: "mistral", label: "Mistral" },
+        { value: "custom", label: "カスタムモデル" }
+      ],
+      description: "ローカルで実行されているLLMサーバーに接続します。（将来対応予定）",
+      requiresConnection: true
+    }
+  };
+  
+  /**
+   * プロバイダー変更時のハンドラー
+   */
+  const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newProvider = e.target.value as Provider;
+    setProvider(newProvider);
+    
+    if (providerConfigs[newProvider].models.length > 0) {
+      setModel(providerConfigs[newProvider].models[0].value);
+    }
+  };
 
   /**
    * ワーカー数変更時のハンドラー
@@ -50,37 +113,78 @@ export function useAISettings() {
    * モデル説明文を取得
    */
   const getModelDescription = () => {
-    if (model === "gpt-4o-mini") {
-      return "GPT-4o mini：最も安価に利用できるモデルです。価格の詳細はOpenAIが公開しているAPI料金のページをご参照ください。";
-    } else if (model === "gpt-4o") {
-      return "GPT-4o：gpt-4o-miniと比較して高性能なモデルです。性能は高くなりますが、gpt-4o-miniと比較してOpenAI APIの料金は高くなります。";
-    } else if (model === "o3-mini") {
-      return "o3-mini：gpt-4oよりも高度な推論能力を備えたモデルです。性能はより高くなりますが、gpt-4oと比較してOpenAI APIの料金は高くなります。";
+    if (provider === "openai") {
+      if (model === "gpt-4o-mini") {
+        return "GPT-4o mini：最も安価に利用できるモデルです。価格の詳細はOpenAIが公開しているAPI料金のページをご参照ください。";
+      } else if (model === "gpt-4o") {
+        return "GPT-4o：gpt-4o-miniと比較して高性能なモデルです。性能は高くなりますが、gpt-4o-miniと比較してOpenAI APIの料金は高くなります。";
+      } else if (model === "o3-mini") {
+        return "o3-mini：gpt-4oよりも高度な推論能力を備えたモデルです。性能はより高くなりますが、gpt-4oと比較してOpenAI APIの料金は高くなります。";
+      }
+    } else if (provider === "azure") {
+      if (model === "gpt-4") {
+        return "GPT-4：Azureで利用可能な高性能モデルです。";
+      } else if (model === "gpt-35-turbo") {
+        return "GPT-3.5 Turbo：Azureで利用可能な高速かつ経済的なモデルです。";
+      }
     }
     return "";
+  };
+  
+  /**
+   * プロバイダー説明文を取得
+   */
+  const getProviderDescription = () => {
+    return providerConfigs[provider].description;
+  };
+  
+  /**
+   * 現在のプロバイダーのモデルリストを取得
+   */
+  const getCurrentModels = () => {
+    return providerConfigs[provider].models;
+  };
+  
+  /**
+   * LocalLLM接続設定が必要かどうか
+   */
+  const requiresConnectionSettings = () => {
+    return providerConfigs[provider].requiresConnection === true;
   };
 
   /**
    * AI設定をリセット
    */
   const resetAISettings = () => {
+    setProvider("openai");
     setModel("gpt-4o-mini");
     setWorkers(30);
     setIsPubcomMode(true);
     setIsEmbeddedAtLocal(false);
+    setLocalLLMHost("localhost");
+    setLocalLLMPort(11434);
   };
 
   return {
+    provider,
     model,
     workers,
     isPubcomMode,
     isEmbeddedAtLocal,
+    localLLMHost,
+    localLLMPort,
+    handleProviderChange,
     handleModelChange,
     handleWorkersChange,
     increaseWorkers,
     decreaseWorkers,
     handlePubcomModeChange,
+    setLocalLLMHost,
+    setLocalLLMPort,
     getModelDescription,
+    getProviderDescription,
+    getCurrentModels,
+    requiresConnectionSettings,
     resetAISettings,
     setIsEmbeddedAtLocal,
   };
