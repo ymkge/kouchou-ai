@@ -21,17 +21,39 @@ const OPENAI_MODELS: ModelOption[] = [
 
 /**
  * OpenRouterからモデルリストを取得する関数
+ * @see https://openrouter.ai/docs/api-reference/list-available-models
  */
 async function fetchOpenRouterModels(): Promise<ModelOption[]> {
   try {
+    const response = await fetch("https://openrouter.ai/api/v1/models");
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data && Array.isArray(data.data)) {
+      return data.data.map((model: any) => {
+        const modelId = model.id;
+        const provider = model.provider || "unknown";
+        const modelName = model.name || modelId;
+        
+        return {
+          value: modelId,
+          label: `${provider} - ${modelName}`
+        };
+      });
+    }
+    
+    throw new Error("Invalid API response format");
+  } catch (error) {
+    console.error("OpenRouterモデルの取得に失敗しました:", error);
     return [
       { value: "openai/gpt-4o", label: "OpenAI GPT-4o" },
       { value: "anthropic/claude-3-opus", label: "Anthropic Claude 3 Opus" },
       { value: "anthropic/claude-3-sonnet", label: "Anthropic Claude 3 Sonnet" }
     ];
-  } catch (error) {
-    console.error("OpenRouterモデルの取得に失敗しました:", error);
-    return [];
   }
 }
 
