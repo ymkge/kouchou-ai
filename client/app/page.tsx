@@ -55,7 +55,7 @@ export default async function Page() {
     return (
       <>
         <div className={"container"}>
-          {meta.reporter && !meta.is_default && <Header meta={meta} />}
+          {meta && !meta.is_default && <Header meta={meta} />}
           <Box mx={"auto"} maxW={"900px"} mb={10}>
             <Heading textAlign={"center"} fontSize={"xl"} mb={5}>
               Reports
@@ -104,9 +104,9 @@ export default async function Page() {
                 </Link>
               ))}
           </Box>
-          {meta.reporter && !meta.is_default && <About meta={meta} />}
+          {meta && !meta.is_default && <About meta={meta} />}
         </div>
-        {meta.reporter && !meta.is_default && <Footer meta={meta} />}
+        {meta && !meta.is_default && <Footer meta={meta} />}
       </>
     );
   } catch (_e) {

@@ -4,31 +4,12 @@ import { useEffect, useState } from "react";
 
 export function Header() {
   const [meta, setMeta] = useState<Meta | null>(null);
-  const [hasImage, setHasImage] = useState(false);
 
   useEffect(() => {
-    // meta情報を取得
     fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta`)
       .then(response => response.json())
-      .then(data => {
-        setMeta(data);
-        // meta情報が取得できたら画像の存在を確認
-        if (data.reporter && !data.is_default) {
-          fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta/reporter.png`)
-            .then(response => {
-              setHasImage(response.status === 200);
-            })
-            .catch(() => {
-              setHasImage(false);
-            });
-        } else {
-          setHasImage(false);
-        }
-      })
-      .catch(() => {
-        setMeta(null);
-        setHasImage(false);
-      });
+      .then(data => setMeta(data))
+      .catch(() => setMeta(null));
   }, []);
 
   return (
@@ -40,7 +21,7 @@ export function Header() {
       maxW={"1200px"}
     >
       <HStack>
-        {meta && hasImage && !meta.is_default && (
+        {meta && !meta.is_default && (
           <Image
             src={`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta/reporter.png`}
             mx={"auto"}
