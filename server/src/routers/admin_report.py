@@ -170,6 +170,8 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
     Returns:
         dict: Status of the verification and any error messages in Japanese
     """
+    from broadlistening.pipeline.services.llm import request_to_chat_openai
+
     try:
         use_azure = os.getenv("USE_AZURE", "false").lower() == "true"
         available_models = []
@@ -179,44 +181,35 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
             {"role": "user", "content": "Hello"},
         ]
 
-        if use_azure:
-            azure_endpoint = os.getenv("AZURE_CHATCOMPLETION_ENDPOINT")
-            api_key = os.getenv("AZURE_CHATCOMPLETION_API_KEY")
-            api_version = os.getenv("AZURE_CHATCOMPLETION_VERSION")
+        _ = request_to_chat_openai(
+            messages=test_messages,
+            model="gpt-4o" if not use_azure else None,
+            max_tokens=1,
+        )
 
-            from openai import AzureOpenAI
+        try:
+            if use_azure:
+                from openai import AzureOpenAI
 
-            client = AzureOpenAI(
-                api_version=api_version,
-                azure_endpoint=azure_endpoint,
-                api_key=api_key,
-            )
-            try:
+                azure_endpoint = os.getenv("AZURE_CHATCOMPLETION_ENDPOINT")
+                api_key = os.getenv("AZURE_CHATCOMPLETION_API_KEY")
+                api_version = os.getenv("AZURE_CHATCOMPLETION_VERSION")
+
+                client = AzureOpenAI(
+                    api_version=api_version,
+                    azure_endpoint=azure_endpoint,
+                    api_key=api_key,
+                )
                 models = client.models.list()
                 available_models = [model.id for model in models]
-            except Exception as e:
-                slogger.error(f"Error listing Azure models: {str(e)}", exc_info=True)
+            else:
+                from openai import OpenAI
 
-            client.chat.completions.create(
-                model=os.getenv("AZURE_CHATCOMPLETION_DEPLOYMENT_NAME", "gpt-35-turbo"),
-                messages=test_messages,
-                max_tokens=1,
-            )
-        else:
-            from openai import OpenAI
-
-            client = OpenAI()
-            try:
+                client = OpenAI()
                 models = client.models.list()
                 available_models = [model.id for model in models]
-            except Exception as e:
-                slogger.error(f"Error listing OpenAI models: {str(e)}", exc_info=True)
-
-            client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=test_messages,
-                max_tokens=1,
-            )
+        except Exception as e:
+            slogger.error(f"Error listing models: {str(e)}", exc_info=True)
 
         return {
             "success": True,
