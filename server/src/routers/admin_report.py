@@ -193,21 +193,13 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
 
             try:
                 client.chat.completions.create(
-                    model=os.getenv(
-                        "AZURE_CHATCOMPLETION_DEPLOYMENT_NAME",
-                        "gpt-35-turbo"
-                    ),
-                    messages=[
-                        {"role": "user", "content": "Hi"}
-                    ],
-                    max_tokens=1
+                    model=os.getenv("AZURE_CHATCOMPLETION_DEPLOYMENT_NAME", "gpt-35-turbo"),
+                    messages=[{"role": "user", "content": "Hi"}],
+                    max_tokens=1,
                 )
             except openai.RateLimitError as e:
                 error_str = str(e).lower()
-                if (
-                    "insufficient_quota" in error_str
-                    or "quota exceeded" in error_str
-                ):
+                if "insufficient_quota" in error_str or "quota exceeded" in error_str:
                     return {
                         "success": False,
                         "message": f"Error: {str(e)}",
@@ -226,22 +218,13 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
 
             try:
                 openai_api_key = os.getenv("OPENAI_API_KEY")
-                headers = {
-                    "Authorization": f"Bearer {openai_api_key}",
-                    "Content-Type": "application/json"
-                }
-                response = requests.get(
-                    "https://api.openai.com/v1/dashboard/billing/credit_grants",
-                    headers=headers
-                )
+                headers = {"Authorization": f"Bearer {openai_api_key}", "Content-Type": "application/json"}
+                response = requests.get("https://api.openai.com/v1/dashboard/billing/credit_grants", headers=headers)
                 if response.status_code == 200:
                     balance_data = response.json()
                     total_available = balance_data.get("total_available", 0)
                     grants = balance_data.get("grants", [])
-                    balance_info = {
-                        "total_available": total_available,
-                        "grants": grants
-                    }
+                    balance_info = {"total_available": total_available, "grants": grants}
                     if total_available <= 0.01:  # Consider balances below 1 cent as insufficient
                         return {
                             "success": False,
@@ -249,7 +232,7 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
                             "error_type": "insufficient_quota",
                             "use_azure": use_azure,
                             "available_models": available_models,
-                            "balance_info": balance_info
+                            "balance_info": balance_info,
                         }
                 elif response.status_code == 401:
                     return {
@@ -266,7 +249,7 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
             "message": "ChatGPT API key is valid",
             "use_azure": use_azure,
             "available_models": available_models,
-            "balance_info": balance_info
+            "balance_info": balance_info,
         }
 
     except openai.AuthenticationError as e:
@@ -278,10 +261,7 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
         }
     except openai.RateLimitError as e:
         error_str = str(e).lower()
-        if (
-            "insufficient_quota" in error_str
-            or "quota exceeded" in error_str
-        ):
+        if "insufficient_quota" in error_str or "quota exceeded" in error_str:
             return {
                 "success": False,
                 "message": f"Error: {str(e)}",
