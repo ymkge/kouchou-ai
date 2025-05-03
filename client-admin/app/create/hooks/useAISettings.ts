@@ -59,17 +59,41 @@ async function fetchOpenRouterModels(): Promise<ModelOption[]> {
 
 /**
  * LocalLLMからモデルリストを取得する関数
+ * ホストとポートを指定してローカルで実行されているLLMサーバーからモデルリストを取得
  */
 async function fetchLocalLLMModels(host: string, port: number): Promise<ModelOption[]> {
   try {
+    const endpoint = `http://${host}:${port}/api/models`;
+    
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      signal: AbortSignal.timeout(5000)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data && Array.isArray(data.models)) {
+      return data.models.map((model: any) => ({
+        value: model.id || model.name,
+        label: model.name || model.id
+      }));
+    }
+    
+    throw new Error("Invalid API response format");
+  } catch (error) {
+    console.error("LocalLLMモデルの取得に失敗しました:", error);
     return [
       { value: "llama3", label: "Llama 3" },
       { value: "mistral", label: "Mistral" },
       { value: "custom", label: "カスタムモデル" }
     ];
-  } catch (error) {
-    console.error("LocalLLMモデルの取得に失敗しました:", error);
-    return [];
   }
 }
 
