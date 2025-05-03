@@ -13,7 +13,7 @@ export function Header() {
       .then(data => {
         setMeta(data);
         // meta情報が取得できたら画像の存在を確認
-        if (data.reporter) {
+        if (data.reporter && !data.is_default) {
           fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta/reporter.png`)
             .then(response => {
               setHasImage(response.status === 200);
@@ -21,6 +21,8 @@ export function Header() {
             .catch(() => {
               setHasImage(false);
             });
+        } else {
+          setHasImage(false);
         }
       })
       .catch(() => {
@@ -38,7 +40,7 @@ export function Header() {
       maxW={"1200px"}
     >
       <HStack>
-        {meta && hasImage && (
+        {meta && hasImage && !meta.is_default && (
           <Image
             src={`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta/reporter.png`}
             mx={"auto"}
