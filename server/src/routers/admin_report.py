@@ -163,7 +163,7 @@ async def update_report_metadata_endpoint(
 async def get_models(
     provider: str = Query(..., description="LLMプロバイダー名"),
     address: str | None = Query(None, description="LocalLLM用アドレス（例: 127.0.0.1:1234）"),
-    api_key: str = Depends(verify_admin_api_key)
+    api_key: str = Depends(verify_admin_api_key),
 ) -> list[dict[str, str]]:
     """指定されたプロバイダーのモデルリストを取得するエンドポイント
 
