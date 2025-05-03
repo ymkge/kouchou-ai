@@ -1,6 +1,7 @@
 import json
+from typing import List, Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException, Security, Query
 from fastapi.responses import FileResponse, ORJSONResponse
 from fastapi.security.api_key import APIKeyHeader
 
@@ -14,6 +15,7 @@ from src.services.report_status import (
     toggle_report_public_state,
     update_report_metadata,
 )
+from src.services.llm_models import get_models_by_provider
 from src.utils.logger import setup_logger
 
 slogger = setup_logger()
@@ -143,8 +145,8 @@ async def update_report_metadata_endpoint(
     try:
         updated_report = update_report_metadata(
             slug=slug,
-            title=metadata.title,
-            description=metadata.description,
+            title=metadata.title or "",
+            description=metadata.description or "",
         )
         return {
             "success": True,
@@ -153,6 +155,35 @@ async def update_report_metadata_endpoint(
     except ValueError as e:
         slogger.error(f"ValueError: {e}", exc_info=True)
         raise HTTPException(status_code=404, detail=str(e)) from e
+    except Exception as e:
+        slogger.error(f"Exception: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error") from e
+
+
+@router.get("/admin/models")
+async def get_models(
+    provider: str = Query(..., description="LLMプロバイダー名"),
+    host: Optional[str] = Query(None, description="LocalLLM用ホスト"),
+    port: Optional[int] = Query(None, description="LocalLLM用ポート"),
+    api_key: str = Depends(verify_admin_api_key)
+) -> List[Dict[str, str]]:
+    """指定されたプロバイダーのモデルリストを取得するエンドポイント
+
+    Args:
+        provider: LLMプロバイダー名（openai, azure, openrouter, local）
+        host: LocalLLM用ホスト（localプロバイダーの場合のみ使用）
+        port: LocalLLM用ポート（localプロバイダーの場合のみ使用）
+        api_key: 管理者APIキー
+
+    Returns:
+        モデルリスト（value, labelのリスト）
+    """
+    try:
+        models = await get_models_by_provider(provider, host, port)
+        return models
+    except ValueError as e:
+        slogger.error(f"ValueError: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         slogger.error(f"Exception: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error") from e
