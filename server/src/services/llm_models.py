@@ -1,11 +1,8 @@
 """
 LLMモデルリスト取得サービス
 """
-import os
 import httpx
-from typing import Any
 
-from src.config import settings
 from src.utils.logger import setup_logger
 
 slogger = setup_logger()

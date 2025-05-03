@@ -1,7 +1,6 @@
 import json
-from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Security, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from fastapi.responses import FileResponse, ORJSONResponse
 from fastapi.security.api_key import APIKeyHeader
 
