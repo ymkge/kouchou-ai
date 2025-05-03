@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 
 export type Provider = "openai" | "azure" | "openrouter" | "local";
 
@@ -112,7 +112,7 @@ export function useAISettings() {
   /**
    * プロバイダー変更時のハンドラー
    */
-  const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleProviderChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const newProvider = e.target.value as Provider;
     setProvider(newProvider);
     
@@ -132,20 +132,20 @@ export function useAISettings() {
    * ワーカー数増加ハンドラー
    */
   const increaseWorkers = () => {
-    setWorkers((prev) => Math.min(100, prev + 1));
+    setWorkers((prev: number) => Math.min(100, prev + 1));
   };
 
   /**
    * ワーカー数減少ハンドラー
    */
   const decreaseWorkers = () => {
-    setWorkers((prev) => Math.max(1, prev - 1));
+    setWorkers((prev: number) => Math.max(1, prev - 1));
   };
 
   /**
    * モデル変更時のハンドラー
    */
-  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleModelChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setModel(e.target.value);
   };
 
@@ -183,21 +183,21 @@ export function useAISettings() {
    * プロバイダー説明文を取得
    */
   const getProviderDescription = () => {
-    return providerConfigs[provider].description;
+    return providerConfigs[provider as Provider].description;
   };
   
   /**
    * 現在のプロバイダーのモデルリストを取得
    */
   const getCurrentModels = () => {
-    return providerConfigs[provider].models;
+    return providerConfigs[provider as Provider].models;
   };
   
   /**
    * LocalLLM接続設定が必要かどうか
    */
   const requiresConnectionSettings = () => {
-    return providerConfigs[provider].requiresConnection === true;
+    return providerConfigs[provider as Provider].requiresConnection === true;
   };
 
   /**
