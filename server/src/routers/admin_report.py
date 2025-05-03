@@ -217,8 +217,8 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
                     }
                 raise  # Re-raise to be caught by the outer exception handler
         else:
-            from openai import OpenAI
             import requests
+            from openai import OpenAI
 
             client = OpenAI()
             models = client.models.list()
