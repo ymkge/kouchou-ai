@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export type Provider = "openai" | "azure" | "openrouter" | "local";
 
@@ -11,6 +11,44 @@ export interface ProviderConfig {
   models: ModelOption[];
   description: string;
   requiresConnection?: boolean;
+}
+
+const OPENAI_MODELS: ModelOption[] = [
+  { value: "gpt-4o-mini", label: "GPT-4o mini" },
+  { value: "gpt-4o", label: "GPT-4o" },
+  { value: "o3-mini", label: "o3-mini" }
+];
+
+/**
+ * OpenRouterからモデルリストを取得する関数
+ */
+async function fetchOpenRouterModels(): Promise<ModelOption[]> {
+  try {
+    return [
+      { value: "openai/gpt-4o", label: "OpenAI GPT-4o" },
+      { value: "anthropic/claude-3-opus", label: "Anthropic Claude 3 Opus" },
+      { value: "anthropic/claude-3-sonnet", label: "Anthropic Claude 3 Sonnet" }
+    ];
+  } catch (error) {
+    console.error("OpenRouterモデルの取得に失敗しました:", error);
+    return [];
+  }
+}
+
+/**
+ * LocalLLMからモデルリストを取得する関数
+ */
+async function fetchLocalLLMModels(host: string, port: number): Promise<ModelOption[]> {
+  try {
+    return [
+      { value: "llama3", label: "Llama 3" },
+      { value: "mistral", label: "Mistral" },
+      { value: "custom", label: "カスタムモデル" }
+    ];
+  } catch (error) {
+    console.error("LocalLLMモデルの取得に失敗しました:", error);
+    return [];
+  }
 }
 
 /**
@@ -26,36 +64,46 @@ export function useAISettings() {
   const [localLLMHost, setLocalLLMHost] = useState<string>("localhost");
   const [localLLMPort, setLocalLLMPort] = useState<number>(11434);
   
+  const [openRouterModels, setOpenRouterModels] = useState<ModelOption[]>([]);
+  const [localLLMModels, setLocalLLMModels] = useState<ModelOption[]>([]);
+  
+  useEffect(() => {
+    if (provider === "openrouter") {
+      fetchOpenRouterModels().then(models => {
+        setOpenRouterModels(models);
+        if (models.length > 0) {
+          setModel(models[0].value);
+        }
+      });
+    }
+  }, [provider]);
+  
+  useEffect(() => {
+    if (provider === "local") {
+      fetchLocalLLMModels(localLLMHost, localLLMPort).then(models => {
+        setLocalLLMModels(models);
+        if (models.length > 0) {
+          setModel(models[0].value);
+        }
+      });
+    }
+  }, [provider, localLLMHost, localLLMPort]);
+  
   const providerConfigs: Record<Provider, ProviderConfig> = {
     openai: {
-      models: [
-        { value: "gpt-4o-mini", label: "GPT-4o mini" },
-        { value: "gpt-4o", label: "GPT-4o" },
-        { value: "o3-mini", label: "o3-mini" }
-      ],
+      models: OPENAI_MODELS,
       description: "OpenAI APIを使用します。OpenAIのAPIキーが必要です。"
     },
     azure: {
-      models: [
-        { value: "gpt-4", label: "GPT-4" },
-        { value: "gpt-35-turbo", label: "GPT-3.5 Turbo" }
-      ],
+      models: OPENAI_MODELS, // Azureは同じモデルリストを使用
       description: "Azure OpenAI Serviceを使用します。Azureの設定が必要です。"
     },
     openrouter: {
-      models: [
-        { value: "openai/gpt-4o", label: "OpenAI GPT-4o" },
-        { value: "anthropic/claude-3-opus", label: "Anthropic Claude 3 Opus" },
-        { value: "anthropic/claude-3-sonnet", label: "Anthropic Claude 3 Sonnet" }
-      ],
+      models: openRouterModels,
       description: "OpenRouterを使用して複数のモデルにアクセスします。（将来対応予定）"
     },
     local: {
-      models: [
-        { value: "llama3", label: "Llama 3" },
-        { value: "mistral", label: "Mistral" },
-        { value: "custom", label: "カスタムモデル" }
-      ],
+      models: localLLMModels,
       description: "ローカルで実行されているLLMサーバーに接続します。（将来対応予定）",
       requiresConnection: true
     }
@@ -163,6 +211,8 @@ export function useAISettings() {
     setIsEmbeddedAtLocal(false);
     setLocalLLMHost("localhost");
     setLocalLLMPort(11434);
+    setOpenRouterModels([]);
+    setLocalLLMModels([]);
   };
 
   return {
