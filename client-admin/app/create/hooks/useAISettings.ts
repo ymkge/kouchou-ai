@@ -20,80 +20,60 @@ const OPENAI_MODELS: ModelOption[] = [
 ];
 
 /**
- * OpenRouterからモデルリストを取得する関数
- * @see https://openrouter.ai/docs/api-reference/list-available-models
+ * サーバーからモデルリストを取得する関数
+ * @param provider プロバイダー名
+ * @param host LocalLLM用ホスト（localプロバイダーの場合のみ）
+ * @param port LocalLLM用ポート（localプロバイダーの場合のみ）
  */
-async function fetchOpenRouterModels(): Promise<ModelOption[]> {
+async function fetchModelsFromServer(
+  provider: Provider,
+  host?: string,
+  port?: number
+): Promise<ModelOption[]> {
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/models");
+    const params = new URLSearchParams({ provider });
+    if (provider === "local" && host) {
+      params.append("host", host);
+    }
+    if (provider === "local" && port) {
+      params.append("port", port.toString());
+    }
+    
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/models?${params.toString()}`,
+      {
+        method: "GET",
+        headers: {
+          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+          "Content-Type": "application/json",
+        },
+      }
+    );
     
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
     }
     
-    const data = await response.json();
-    
-    if (data && Array.isArray(data.data)) {
-      return data.data.map((model: any) => {
-        const modelId = model.id;
-        const provider = model.provider || "unknown";
-        const modelName = model.name || modelId;
-        
-        return {
-          value: modelId,
-          label: `${provider} - ${modelName}`
-        };
-      });
-    }
-    
-    throw new Error("Invalid API response format");
+    const models = await response.json();
+    return models;
   } catch (error) {
-    console.error("OpenRouterモデルの取得に失敗しました:", error);
-    return [
-      { value: "openai/gpt-4o", label: "OpenAI GPT-4o" },
-      { value: "anthropic/claude-3-opus", label: "Anthropic Claude 3 Opus" },
-      { value: "anthropic/claude-3-sonnet", label: "Anthropic Claude 3 Sonnet" }
-    ];
-  }
-}
-
-/**
- * LocalLLMからモデルリストを取得する関数
- * ホストとポートを指定してローカルで実行されているLLMサーバーからモデルリストを取得
- */
-async function fetchLocalLLMModels(host: string, port: number): Promise<ModelOption[]> {
-  try {
-    const endpoint = `http://${host}:${port}/api/models`;
+    console.error(`${provider}モデルの取得に失敗しました:`, error);
     
-    const response = await fetch(endpoint, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      signal: AbortSignal.timeout(5000)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+    if (provider === "openrouter") {
+      return [
+        { value: "openai/gpt-4o", label: "OpenAI GPT-4o" },
+        { value: "anthropic/claude-3-opus", label: "Anthropic Claude 3 Opus" },
+        { value: "anthropic/claude-3-sonnet", label: "Anthropic Claude 3 Sonnet" }
+      ];
+    } else if (provider === "local") {
+      return [
+        { value: "llama3", label: "Llama 3" },
+        { value: "mistral", label: "Mistral" },
+        { value: "custom", label: "カスタムモデル" }
+      ];
     }
     
-    const data = await response.json();
-    
-    if (data && Array.isArray(data.models)) {
-      return data.models.map((model: any) => ({
-        value: model.id || model.name,
-        label: model.name || model.id
-      }));
-    }
-    
-    throw new Error("Invalid API response format");
-  } catch (error) {
-    console.error("LocalLLMモデルの取得に失敗しました:", error);
-    return [
-      { value: "llama3", label: "Llama 3" },
-      { value: "mistral", label: "Mistral" },
-      { value: "custom", label: "カスタムモデル" }
-    ];
+    return [];
   }
 }
 
@@ -115,7 +95,7 @@ export function useAISettings() {
   
   useEffect(() => {
     if (provider === "openrouter") {
-      fetchOpenRouterModels().then(models => {
+      fetchModelsFromServer("openrouter").then(models => {
         setOpenRouterModels(models);
         if (models.length > 0) {
           setModel(models[0].value);
@@ -126,7 +106,7 @@ export function useAISettings() {
   
   useEffect(() => {
     if (provider === "local") {
-      fetchLocalLLMModels(localLLMHost, localLLMPort).then(models => {
+      fetchModelsFromServer("local", localLLMHost, localLLMPort).then(models => {
         setLocalLLMModels(models);
         if (models.length > 0) {
           setModel(models[0].value);
