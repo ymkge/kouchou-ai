@@ -162,23 +162,21 @@ async def update_report_metadata_endpoint(
 @router.get("/admin/models")
 async def get_models(
     provider: str = Query(..., description="LLMプロバイダー名"),
-    host: str | None = Query(None, description="LocalLLM用ホスト"),
-    port: int | None = Query(None, description="LocalLLM用ポート"),
+    address: str | None = Query(None, description="LocalLLM用アドレス（例: 127.0.0.1:1234）"),
     api_key: str = Depends(verify_admin_api_key)
 ) -> list[dict[str, str]]:
     """指定されたプロバイダーのモデルリストを取得するエンドポイント
 
     Args:
         provider: LLMプロバイダー名（openai, azure, openrouter, local）
-        host: LocalLLM用ホスト（localプロバイダーの場合のみ使用）
-        port: LocalLLM用ポート（localプロバイダーの場合のみ使用）
+        address: LocalLLM用アドレス（localプロバイダーの場合のみ使用、例: 127.0.0.1:1234）
         api_key: 管理者APIキー
 
     Returns:
         モデルリスト（value, labelのリスト）
     """
     try:
-        models = await get_models_by_provider(provider, host, port)
+        models = await get_models_by_provider(provider, address)
         return models
     except ValueError as e:
         slogger.error(f"ValueError: {e}", exc_info=True)

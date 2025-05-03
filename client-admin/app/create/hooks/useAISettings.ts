@@ -27,16 +27,12 @@ const OPENAI_MODELS: ModelOption[] = [
  */
 async function fetchModelsFromServer(
   provider: Provider,
-  host?: string,
-  port?: number
+  address?: string
 ): Promise<ModelOption[]> {
   try {
     const params = new URLSearchParams({ provider });
-    if (provider === "local" && host) {
-      params.append("host", host);
-    }
-    if (provider === "local" && port) {
-      params.append("port", port.toString());
+    if (provider === "local" && address) {
+      params.append("address", address);
     }
     
     const response = await fetch(
@@ -87,8 +83,7 @@ export function useAISettings() {
   const [isPubcomMode, setIsPubcomMode] = useState<boolean>(true);
   const [isEmbeddedAtLocal, setIsEmbeddedAtLocal] = useState<boolean>(false);
   
-  const [localLLMHost, setLocalLLMHost] = useState<string>("localhost");
-  const [localLLMPort, setLocalLLMPort] = useState<number>(11434);
+  const [localLLMAddress, setLocalLLMAddress] = useState<string>("localhost:11434");
   
   const [openRouterModels, setOpenRouterModels] = useState<ModelOption[]>([]);
   const [localLLMModels, setLocalLLMModels] = useState<ModelOption[]>([]);
@@ -106,14 +101,14 @@ export function useAISettings() {
   
   useEffect(() => {
     if (provider === "local") {
-      fetchModelsFromServer("local", localLLMHost, localLLMPort).then(models => {
+      fetchModelsFromServer("local", localLLMAddress).then(models => {
         setLocalLLMModels(models);
         if (models.length > 0) {
           setModel(models[0].value);
         }
       });
     }
-  }, [provider, localLLMHost, localLLMPort]);
+  }, [provider, localLLMAddress]);
   
   const providerConfigs: Record<Provider, ProviderConfig> = {
     openai: {
@@ -235,8 +230,7 @@ export function useAISettings() {
     setWorkers(30);
     setIsPubcomMode(true);
     setIsEmbeddedAtLocal(false);
-    setLocalLLMHost("localhost");
-    setLocalLLMPort(11434);
+    setLocalLLMAddress("localhost:11434");
     setOpenRouterModels([]);
     setLocalLLMModels([]);
   };
@@ -247,16 +241,14 @@ export function useAISettings() {
     workers,
     isPubcomMode,
     isEmbeddedAtLocal,
-    localLLMHost,
-    localLLMPort,
+    localLLMAddress,
     handleProviderChange,
     handleModelChange,
     handleWorkersChange,
     increaseWorkers,
     decreaseWorkers,
     handlePubcomModeChange,
-    setLocalLLMHost,
-    setLocalLLMPort,
+    setLocalLLMAddress,
     getModelDescription,
     getProviderDescription,
     getCurrentModels,

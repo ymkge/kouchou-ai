@@ -73,12 +73,19 @@ async def get_openrouter_models() -> list[dict[str, str]]:
         ]
 
 
-async def get_local_llm_models(host: str | None = None, port: int | None = None) -> list[dict[str, str]]:
+async def get_local_llm_models(address: str | None = None) -> list[dict[str, str]]:
     """LocalLLMのモデルリストをAPIから取得"""
-    if not host:
+    if not address:
         host = "localhost"
-    if not port:
         port = 11434  # Ollamaのデフォルトポート
+    else:
+        try:
+            host, port_str = address.split(":")
+            port = int(port_str)
+        except ValueError:
+            slogger.warning(f"Invalid address format: {address}, using default")
+            host = "localhost"
+            port = 11434
     
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
@@ -114,7 +121,7 @@ async def get_local_llm_models(host: str | None = None, port: int | None = None)
         ]
 
 
-async def get_models_by_provider(provider: str, host: str | None = None, port: int | None = None) -> list[dict[str, str]]:
+async def get_models_by_provider(provider: str, address: str | None = None) -> list[dict[str, str]]:
     """プロバイダーに応じたモデルリストを取得"""
     if provider == "openai":
         return await get_openai_models()
@@ -123,6 +130,6 @@ async def get_models_by_provider(provider: str, host: str | None = None, port: i
     elif provider == "openrouter":
         return await get_openrouter_models()
     elif provider == "local":
-        return await get_local_llm_models(host, port)
+        return await get_local_llm_models(address)
     else:
         raise ValueError(f"Unknown provider: {provider}")

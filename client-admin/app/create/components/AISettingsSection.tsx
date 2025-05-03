@@ -27,10 +27,8 @@ export function AISettingsSection({
   getProviderDescription,
   getCurrentModels,
   requiresConnectionSettings,
-  localLLMHost,
-  localLLMPort,
-  setLocalLLMHost,
-  setLocalLLMPort,
+  localLLMAddress,
+  setLocalLLMAddress,
   promptSettings,
   isEmbeddedAtLocal,
   onEmbeddedAtLocalChange,
@@ -49,10 +47,8 @@ export function AISettingsSection({
   getProviderDescription: () => string;
   getCurrentModels: () => { value: string; label: string }[];
   requiresConnectionSettings: () => boolean;
-  localLLMHost?: string;
-  localLLMPort?: number;
-  setLocalLLMHost?: (value: string) => void;
-  setLocalLLMPort?: (value: number) => void;
+  localLLMAddress?: string;
+  setLocalLLMAddress?: (value: string) => void;
   promptSettings: {
     extraction: string;
     initialLabelling: string;
@@ -108,21 +104,13 @@ export function AISettingsSection({
       {requiresConnectionSettings() && (
         <Field.Root>
           <Field.Label>LocalLLM接続設定</Field.Label>
-          <HStack>
-            <Input
-              placeholder="ホスト"
-              value={localLLMHost}
-              onChange={(e) => setLocalLLMHost && setLocalLLMHost(e.target.value)}
-            />
-            <Input
-              type="number"
-              placeholder="ポート"
-              value={localLLMPort?.toString()}
-              onChange={(e) => setLocalLLMPort && setLocalLLMPort(Number(e.target.value))}
-            />
-          </HStack>
+          <Input
+            placeholder="127.0.0.1:1234"
+            value={localLLMAddress}
+            onChange={(e) => setLocalLLMAddress && setLocalLLMAddress(e.target.value)}
+          />
           <Field.HelperText>
-            ローカルで実行中のLLMサーバーのホスト名とポート番号を指定してください。
+            ローカルで実行中のLLMサーバーのアドレスを指定してください。例: 127.0.0.1:1234
           </Field.HelperText>
         </Field.Root>
       )}

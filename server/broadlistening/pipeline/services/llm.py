@@ -158,24 +158,34 @@ def request_to_local_llm(
     model: str,
     is_json: bool = False,
     json_schema: dict | type[BaseModel] | None = None,
-    host: str = "localhost",
-    port: int = 11434,
+    address: str = "localhost:11434",
 ) -> dict:
     """ローカルLLM（OllamaやLM Studio）にリクエストを送信する関数
     
-    OpenAI互換APIを使用して、指定されたホスト/ポートのローカルLLMにリクエストを送信します。
+    OpenAI互換APIを使用して、指定されたアドレスのローカルLLMにリクエストを送信します。
     
     Args:
         messages: チャットメッセージのリスト
         model: 使用するモデル名
         is_json: JSONレスポンスを要求するかどうか
         json_schema: JSONスキーマ（Pydanticモデルまたは辞書）
-        host: ローカルLLMのホスト名
-        port: ローカルLLMのポート番号
+        address: ローカルLLMのアドレス（例: 127.0.0.1:1234）
         
     Returns:
         LLMからのレスポンス
     """
+    try:
+        if ":" in address:
+            host, port_str = address.split(":")
+            port = int(port_str)
+        else:
+            host = address
+            port = 11434  # デフォルトポート
+    except ValueError:
+        logging.warning(f"Invalid address format: {address}, using default")
+        host = "localhost"
+        port = 11434
+        
     base_url = f"http://{host}:{port}/v1"
     
     try:
@@ -227,8 +237,7 @@ def request_to_chat_openai(
     is_json: bool = False,
     json_schema: dict | type[BaseModel] | None = None,
     provider: str = "openai",
-    local_llm_host: str | None = None,
-    local_llm_port: int | None = None,
+    local_llm_address: str | None = None,
 ) -> dict:
     if provider == "azure":
         return request_to_azure_chatcompletion(messages, is_json, json_schema)
@@ -237,9 +246,8 @@ def request_to_chat_openai(
     elif provider == "openrouter":
         raise NotImplementedError("OpenRouter support is not implemented yet")
     elif provider == "local":
-        host = local_llm_host or "localhost"
-        port = local_llm_port or 11434
-        return request_to_local_llm(messages, model, is_json, json_schema, host, port)
+        address = local_llm_address or "localhost:11434"
+        return request_to_local_llm(messages, model, is_json, json_schema, address)
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
@@ -255,20 +263,31 @@ def _validate_model(model):
         raise RuntimeError(f"Invalid embedding model: {model}, available models: {EMBDDING_MODELS}")
 
 
-def request_to_local_llm_embed(args, model, host="localhost", port=11434):
+def request_to_local_llm_embed(args, model, address="localhost:11434"):
     """ローカルLLM（OllamaやLM Studio）を使用して埋め込みを取得する関数
     
-    OpenAI互換APIを使用して、指定されたホスト/ポートのローカルLLMから埋め込みを取得します。
+    OpenAI互換APIを使用して、指定されたアドレスのローカルLLMから埋め込みを取得します。
     
     Args:
         args: 埋め込みを取得するテキスト
         model: 使用するモデル名
-        host: ローカルLLMのホスト名
-        port: ローカルLLMのポート番号
+        address: ローカルLLMのアドレス（例: 127.0.0.1:1234）
         
     Returns:
         埋め込みベクトルのリスト
     """
+    try:
+        if ":" in address:
+            host, port_str = address.split(":")
+            port = int(port_str)
+        else:
+            host = address
+            port = 11434  # デフォルトポート
+    except ValueError:
+        logging.warning(f"Invalid address format: {address}, using default")
+        host = "localhost"
+        port = 11434
+        
     base_url = f"http://{host}:{port}/v1"
     
     try:
@@ -285,7 +304,7 @@ def request_to_local_llm_embed(args, model, host="localhost", port=11434):
         logging.warning("Falling back to local embedding")
         return request_to_local_embed(args)
 
-def request_to_embed(args, model, is_embedded_at_local=False, provider="openai", local_llm_host: str | None = None, local_llm_port: int | None = None):
+def request_to_embed(args, model, is_embedded_at_local=False, provider="openai", local_llm_address: str | None = None):
     if is_embedded_at_local:
         return request_to_local_embed(args)
 
@@ -300,9 +319,8 @@ def request_to_embed(args, model, is_embedded_at_local=False, provider="openai",
     elif provider == "openrouter":
         raise NotImplementedError("OpenRouter embedding support is not implemented yet")
     elif provider == "local":
-        host = local_llm_host or "localhost"
-        port = local_llm_port or 11434
-        return request_to_local_llm_embed(args, model, host, port)
+        address = local_llm_address or "localhost:11434"
+        return request_to_local_llm_embed(args, model, address)
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
