@@ -20,10 +20,6 @@ def load_metadata_file_path(filename: str) -> Path:
 
 @router.get("/meta")
 async def get_metadata() -> Metadata:
-    metadata_path = load_metadata_file_path("metadata.json")
-    with open(metadata_path) as f:
-        metadata = json.load(f)
-
     # defaultディレクトリのファイルが使用されているかどうかを判断
     is_default = metadata_path.parent == DEFAULT_META_DIR
 
@@ -32,14 +28,14 @@ async def get_metadata() -> Metadata:
         metadata = json.load(f)
 
     return Metadata(
-            reporter=metadata["reporter"],
-            message=metadata["message"],
-            webLink=metadata["webLink"],
-            privacyLink=metadata["privacyLink"],
-            termsLink=metadata["termsLink"],
-            brandColor=metadata["brandColor"],
-            is_default=is_default,
-        )
+        reporter=metadata["reporter"],
+        message=metadata["message"],
+        webLink=metadata["webLink"],
+        privacyLink=metadata["privacyLink"],
+        termsLink=metadata["termsLink"],
+        brandColor=metadata["brandColor"],
+        is_default=is_default,
+    )
 
 
 @router.get("/meta/reporter.png")
