@@ -7,6 +7,7 @@ from fastapi.security.api_key import APIKeyHeader
 from src.config import settings
 from src.schemas.admin_report import ReportInput, ReportMetadataUpdate
 from src.schemas.report import Report, ReportStatus
+from src.services.llm_models import get_models_by_provider
 from src.services.report_launcher import launch_report_generation
 from src.services.report_status import (
     load_status_as_reports,
@@ -14,7 +15,6 @@ from src.services.report_status import (
     toggle_report_public_state,
     update_report_metadata,
 )
-from src.services.llm_models import get_models_by_provider
 from src.utils.logger import setup_logger
 
 slogger = setup_logger()
