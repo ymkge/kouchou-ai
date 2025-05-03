@@ -194,7 +194,7 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
             try:
                 client.chat.completions.create(
                     model=os.getenv(
-                        "AZURE_CHATCOMPLETION_DEPLOYMENT_NAME", 
+                        "AZURE_CHATCOMPLETION_DEPLOYMENT_NAME",
                         "gpt-35-turbo"
                     ),
                     messages=[
@@ -234,17 +234,14 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
                     "https://api.openai.com/v1/dashboard/billing/credit_grants",
                     headers=headers
                 )
-                
                 if response.status_code == 200:
                     balance_data = response.json()
                     total_available = balance_data.get("total_available", 0)
                     grants = balance_data.get("grants", [])
-                    
                     balance_info = {
                         "total_available": total_available,
                         "grants": grants
                     }
-                    
                     if total_available <= 0.01:  # Consider balances below 1 cent as insufficient
                         return {
                             "success": False,
