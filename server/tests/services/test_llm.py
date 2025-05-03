@@ -446,41 +446,33 @@ class TestLLMService:
                     request_to_azure_chatcompletion(messages)
 
     def test_request_to_chat_openai_use_openai(self, mock_openai_response):
-        """request_to_chat_openai: USE_AZURE=falseの場合はrequest_to_openaiを使用する"""
+        """request_to_chat_openai: provider=openaiの場合はrequest_to_openaiを使用する"""
         messages = [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "Hello, world!"},
         ]
 
-        # 環境変数をモック化
-        env_vars = {"USE_AZURE": "false"}
-
         # request_to_openaiをモック化
-        with patch.dict(os.environ, env_vars):
-            with patch(
-                "broadlistening.pipeline.services.llm.request_to_openai", return_value="OpenAI response"
-            ) as mock_request_to_openai:
-                response = request_to_chat_openai(messages, model="gpt-4o")
+        with patch(
+            "broadlistening.pipeline.services.llm.request_to_openai", return_value="OpenAI response"
+        ) as mock_request_to_openai:
+            response = request_to_chat_openai(messages, model="gpt-4o", provider="openai")
 
         assert response == "OpenAI response"
         mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, None)
 
     def test_request_to_chat_openai_use_azure(self, mock_openai_response):
-        """request_to_chat_openai: USE_AZURE=trueの場合はrequest_to_azure_chatcompletionを使用する"""
+        """request_to_chat_openai: provider=azureの場合はrequest_to_azure_chatcompletionを使用する"""
         messages = [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "Hello, world!"},
         ]
 
-        # 環境変数をモック化
-        env_vars = {"USE_AZURE": "true"}
-
         # request_to_azure_chatcompletionをモック化
-        with patch.dict(os.environ, env_vars):
-            with patch(
-                "broadlistening.pipeline.services.llm.request_to_azure_chatcompletion", return_value="Azure response"
-            ) as mock_request_to_azure:
-                response = request_to_chat_openai(messages, model="gpt-4o", is_json=True)
+        with patch(
+            "broadlistening.pipeline.services.llm.request_to_azure_chatcompletion", return_value="Azure response"
+        ) as mock_request_to_azure:
+            response = request_to_chat_openai(messages, model="gpt-4o", is_json=True, provider="azure")
 
         assert response == "Azure response"
         mock_request_to_azure.assert_called_once_with(messages, True, None)
@@ -491,9 +483,6 @@ class TestLLMService:
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "Hello, world!"},
         ]
-
-        # 環境変数をモック化
-        env_vars = {"USE_AZURE": "false"}
 
         # JSON Schemaを定義
         json_schema = {
@@ -511,11 +500,10 @@ class TestLLMService:
         }
 
         # request_to_openaiをモック化
-        with patch.dict(os.environ, env_vars):
-            with patch(
-                "broadlistening.pipeline.services.llm.request_to_openai", return_value="OpenAI response"
-            ) as mock_request_to_openai:
-                response = request_to_chat_openai(messages, model="gpt-4o", json_schema=json_schema)
+        with patch(
+            "broadlistening.pipeline.services.llm.request_to_openai", return_value="OpenAI response"
+        ) as mock_request_to_openai:
+            response = request_to_chat_openai(messages, model="gpt-4o", json_schema=json_schema, provider="openai")
 
         assert response == "OpenAI response"
         mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, json_schema)
@@ -531,15 +519,11 @@ class TestLLMService:
         class TestModel(BaseModel):
             test: str = Field(..., description="テスト用フィールド")
 
-        # 環境変数をモック化
-        env_vars = {"USE_AZURE": "false"}
-
         # request_to_openaiをモック化
-        with patch.dict(os.environ, env_vars):
-            with patch(
-                "broadlistening.pipeline.services.llm.request_to_openai", return_value="OpenAI response"
-            ) as mock_request_to_openai:
-                response = request_to_chat_openai(messages, model="gpt-4o", json_schema=TestModel)
+        with patch(
+            "broadlistening.pipeline.services.llm.request_to_openai", return_value="OpenAI response"
+        ) as mock_request_to_openai:
+            response = request_to_chat_openai(messages, model="gpt-4o", json_schema=TestModel, provider="openai")
 
         assert response == "OpenAI response"
         mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, TestModel)
