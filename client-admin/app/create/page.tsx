@@ -144,8 +144,7 @@ export default function Page() {
         is_pubcom: aiSettings.isPubcomMode,
         inputType: inputData.inputType,
         is_embedded_at_local: aiSettings.isEmbeddedAtLocal,
-        local_llm_host: aiSettings.provider === "local" ? aiSettings.localLLMHost : undefined,
-        local_llm_port: aiSettings.provider === "local" ? aiSettings.localLLMPort : undefined,
+        local_llm_address: aiSettings.provider === "local" ? aiSettings.localLLMAddress : undefined,
       });
       
       toaster.create({
@@ -247,8 +246,7 @@ export default function Page() {
               workers={aiSettings.workers}
               isPubcomMode={aiSettings.isPubcomMode}
               isEmbeddedAtLocal={aiSettings.isEmbeddedAtLocal}
-              localLLMHost={aiSettings.localLLMHost}
-              localLLMPort={aiSettings.localLLMPort}
+              localLLMAddress={aiSettings.localLLMAddress}
               onProviderChange={aiSettings.handleProviderChange}
               onModelChange={aiSettings.handleModelChange}
               onWorkersChange={(e) => {
@@ -264,8 +262,7 @@ export default function Page() {
                 if (checked === "indeterminate") return;
                 aiSettings.setIsEmbeddedAtLocal(checked);
               }}
-              setLocalLLMHost={aiSettings.setLocalLLMHost}
-              setLocalLLMPort={aiSettings.setLocalLLMPort}
+              setLocalLLMAddress={aiSettings.setLocalLLMAddress}
               getModelDescription={aiSettings.getModelDescription}
               getProviderDescription={aiSettings.getProviderDescription}
               getCurrentModels={aiSettings.getCurrentModels}
