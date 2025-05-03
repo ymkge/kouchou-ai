@@ -16,9 +16,16 @@ export async function generateMetadata(): Promise<Metadata> {
 
     const { getBasePath, getRelativeUrl } = await import("@/app/utils/image-src");
 
+    // メタデータが存在しない場合はデフォルトのタイトルのみを返す
+    if (!meta.reporter) {
+      return {
+        title: "広聴AI(デジタル民主主義2030ブロードリスニング)",
+      };
+    }
+
     const metadata: Metadata = {
       title: `${meta.reporter} - 広聴AI(デジタル民主主義2030ブロードリスニング)`,
-      description: `${meta.message}`,
+      description: meta.message || "",
       openGraph: {
         images: [getRelativeUrl('/meta/ogp.png')],
       },
@@ -51,10 +58,11 @@ export default async function Page() {
     });
     const meta: Meta = await metaResponse.json();
     const reports: Report[] = await reportsResponse.json();
+
     return (
       <>
         <div className={"container"}>
-          <Header meta={meta} />
+          {meta.reporter && <Header meta={meta} />}
           <Box mx={"auto"} maxW={"900px"} mb={10}>
             <Heading textAlign={"center"} fontSize={"xl"} mb={5}>
               Reports
@@ -103,9 +111,9 @@ export default async function Page() {
                 </Link>
               ))}
           </Box>
-          <About meta={meta} />
+          {meta.reporter && <About meta={meta} />}
         </div>
-        <Footer meta={meta} />
+        {meta.reporter && <Footer meta={meta} />}
       </>
     );
   } catch (_e) {

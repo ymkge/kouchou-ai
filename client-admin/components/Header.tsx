@@ -1,6 +1,34 @@
+import type { Meta } from "@/type";
 import { Alert, HStack, Image } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 
 export function Header() {
+  const [meta, setMeta] = useState<Meta | null>(null);
+  const [hasImage, setHasImage] = useState(false);
+
+  useEffect(() => {
+    // meta情報を取得
+    fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta`)
+      .then(response => response.json())
+      .then(data => {
+        setMeta(data);
+        // meta情報が取得できたら画像の存在を確認
+        if (data.reporter) {
+          fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta/reporter.png`)
+            .then(response => {
+              setHasImage(response.status === 200);
+            })
+            .catch(() => {
+              setHasImage(false);
+            });
+        }
+      })
+      .catch(() => {
+        setMeta(null);
+        setHasImage(false);
+      });
+  }, []);
+
   return (
     <HStack
       justify="space-between"
@@ -10,14 +38,16 @@ export function Header() {
       maxW={"1200px"}
     >
       <HStack>
-        <Image
-          src={`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta/reporter.png`}
-          mx={"auto"}
-          objectFit={"cover"}
-          maxH={{ base: "40px", md: "60px" }}
-          maxW={{ base: "120px", md: "200px" }}
-          alt={"レポート発行者"}
-        />
+        {meta && hasImage && (
+          <Image
+            src={`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta/reporter.png`}
+            mx={"auto"}
+            objectFit={"cover"}
+            maxH={{ base: "40px", md: "60px" }}
+            maxW={{ base: "120px", md: "200px" }}
+            alt={meta.reporter}
+          />
+        )}
       </HStack>
       <HStack>
         <Alert.Root status="warning">

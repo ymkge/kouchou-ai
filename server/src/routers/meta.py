@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-from fastapi import APIRouter
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse, Response
 
 from src.schemas.metadata import Metadata
 
@@ -20,23 +20,35 @@ def load_metadata_file_path(filename: str) -> Path:
 
 @router.get("/meta")
 async def get_metadata() -> Metadata:
-    metadata_path = load_metadata_file_path("metadata.json")
-    with open(metadata_path) as f:
-        metadata = json.load(f)
+    try:
+        metadata_path = load_metadata_file_path("metadata.json")
+        with open(metadata_path) as f:
+            metadata = json.load(f)
 
-    return Metadata(
-        reporter=metadata["reporter"],
-        message=metadata["message"],
-        webLink=metadata["webLink"],
-        privacyLink=metadata["privacyLink"],
-        termsLink=metadata["termsLink"],
-        brandColor=metadata["brandColor"],
-    )
+        return Metadata(
+            reporter=metadata.get("reporter"),
+            message=metadata.get("message"),
+            webLink=metadata.get("webLink"),
+            privacyLink=metadata.get("privacyLink"),
+            termsLink=metadata.get("termsLink"),
+            brandColor=metadata.get("brandColor"),
+        )
+    except FileNotFoundError:
+        # メタデータファイルが存在しない場合は空のメタデータを返す
+        return Metadata()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/meta/reporter.png")
 async def get_reporter_image():
-    return FileResponse(load_metadata_file_path("reporter.png"))
+    try:
+        return FileResponse(load_metadata_file_path("reporter.png"))
+    except FileNotFoundError:
+        # 画像ファイルが存在しない場合は空のレスポンスを返す
+        return Response(status_code=204)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/meta/icon.png")
