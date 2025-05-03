@@ -68,7 +68,8 @@ export default function Page() {
           </Card.Header>
           <Card.Body>
             <Text mb={4}>
-              ChatGPT API キーの設定を検証します。API キーが正しく設定されているか確認できます。 
+              ChatGPT API キーの設定を検証します。API キーが正しく設定されているか確認できます。 <br/>
+              （注意、検証のためにChatGPTのAPIを利用するため、約0.005円の費用がかかります）
             </Text>
 
             <Button
