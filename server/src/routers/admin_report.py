@@ -174,7 +174,6 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
 
     try:
         use_azure = os.getenv("USE_AZURE", "false").lower() == "true"
-        available_models = []
 
         test_messages = [
             {"role": "system", "content": "This is a test message to verify API key."},
@@ -187,35 +186,10 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
             max_tokens=1,
         )
 
-        try:
-            if use_azure:
-                from openai import AzureOpenAI
-
-                azure_endpoint = os.getenv("AZURE_CHATCOMPLETION_ENDPOINT")
-                api_key = os.getenv("AZURE_CHATCOMPLETION_API_KEY")
-                api_version = os.getenv("AZURE_CHATCOMPLETION_VERSION")
-
-                client = AzureOpenAI(
-                    api_version=api_version,
-                    azure_endpoint=azure_endpoint,
-                    api_key=api_key,
-                )
-                models = client.models.list()
-                available_models = [model.id for model in models]
-            else:
-                from openai import OpenAI
-
-                client = OpenAI()
-                models = client.models.list()
-                available_models = [model.id for model in models]
-        except Exception as e:
-            slogger.error(f"Error listing models: {str(e)}", exc_info=True)
-
         return {
             "success": True,
             "message": "ChatGPT API キーは有効です",
             "use_azure": use_azure,
-            "available_models": available_models,
         }
 
     except openai.AuthenticationError as e:
@@ -224,7 +198,6 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
             "message": "認証エラー: APIキーが無効または期限切れです",
             "error_detail": str(e),
             "use_azure": use_azure,
-            "available_models": [],
         }
     except openai.RateLimitError as e:
         error_str = str(e).lower()
@@ -235,14 +208,12 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
                 "error_detail": str(e),
                 "error_type": "insufficient_quota",
                 "use_azure": use_azure,
-                "available_models": [],
             }
         return {
             "success": False,
             "message": "レート制限エラー: APIリクエストの制限を超えました。しばらく待ってから再試行してください。",
             "error_detail": str(e),
             "use_azure": use_azure,
-            "available_models": [],
         }
     except Exception as e:
         return {
@@ -250,5 +221,4 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
             "message": f"エラーが発生しました: {str(e)}",
             "error_detail": str(e),
             "use_azure": use_azure,
-            "available_models": [],
         }
