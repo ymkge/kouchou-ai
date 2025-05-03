@@ -191,13 +191,12 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
                 azure_endpoint=azure_endpoint,
                 api_key=api_key,
             )
-            
             try:
                 models = client.models.list()
                 available_models = [model.id for model in models]
             except Exception as e:
                 slogger.error(f"Error listing Azure models: {str(e)}", exc_info=True)
-            
+
             client.chat.completions.create(
                 model=os.getenv("AZURE_CHATCOMPLETION_DEPLOYMENT_NAME", "gpt-35-turbo"),
                 messages=test_messages,
@@ -207,13 +206,12 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
             from openai import OpenAI
 
             client = OpenAI()
-            
             try:
                 models = client.models.list()
                 available_models = [model.id for model in models]
             except Exception as e:
                 slogger.error(f"Error listing OpenAI models: {str(e)}", exc_info=True)
-            
+
             client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=test_messages,
