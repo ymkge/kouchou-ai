@@ -7,13 +7,12 @@ import {
   Box,
   Button,
   Card,
-  Flex,
   Heading,
   HStack,
   Text,
-  VStack,
+  VStack
 } from "@chakra-ui/react";
-import { CircleCheckIcon, CircleAlertIcon } from "lucide-react";
+import { CircleAlertIcon, CircleCheckIcon } from "lucide-react";
 import { useState } from "react";
 
 export default function Page() {
@@ -69,10 +68,7 @@ export default function Page() {
           </Card.Header>
           <Card.Body>
             <Text mb={4}>
-              ChatGPT API キーの設定を検証します。API キーが正しく設定されているか確認できます。
-            </Text>
-            <Text mb={4}>
-              現在の設定: {process.env.NEXT_PUBLIC_USE_AZURE === "true" ? "Azure OpenAI Service" : "OpenAI API"}
+              ChatGPT API キーの設定を検証します。API キーが正しく設定されているか確認できます。 
             </Text>
 
             <Button
