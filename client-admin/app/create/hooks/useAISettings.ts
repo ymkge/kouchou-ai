@@ -175,7 +175,7 @@ export function useAISettings() {
         }
       });
     }
-  }, [provider]);
+  }, [provider, localLLMAddress]);
   
   /**
    * LocalLLMのモデルリストを手動で取得
@@ -299,7 +299,7 @@ export function useAISettings() {
    * LocalLLM接続設定が必要かどうか
    */
   const requiresConnectionSettings = () => {
-    return providerConfigs[provider as Provider].requiresConnection === true;
+    return provider === "local";
   };
 
   /**
