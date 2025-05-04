@@ -3,7 +3,7 @@ LLMモデルリスト取得サービス
 """
 
 import httpx
-from openai import OpenAI
+from openai import OpenAI, APIError
 
 from src.utils.logger import setup_logger
 
@@ -103,6 +103,9 @@ async def get_local_llm_models(address: str | None = None) -> list[dict[str, str
         response = await loop.run_in_executor(None, client.models.list)
 
         return [{"value": model.id, "label": model.id} for model in response.data]
+    except APIError as e:
+        slogger.error(f"LocalLLM API error: {e}")
+        return default_models
     except Exception as e:
         slogger.error(f"Error fetching LocalLLM models: {e}")
         return default_models
