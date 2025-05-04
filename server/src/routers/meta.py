@@ -40,7 +40,7 @@ async def get_metadata() -> Metadata:
         # メタデータファイルが存在しない場合は空のメタデータを返す
         return Metadata()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/meta/reporter.png")
