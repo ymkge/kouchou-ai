@@ -33,8 +33,7 @@ class ReportInput(SchemaBaseModel):
     inputType: Literal["file", "spreadsheet"] = "file"  # 入力タイプ
     is_embedded_at_local: bool = False  # エンベデッド処理をローカルで行うかどうか
     provider: str = "openai"  # LLMプロバイダー（openai, azure, openrouter, local）
-    local_llm_host: str | None = None  # LocalLLM用ホスト（将来拡張用）
-    local_llm_port: int | None = None  # LocalLLM用ポート（将来拡張用）
+    local_llm_address: str | None = None  # LocalLLM用アドレス（例: "127.0.0.1:1234"）
 
 
 class ReportMetadataUpdate(SchemaBaseModel):

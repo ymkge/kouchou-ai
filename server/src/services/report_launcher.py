@@ -27,8 +27,7 @@ def _build_config(report_input: ReportInput) -> dict[str, Any]:
         "provider": report_input.provider,
         "is_pubcom": report_input.is_pubcom,
         "is_embedded_at_local": report_input.is_embedded_at_local,
-        "local_llm_host": report_input.local_llm_host,
-        "local_llm_port": report_input.local_llm_port,
+        "local_llm_address": report_input.local_llm_address,
         "extraction": {
             "prompt": report_input.prompt.extraction,
             "workers": report_input.workers,
