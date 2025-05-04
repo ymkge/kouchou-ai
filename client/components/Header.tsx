@@ -11,8 +11,12 @@ type Props = {
 };
 
 export function Header({ meta }: Props) {
+  // reporter.png（作成者画像）が存在するかどうかを管理
+  // 204(No Content)の場合は画像を表示しない
   const [hasImage, setHasImage] = useState(false);
 
+  // reporter.pngの存在確認
+  // 画像が存在する場合のみ画像を表示する（リンク切れやキャッシュ問題を防ぐため）
   useEffect(() => {
     if (!meta) {
       setHasImage(false);

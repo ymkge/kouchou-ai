@@ -12,9 +12,13 @@ type AboutProps = {
 };
 
 export function About({ meta }: AboutProps) {
+  // reporter.png（作成者画像）が存在するかどうかを管理
+  // 204(No Content)の場合は画像を表示しない
   const [hasImage, setHasImage] = useState(false);
 
   useEffect(() => {
+    // reporter.png（作成者画像）が存在するかどうかを確認
+    // 204(No Content)の場合は画像もリンクボタンも表示しないための判定
     if (!meta) {
       setHasImage(false);
       return;

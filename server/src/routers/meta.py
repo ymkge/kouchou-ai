@@ -13,7 +13,6 @@ DEFAULT_META_DIR = Path(__file__).parent.parent.parent / "public" / "meta" / "de
 
 
 def load_metadata_file_path(filename: str) -> Path:
-    """メタデータファイルのパスを返す。customファイルが存在する場合はcustomファイルを読み、存在しない場合はdefaultファイルを読む"""
     custom_metadata_path = CUSTOM_META_DIR / filename
     metadata_path = custom_metadata_path if custom_metadata_path.exists() else DEFAULT_META_DIR / filename
     return metadata_path
@@ -21,6 +20,10 @@ def load_metadata_file_path(filename: str) -> Path:
 
 @router.get("/meta")
 async def get_metadata() -> Metadata:
+    """
+    レポート作成者情報などのメタデータを返す。
+    custom/meta/metadata.jsonがあればそれを、なければdefault/meta/metadata.jsonを返す。
+    """
     try:
         metadata_path = load_metadata_file_path("metadata.json")
         with open(metadata_path) as f:
@@ -43,7 +46,12 @@ async def get_metadata() -> Metadata:
 
 @router.get("/meta/reporter.png")
 async def get_reporter_image():
-    """defaultの場合や、customでもreporter.pngが存在しない場合は何も返さない"""
+    """
+    レポート作成者の画像を返す。
+    custom/meta/report.pngが存在する場合のみ画像を返し、
+    存在しない場合やdefaultのみの場合は204 No Contentを返す。
+    → デフォルト画像（テスト環境など）が誤って表示されないようにするための仕様。
+    """
     custom_metadata_path = CUSTOM_META_DIR / "reporter.png"
     if custom_metadata_path.exists():
         return FileResponse(custom_metadata_path)
