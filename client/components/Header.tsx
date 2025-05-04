@@ -13,7 +13,7 @@ export function Header({ meta }: Props) {
   return (
     <HStack justify="space-between" mb={8} mx={"auto"} maxW={"1200px"}>
       <HStack>
-        {meta && !meta.is_default && (
+        {meta && (
           <Image
             src={getImageFromServerSrc("/meta/reporter.png")}
             mx={"auto"}

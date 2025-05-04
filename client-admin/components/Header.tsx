@@ -21,7 +21,7 @@ export function Header() {
       maxW={"1200px"}
     >
       <HStack>
-        {meta && !meta.is_default && (
+        {meta && (
           <Image
             src={`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta/reporter.png`}
             mx={"auto"}

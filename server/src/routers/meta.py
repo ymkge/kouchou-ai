@@ -2,7 +2,8 @@ import json
 from pathlib import Path
 
 from fastapi import APIRouter
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
+from fastapi import HTTPException
 
 from src.schemas.metadata import Metadata
 
@@ -20,27 +21,33 @@ def load_metadata_file_path(filename: str) -> Path:
 
 @router.get("/meta")
 async def get_metadata() -> Metadata:
-    # defaultディレクトリのファイルが使用されているかどうかを判断
-    is_default = metadata_path.parent == DEFAULT_META_DIR
+    try:
+        metadata_path = load_metadata_file_path("metadata.json")
+        with open(metadata_path) as f:
+            metadata = json.load(f)
 
-    metadata_path = load_metadata_file_path("metadata.json")
-    with open(metadata_path) as f:
-        metadata = json.load(f)
-
-    return Metadata(
-        reporter=metadata["reporter"],
-        message=metadata["message"],
-        webLink=metadata["webLink"],
-        privacyLink=metadata["privacyLink"],
-        termsLink=metadata["termsLink"],
-        brandColor=metadata["brandColor"],
-        is_default=is_default,
-    )
+        return Metadata(
+            reporter=metadata.get("reporter"),
+            message=metadata.get("message"),
+            webLink=metadata.get("webLink"),
+            privacyLink=metadata.get("privacyLink"),
+            termsLink=metadata.get("termsLink"),
+            brandColor=metadata.get("brandColor"),
+        )
+    except FileNotFoundError:
+        # メタデータファイルが存在しない場合は空のメタデータを返す
+        return Metadata()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/meta/reporter.png")
 async def get_reporter_image():
-    return FileResponse(load_metadata_file_path("reporter.png"))
+    """defaultの場合や、customでもreporter.pngが存在しない場合は何も返さない"""
+    custom_metadata_path = CUSTOM_META_DIR / "reporter.png"
+    if custom_metadata_path.exists():
+        return FileResponse(custom_metadata_path)
+    return Response(status_code=204)
 
 
 @router.get("/meta/icon.png")

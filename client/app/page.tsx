@@ -51,11 +51,10 @@ export default async function Page() {
     });
     const meta: Meta = await metaResponse.json();
     const reports: Report[] = await reportsResponse.json();
-
     return (
       <>
         <div className={"container"}>
-          {meta && !meta.is_default && <Header meta={meta} />}
+          {meta && <Header meta={meta} />}
           <Box mx={"auto"} maxW={"900px"} mb={10}>
             <Heading textAlign={"center"} fontSize={"xl"} mb={5}>
               Reports
@@ -104,9 +103,9 @@ export default async function Page() {
                 </Link>
               ))}
           </Box>
-          {meta && !meta.is_default && <About meta={meta} />}
+          {meta && <About meta={meta} />}
         </div>
-        {meta && !meta.is_default && <Footer meta={meta} />}
+        {meta && <Footer meta={meta} />}
       </>
     );
   } catch (_e) {

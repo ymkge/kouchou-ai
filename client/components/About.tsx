@@ -30,7 +30,7 @@ export function About({ meta }: AboutProps) {
       <Heading textAlign={"center"} fontSize={"xl"} mb={5}>
         About
       </Heading>
-      {hasImage && !meta.is_default && (
+      {hasImage && (
         <Image
           src={getImageFromServerSrc("/meta/reporter.png")}
           mx={"auto"}
