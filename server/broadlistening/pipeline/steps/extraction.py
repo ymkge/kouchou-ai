@@ -97,7 +97,8 @@ logging.basicConfig(level=logging.ERROR)
 def extract_batch(batch, prompt, model, workers, provider="openai", local_llm_address=None):
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
         futures_with_index = [
-            (i, executor.submit(extract_arguments, input, prompt, model, provider, local_llm_address)) for i, input in enumerate(batch)
+            (i, executor.submit(extract_arguments, input, prompt, model, provider, local_llm_address))
+            for i, input in enumerate(batch)
         ]
 
         done, not_done = concurrent.futures.wait([f for _, f in futures_with_index], timeout=30)
@@ -125,12 +126,12 @@ def extract_arguments(input, prompt, model, provider="openai", local_llm_address
     ]
     try:
         response = request_to_chat_openai(
-            messages=messages, 
-            model=model, 
-            is_json=False, 
-            json_schema=ExtractionResponse, 
+            messages=messages,
+            model=model,
+            is_json=False,
+            json_schema=ExtractionResponse,
             provider=provider,
-            local_llm_address=local_llm_address
+            local_llm_address=local_llm_address,
         )
         items = parse_extraction_response(response)
         items = filter(None, items)  # omit empty strings

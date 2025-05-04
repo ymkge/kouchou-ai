@@ -267,7 +267,7 @@ def process_merge_labelling(
             model=config["hierarchical_merge_labelling"]["model"],
             is_json=True,
             provider=config.get("provider", "openai"),
-            local_llm_address=config.get("local_llm_address")
+            local_llm_address=config.get("local_llm_address"),
         )
         response_json = json.loads(response)
         return {

@@ -138,11 +138,7 @@ def process_initial_labelling(
     ]
     try:
         response = request_to_chat_openai(
-            messages=messages, 
-            model=model, 
-            is_json=True, 
-            provider=provider,
-            local_llm_address=local_llm_address
+            messages=messages, model=model, is_json=True, provider=provider, local_llm_address=local_llm_address
         )
         response_json = json.loads(response)
         return LabellingResult(

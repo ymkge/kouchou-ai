@@ -30,10 +30,7 @@ def hierarchical_overview(config):
 
     messages = [{"role": "user", "content": prompt}, {"role": "user", "content": input}]
     response = request_to_chat_openai(
-        messages=messages, 
-        model=model, 
-        provider=provider,
-        local_llm_address=config.get("local_llm_address")
+        messages=messages, model=model, provider=provider, local_llm_address=config.get("local_llm_address")
     )
 
     with open(path, "w") as file:
