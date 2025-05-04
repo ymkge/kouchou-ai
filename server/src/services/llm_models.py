@@ -3,6 +3,8 @@ LLMモデルリスト取得サービス
 """
 
 import httpx
+from openai import OpenAI
+from openai.types.error import APIError
 
 from src.utils.logger import setup_logger
 
@@ -74,51 +76,45 @@ async def get_openrouter_models() -> list[dict[str, str]]:
 
 
 async def get_local_llm_models(address: str | None = None) -> list[dict[str, str]]:
-    """LocalLLMのモデルリストをAPIから取得"""
+    """LocalLLMのモデルリストをOpenAI互換APIから取得"""
     if not address:
-        host = "localhost"
-        port = 11434  # Ollamaのデフォルトポート
+        address = "localhost:11434"  # Ollamaのデフォルトポート
+    
+    if ":" in address:
+        host, port = address.split(":")
+        base_url = f"http://{host}:{port}/v1"
     else:
-        try:
-            host, port_str = address.split(":")
-            port = int(port_str)
-        except ValueError:
-            slogger.warning(f"Invalid address format: {address}, using default")
-            host = "localhost"
-            port = 11434
-
+        base_url = f"http://{address}/v1"
+    
+    default_models = [
+        {"value": "llama3", "label": "Llama 3"},
+        {"value": "mistral", "label": "Mistral"},
+        {"value": "custom", "label": "カスタムモデル"},
+    ]
+    
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            response = await client.get(f"http://{host}:{port}/api/models")
-
-            if response.status_code != 200:
-                slogger.error(f"LocalLLM API error: {response.status_code}")
-                return [
-                    {"value": "llama3", "label": "Llama 3"},
-                    {"value": "mistral", "label": "Mistral"},
-                    {"value": "custom", "label": "カスタムモデル"},
-                ]
-
-            data = response.json()
-
-            if not data or not isinstance(data.get("models"), list):
-                slogger.error("Invalid response format from LocalLLM API")
-                raise ValueError("Invalid API response format")
-
-            return [
-                {
-                    "value": model.get("id", model.get("name", "")),
-                    "label": model.get("name", model.get("id", "unknown")),
-                }
-                for model in data["models"]
-            ]
+        client = OpenAI(
+            base_url=base_url,
+            api_key="not-needed"  # OllamaとLM Studioは認証不要
+        )
+        
+        import asyncio
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(None, client.models.list)
+        
+        return [
+            {
+                "value": model.id,
+                "label": model.id
+            }
+            for model in response.data
+        ]
+    except APIError as e:
+        slogger.error(f"LocalLLM API error: {e}")
+        return default_models
     except Exception as e:
         slogger.error(f"Error fetching LocalLLM models: {e}")
-        return [
-            {"value": "llama3", "label": "Llama 3"},
-            {"value": "mistral", "label": "Mistral"},
-            {"value": "custom", "label": "カスタムモデル"},
-        ]
+        return default_models
 
 
 async def get_models_by_provider(provider: str, address: str | None = None) -> list[dict[str, str]]:
