@@ -202,6 +202,7 @@ def merge_labelling(clusters_df: pd.DataFrame, cluster_id_columns: list[str], co
         clusters_df = clusters_df.merge(current_result_df, on=[current_columns.id])
     return clusters_df
 
+
 class LabellingFromat(BaseModel):
     """ラベリング結果のフォーマットを定義する"""
 
