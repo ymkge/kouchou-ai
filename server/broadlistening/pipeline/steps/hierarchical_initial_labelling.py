@@ -48,6 +48,7 @@ def hierarchical_initial_labelling(config: dict) -> None:
         model,
         workers,
         provider,
+        config.get("local_llm_address"),
     )
     print("start initial labelling")
     initial_clusters_argument_df = clusters_argument_df.merge(
@@ -72,6 +73,7 @@ def initial_labelling(
     model: str,
     workers: int,
     provider: str = "openai",
+    local_llm_address: str = None,
 ) -> pd.DataFrame:
     """各クラスタに対して初期ラベリングを実行する
 
@@ -96,6 +98,7 @@ def initial_labelling(
         target_column=initial_cluster_column,
         model=model,
         provider=provider,
+        local_llm_address=local_llm_address,
     )
     with ThreadPoolExecutor(max_workers=workers) as executor:
         results = list(executor.map(process_func, cluster_ids))
@@ -110,6 +113,7 @@ def process_initial_labelling(
     target_column: str,
     model: str,
     provider: str = "openai",
+    local_llm_address: str = None,
 ) -> LabellingResult:
     """個別のクラスタに対してラベリングを実行する
 
@@ -133,7 +137,13 @@ def process_initial_labelling(
         {"role": "user", "content": input},
     ]
     try:
-        response = request_to_chat_openai(messages=messages, model=model, is_json=True, provider=provider)
+        response = request_to_chat_openai(
+            messages=messages, 
+            model=model, 
+            is_json=True, 
+            provider=provider,
+            local_llm_address=local_llm_address
+        )
         response_json = json.loads(response)
         return LabellingResult(
             cluster_id=cluster_id,
