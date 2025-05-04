@@ -27,6 +27,7 @@ def hierarchical_initial_labelling(config: dict) -> None:
                 - prompt: LLMへのプロンプト
                 - model: 使用するLLMモデル名
                 - workers: 並列処理のワーカー数
+            - provider: LLMプロバイダー
     """
     dataset = config["output_dir"]
     path = f"outputs/{dataset}/hierarchical_initial_labels.csv"
@@ -38,6 +39,7 @@ def hierarchical_initial_labelling(config: dict) -> None:
     initial_labelling_prompt = config["hierarchical_initial_labelling"]["prompt"]
     model = config["hierarchical_initial_labelling"]["model"]
     workers = config["hierarchical_initial_labelling"]["workers"]
+    provider = config.get("provider", "openai")  # デフォルトはopenai
 
     initial_label_df = initial_labelling(
         initial_labelling_prompt,
@@ -45,6 +47,7 @@ def hierarchical_initial_labelling(config: dict) -> None:
         sampling_num,
         model,
         workers,
+        provider,
     )
     print("start initial labelling")
     initial_clusters_argument_df = clusters_argument_df.merge(
@@ -68,6 +71,7 @@ def initial_labelling(
     sampling_num: int,
     model: str,
     workers: int,
+    provider: str = "openai",
 ) -> pd.DataFrame:
     """各クラスタに対して初期ラベリングを実行する
 
@@ -91,6 +95,7 @@ def initial_labelling(
         sampling_num=sampling_num,
         target_column=initial_cluster_column,
         model=model,
+        provider=provider,
     )
     with ThreadPoolExecutor(max_workers=workers) as executor:
         results = list(executor.map(process_func, cluster_ids))
@@ -104,6 +109,7 @@ def process_initial_labelling(
     sampling_num: int,
     target_column: str,
     model: str,
+    provider: str = "openai",
 ) -> LabellingResult:
     """個別のクラスタに対してラベリングを実行する
 
@@ -127,7 +133,7 @@ def process_initial_labelling(
         {"role": "user", "content": input},
     ]
     try:
-        response = request_to_chat_openai(messages=messages, model=model, is_json=True)
+        response = request_to_chat_openai(messages=messages, model=model, is_json=True, provider=provider)
         response_json = json.loads(response)
         return LabellingResult(
             cluster_id=cluster_id,

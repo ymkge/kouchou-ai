@@ -50,6 +50,7 @@ def hierarchical_merge_labelling(config: dict) -> None:
                 - prompt: LLMへのプロンプト
                 - model: 使用するLLMモデル名
                 - workers: 並列処理のワーカー数
+            - provider: LLMプロバイダー
     """
     dataset = config["output_dir"]
     merge_path = f"outputs/{dataset}/hierarchical_merge_labels.csv"
@@ -265,6 +266,7 @@ def process_merge_labelling(
             messages=messages,
             model=config["hierarchical_merge_labelling"]["model"],
             is_json=True,
+            provider=config.get("provider", "openai"),
         )
         response_json = json.loads(response)
         return {

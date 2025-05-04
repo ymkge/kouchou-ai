@@ -13,6 +13,7 @@ def hierarchical_overview(config):
 
     prompt = config["hierarchical_overview"]["prompt"]
     model = config["hierarchical_overview"]["model"]
+    provider = config.get("provider", "openai")  # デフォルトはopenai
 
     # TODO: level1で固定にしているが、設定で変えられるようにする
     target_level = 1
@@ -28,7 +29,7 @@ def hierarchical_overview(config):
         input += descriptions[i] + "\n\n"
 
     messages = [{"role": "user", "content": prompt}, {"role": "user", "content": input}]
-    response = request_to_chat_openai(messages=messages, model=model)
+    response = request_to_chat_openai(messages=messages, model=model, provider=provider)
 
     with open(path, "w") as file:
         file.write(response)
