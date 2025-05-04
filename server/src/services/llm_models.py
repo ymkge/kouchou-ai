@@ -104,9 +104,6 @@ async def get_local_llm_models(address: str | None = None) -> list[dict[str, str
 
         return [{"value": model.id, "label": model.id} for model in response.data]
     except Exception as e:
-        slogger.error(f"LocalLLM API error: {e}")
-        return default_models
-    except Exception as e:
         slogger.error(f"Error fetching LocalLLM models: {e}")
         return default_models
 
