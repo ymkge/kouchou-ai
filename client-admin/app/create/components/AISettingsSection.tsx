@@ -92,7 +92,7 @@ export function AISettingsSection({
             <option value={"openai"}>OpenAI</option>
             <option value={"azure"}>Azure</option>
             <option value={"openrouter"} disabled>OpenRouter (将来対応予定)</option>
-            <option value={"local"} disabled>LocalLLM (将来対応予定)</option>
+            <option value={"local"}>LocalLLM</option>
           </NativeSelect.Field>
           <NativeSelect.Indicator />
         </NativeSelect.Root>
