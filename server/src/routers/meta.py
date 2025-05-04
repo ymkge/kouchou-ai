@@ -13,6 +13,7 @@ DEFAULT_META_DIR = Path(__file__).parent.parent.parent / "public" / "meta" / "de
 
 
 def load_metadata_file_path(filename: str) -> Path:
+    """メタデータファイルのパスを返す。customファイルが存在する場合はcustomファイルを読み、存在しない場合はdefaultファイルを読む"""
     custom_metadata_path = CUSTOM_META_DIR / filename
     metadata_path = custom_metadata_path if custom_metadata_path.exists() else DEFAULT_META_DIR / filename
     return metadata_path
