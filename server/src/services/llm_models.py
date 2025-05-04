@@ -79,36 +79,31 @@ async def get_local_llm_models(address: str | None = None) -> list[dict[str, str
     """LocalLLMのモデルリストをOpenAI互換APIから取得"""
     if not address:
         address = "localhost:11434"  # Ollamaのデフォルトポート
-    
+
     if ":" in address:
         host, port = address.split(":")
         base_url = f"http://{host}:{port}/v1"
     else:
         base_url = f"http://{address}/v1"
-    
+
     default_models = [
         {"value": "llama3", "label": "Llama 3"},
         {"value": "mistral", "label": "Mistral"},
         {"value": "custom", "label": "カスタムモデル"},
     ]
-    
+
     try:
         client = OpenAI(
             base_url=base_url,
-            api_key="not-needed"  # OllamaとLM Studioは認証不要
+            api_key="not-needed",  # OllamaとLM Studioは認証不要
         )
-        
+
         import asyncio
+
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, client.models.list)
-        
-        return [
-            {
-                "value": model.id,
-                "label": model.id
-            }
-            for model in response.data
-        ]
+
+        return [{"value": model.id, "label": model.id} for model in response.data]
     except APIError as e:
         slogger.error(f"LocalLLM API error: {e}")
         return default_models
