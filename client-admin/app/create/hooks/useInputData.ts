@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { deleteSpreadsheetData, getSpreadsheetData, importSpreadsheet } from "../api/spreadsheet";
 import { parseCsv } from "../parseCsv";
 import { InputType, SpreadsheetComment } from "../types";
+import { getBestCommentColumn } from "../utils/columnScorer";
 import { showErrorToast } from "../utils/error-handler";
 
 /**
@@ -29,6 +30,29 @@ export function useInputData(
   const [selectedCommentColumn, setSelectedCommentColumn] = useState<string>("");
 
   /**
+   * 最適なカラムを選択する関数
+   * スコア計算に基づいてカラムを自動選択し、最適なカラムが見つからない場合は従来の方法でフォールバック
+   */
+  const selectBestColumn = useCallback((data: Record<string, any>[]) => {
+    if (data.length === 0) return;
+    
+    const columns = Object.keys(data[0]);
+    setCsvColumns(columns);
+    
+    // スコアに基づいて最適なカラムを選択
+    const bestColumn = getBestCommentColumn(data);
+    
+    if (bestColumn) {
+      setSelectedCommentColumn(bestColumn);
+    } else if (columns.includes("comment")) {
+      // 従来の方法でフォールバック
+      setSelectedCommentColumn("comment");
+    }
+    
+    onDataLoaded(data.length);
+  }, [onDataLoaded]);
+
+  /**
    * CSVファイル変更時のハンドラー
    */
   const handleCsvChange = useCallback(async (file: File | null) => {
@@ -37,12 +61,7 @@ export function useInputData(
       try {
         const parsed = await parseCsv(file);
         if (parsed.length > 0) {
-          const columns = Object.keys(parsed[0]);
-          setCsvColumns(columns);
-          if (columns.includes("comment")) {
-            setSelectedCommentColumn("comment");
-          }
-          onDataLoaded(parsed.length);
+          selectBestColumn(parsed);
         }
       } catch (error) {
         showErrorToast(toaster, error, "CSVファイルの読み込みに失敗しました");
@@ -51,7 +70,7 @@ export function useInputData(
       setCsvColumns([]);
       setSelectedCommentColumn("");
     }
-  }, [onDataLoaded]);
+  }, [selectBestColumn]);
 
   /**
    * スプレッドシートのインポート
@@ -76,14 +95,8 @@ export function useInputData(
       setSpreadsheetData(commentData.comments);
 
       if (commentData.comments.length > 0) {
-        const columns = Object.keys(commentData.comments[0]);
-        setCsvColumns(columns);
-        if (columns.includes("comment")) {
-          setSelectedCommentColumn("comment");
-        }
+        selectBestColumn(commentData.comments);
       }
-
-      onDataLoaded(commentData.comments.length);
 
       toaster.create({
         type: "success",
@@ -97,7 +110,7 @@ export function useInputData(
     } finally {
       setSpreadsheetLoading(false);
     }
-  }, [spreadsheetUrl, onDataLoaded]);
+  }, [spreadsheetUrl, selectBestColumn]);
 
   /**
    * スプレッドシートデータのクリア
@@ -138,28 +151,18 @@ export function useInputData(
       // CSVのカラムを再構築
       parseCsv(csv).then((parsed) => {
         if (parsed.length > 0) {
-          const columns = Object.keys(parsed[0]);
-          setCsvColumns(columns);
-          if (columns.includes("comment")) {
-            setSelectedCommentColumn("comment");
-          }
-          onDataLoaded(parsed.length);
+          selectBestColumn(parsed);
         }
       });
     } else if (newType === "spreadsheet" && spreadsheetData.length > 0) {
       // スプレッドシートのカラムを再構築
-      const columns = Object.keys(spreadsheetData[0]);
-      setCsvColumns(columns);
-      if (columns.includes("comment")) {
-        setSelectedCommentColumn("comment");
-      }
-      onDataLoaded(spreadsheetData.length);
+      selectBestColumn(spreadsheetData);
     } else {
       // データがない場合はカラムリセット
       setCsvColumns([]);
       setSelectedCommentColumn("");
     }
-  }, [csv, spreadsheetData, onDataLoaded]);
+  }, [csv, spreadsheetData, selectBestColumn]);
 
   /**
    * スプレッドシートのインポートが可能かどうか
