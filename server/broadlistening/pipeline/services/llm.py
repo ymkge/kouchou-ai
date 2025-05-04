@@ -200,14 +200,14 @@ def request_to_local_llm(
         if json_schema and not isinstance(json_schema, type):
             response_format = json_schema
 
-        if json_schema and isinstance(json_schema, type) and issubclass(json_schema, BaseModel):        
+        if json_schema and isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
             response_format = {
                 "type": "json_schema",
                 "json_schema": {
                     "name": json_schema.__name__,
-                    "strict": True,           # ← スキーマ逸脱を弾く
+                    "strict": True,  # ← スキーマ逸脱を弾く
                     "schema": json_schema.schema(),
-                }
+                },
             }
 
         response = client.chat.completions.create(
@@ -222,7 +222,9 @@ def request_to_local_llm(
 
         return response.choices[0].message.content
     except Exception as e:
-        logging.error(f"LocalLLM API error: {e}, model:{model}, address:{address}, is_json:{is_json}, json_schema:{json_schema}, response_format:{response_format}")
+        logging.error(
+            f"LocalLLM API error: {e}, model:{model}, address:{address}, is_json:{is_json}, json_schema:{json_schema}, response_format:{response_format}"
+        )
         raise
 
 
