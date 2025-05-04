@@ -4,7 +4,7 @@ from functools import partial
 from typing import TypedDict
 
 import pandas as pd
-
+from pydantic import BaseModel, Field
 from services.llm import request_to_chat_openai
 
 
@@ -105,6 +105,11 @@ def initial_labelling(
     return pd.DataFrame(results)
 
 
+class LabellingFromat(BaseModel):
+    """ラベリング結果のフォーマットを定義する"""
+    label: str = Field(..., description="クラスタのラベル名")
+    description: str = Field(..., description="クラスタの説明文")
+
 def process_initial_labelling(
     cluster_id: str,
     df: pd.DataFrame,
@@ -138,7 +143,11 @@ def process_initial_labelling(
     ]
     try:
         response = request_to_chat_openai(
-            messages=messages, model=model, is_json=True, provider=provider, local_llm_address=local_llm_address
+            messages=messages,
+            model=model,
+            provider=provider,
+            json_schema=LabellingFromat,
+            local_llm_address=local_llm_address
         )
         response_json = json.loads(response)
         return LabellingResult(

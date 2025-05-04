@@ -28,9 +28,12 @@ def hierarchical_overview(config):
         input += f"# Cluster {i}/{len(ids)}: {labels[i]}\n\n"
         input += descriptions[i] + "\n\n"
 
-    messages = [{"role": "user", "content": prompt}, {"role": "user", "content": input}]
+    messages = [{"role": "system", "content": prompt}, {"role": "user", "content": input}]
     response = request_to_chat_openai(
-        messages=messages, model=model, provider=provider, local_llm_address=config.get("local_llm_address")
+        messages=messages,
+        model=model,
+        provider=provider,
+        local_llm_address=config.get("local_llm_address")
     )
 
     with open(path, "w") as file:

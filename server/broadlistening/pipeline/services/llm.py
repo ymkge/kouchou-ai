@@ -67,15 +67,18 @@ def request_to_openai(
             if json_schema:  # 両方有効化されていたら、json_schemaを優先
                 response_format = json_schema
 
-            response = openai.chat.completions.create(
-                model=model,
-                messages=messages,
-                temperature=0,
-                n=1,
-                seed=0,
-                response_format=response_format,
-                timeout=30,
-            )
+            payload = {
+                "model": model,
+                "messages": messages,
+                "temperature": 0,
+                "n": 1,
+                "seed": 0,
+                "timeout": 30,
+            }
+            if response_format:
+                payload["response_format"] = response_format
+
+            response = openai.chat.completions.create(**payload)
 
             return response.choices[0].message.content
     except openai.RateLimitError as e:
@@ -132,15 +135,19 @@ def request_to_azure_chatcompletion(
             if json_schema:  # 両方有効化されていたら、json_schemaを優先
                 response_format = json_schema
 
-            response = client.chat.completions.create(
-                model=deployment,
-                messages=messages,
-                temperature=0,
-                n=1,
-                seed=0,
-                response_format=response_format,
-                timeout=30,
-            )
+            payload = {
+                "model": deployment,
+                "messages": messages,
+                "temperature": 0,
+                "n": 1,
+                "seed": 0,
+                "timeout": 30,
+            }
+            if response_format:
+                payload["response_format"] = response_format
+
+            response = client.chat.completions.create(**payload)
+
             return response.choices[0].message.content
     except openai.RateLimitError as e:
         logging.warning(f"OpenAI API rate limit hit: {e}")
@@ -197,34 +204,35 @@ def request_to_local_llm(
         response_format = None
         if is_json:
             response_format = {"type": "json_object"}
-        if json_schema and not isinstance(json_schema, type):
+        if json_schema and isinstance(json_schema, dict):
             response_format = json_schema
-
         if json_schema and isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
             response_format = {
                 "type": "json_schema",
                 "json_schema": {
                     "name": json_schema.__name__,
-                    "strict": True,  # ← スキーマ逸脱を弾く
+                    "strict": True,           # ← スキーマ逸脱を弾く
                     "schema": json_schema.schema(),
-                },
+                }
             }
 
-        response = client.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=0,
-            n=1,
-            seed=0,
-            response_format=response_format,
-            timeout=30,
-        )
+        payload = {
+            "model": model,
+            "messages": messages,
+            "temperature": 0,
+            "n": 1,
+            "seed": 0,
+            "timeout": 30,
+        }
+
+        if response_format:
+            payload["response_format"] = response_format
+
+        response = client.chat.completions.create(**payload)
 
         return response.choices[0].message.content
     except Exception as e:
-        logging.error(
-            f"LocalLLM API error: {e}, model:{model}, address:{address}, is_json:{is_json}, json_schema:{json_schema}, response_format:{response_format}"
-        )
+        logging.error(f"LocalLLM API error: {e}, model:{model}, address:{address}, is_json:{is_json}, json_schema:{json_schema}, response_format:{response_format}")
         raise
 
 
@@ -448,6 +456,16 @@ def _basemodel_test():
     print("Pydantic(BaseModel) schema response example:")
     print(response)
 
+def _local_llm_test():
+    # ローカルLLMにリクエストを送信するテスト
+    messages = [
+        {"role": "system", "content": "Translate the following text to English."},
+        {"role": "user", "content": "これはテストです"},
+    ]
+    response = request_to_local_llm(messages=messages, model="llama-3-elyza-jp-8b", address="localhost:1234")
+    print("Local LLM response example:")
+    print(response)
+
 
 if __name__ == "__main__":
     # _test()
@@ -455,4 +473,5 @@ if __name__ == "__main__":
     # _jsonschema_test()
     # _basemodel_test()
     # _local_emb_test()
+    # _local_llm_test()
     pass

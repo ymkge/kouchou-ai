@@ -6,6 +6,7 @@ from functools import partial
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from pydantic import BaseModel, Field
 
 from services.llm import request_to_chat_openai
 
@@ -201,6 +202,10 @@ def merge_labelling(clusters_df: pd.DataFrame, cluster_id_columns: list[str], co
         clusters_df = clusters_df.merge(current_result_df, on=[current_columns.id])
     return clusters_df
 
+class LabellingFromat(BaseModel):
+    """ラベリング結果のフォーマットを定義する"""
+    label: str = Field(..., description="クラスタのラベル名")
+    description: str = Field(..., description="クラスタの説明文")
 
 def process_merge_labelling(
     target_cluster_id: str,
@@ -265,7 +270,7 @@ def process_merge_labelling(
         response = request_to_chat_openai(
             messages=messages,
             model=config["hierarchical_merge_labelling"]["model"],
-            is_json=True,
+            json_schema=LabellingFromat,
             provider=config.get("provider", "openai"),
             local_llm_address=config.get("local_llm_address"),
         )
