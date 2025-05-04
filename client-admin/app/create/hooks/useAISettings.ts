@@ -166,16 +166,6 @@ export function useAISettings() {
     }
   }, [provider]);
   
-  useEffect(() => {
-    if (provider === "local") {
-      fetchModelsFromServer("local", localLLMAddress).then(models => {
-        setLocalLLMModels(models);
-        if (models.length > 0) {
-          setModel(models[0].value);
-        }
-      });
-    }
-  }, [provider, localLLMAddress]);
   
   /**
    * LocalLLMのモデルリストを手動で取得
