@@ -253,28 +253,6 @@ export function AISettingsSection({
           AIに提示する要約プロンプトです(通常は変更不要です)
         </Field.HelperText>
       </Field.Root>
-      <Field.Root>
-        <Checkbox
-          checked={isEmbeddedAtLocal}
-          onCheckedChange={(details) => {
-            const { checked } = details;
-            if (checked === "indeterminate") return;
-            onEmbeddedAtLocalChange(checked);
-          }}
-          disabled={isEmbeddedAtLocalDisabled && isEmbeddedAtLocalDisabled()}
-        >
-          埋め込み処理をサーバ内で行う
-        </Checkbox>
-        <Field.HelperText>
-          埋め込み処理をサーバ内で行うことで、APIの利用料金を削減します。
-          精度に関しては未検証であり、OpenAIを使った場合と大きく異なる結果になる可能性があります。
-          {isEmbeddedAtLocalDisabled && isEmbeddedAtLocalDisabled() && (
-            <span style={{ color: "red" }}>
-              ※ LocalLLMプロバイダーを選択している場合、この設定は強制的にONになります
-            </span>
-          )}
-        </Field.HelperText>
-      </Field.Root>
     </VStack>
   );
 }
