@@ -19,6 +19,7 @@ const STORAGE_KEYS = {
   MODEL: `${STORAGE_KEY_PREFIX}model`,
   WORKERS: `${STORAGE_KEY_PREFIX}workers`,
   LOCAL_LLM_ADDRESS: `${STORAGE_KEY_PREFIX}local_llm_address`,
+  IS_EMBEDDED_AT_LOCAL: `${STORAGE_KEY_PREFIX}is_embedded_at_local`,
 };
 
 const OPENAI_MODELS: ModelOption[] = [
@@ -130,7 +131,9 @@ export function useAISettings() {
     getFromStorage<number>(STORAGE_KEYS.WORKERS, 30)
   );
   const [isPubcomMode, setIsPubcomMode] = useState<boolean>(true);
-  const [isEmbeddedAtLocal, setIsEmbeddedAtLocal] = useState<boolean>(false);
+  const [isEmbeddedAtLocal, setIsEmbeddedAtLocal] = useState<boolean>(() => 
+    getFromStorage<boolean>(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, false)
+  );
   
   const [localLLMAddress, setLocalLLMAddress] = useState<string>(() => 
     getFromStorage<string>(STORAGE_KEYS.LOCAL_LLM_ADDRESS, "localhost:11434")
@@ -154,6 +157,10 @@ export function useAISettings() {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.LOCAL_LLM_ADDRESS, localLLMAddress);
   }, [localLLMAddress]);
+  
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, isEmbeddedAtLocal);
+  }, [isEmbeddedAtLocal]);
   
   useEffect(() => {
     if (provider === "openrouter") {
@@ -309,6 +316,7 @@ export function useAISettings() {
     saveToStorage(STORAGE_KEYS.MODEL, "gpt-4o-mini");
     saveToStorage(STORAGE_KEYS.WORKERS, 30);
     saveToStorage(STORAGE_KEYS.LOCAL_LLM_ADDRESS, "localhost:11434");
+    saveToStorage(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, false);
   };
 
   return {
