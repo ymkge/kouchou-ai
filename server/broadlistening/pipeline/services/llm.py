@@ -194,27 +194,21 @@ def request_to_local_llm(
             api_key="not-needed",  # OllamaとLM Studioは認証不要
         )
 
-        if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
-            try:
-                response = client.beta.chat.completions.parse(
-                    model=model,
-                    messages=messages,
-                    temperature=0,
-                    n=1,
-                    seed=0,
-                    response_model=json_schema,
-                    timeout=30,
-                )
-                return response
-            except Exception as e:
-                logging.warning(f"LocalLLM beta API error: {e}, falling back to standard API")
-                pass
-
         response_format = None
         if is_json:
             response_format = {"type": "json_object"}
         if json_schema and not isinstance(json_schema, type):
             response_format = json_schema
+
+        if json_schema and isinstance(json_schema, type) and issubclass(json_schema, BaseModel):        
+            response_format = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": json_schema.__name__,
+                    "strict": True,           # ← スキーマ逸脱を弾く
+                    "schema": json_schema.schema(),
+                }
+            }
 
         response = client.chat.completions.create(
             model=model,
@@ -228,7 +222,7 @@ def request_to_local_llm(
 
         return response.choices[0].message.content
     except Exception as e:
-        logging.error(f"LocalLLM API error: {e}")
+        logging.error(f"LocalLLM API error: {e}, model:{model}, address:{address}, is_json:{is_json}, json_schema:{json_schema}, response_format:{response_format}")
         raise
 
 
