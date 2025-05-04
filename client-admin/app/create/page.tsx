@@ -249,6 +249,7 @@ export default function Page() {
               localLLMAddress={aiSettings.localLLMAddress}
               onProviderChange={aiSettings.handleProviderChange}
               onModelChange={aiSettings.handleModelChange}
+              fetchLocalLLMModels={aiSettings.fetchLocalLLMModels}
               onWorkersChange={(e) => {
                 const v = Number(e.target.value);
                 if (!Number.isNaN(v)) {

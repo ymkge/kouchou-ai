@@ -32,6 +32,7 @@ export function AISettingsSection({
   promptSettings,
   isEmbeddedAtLocal,
   onEmbeddedAtLocalChange,
+  fetchLocalLLMModels,
 }: {
   provider: string;
   model: string;
@@ -49,6 +50,7 @@ export function AISettingsSection({
   requiresConnectionSettings: () => boolean;
   localLLMAddress?: string;
   setLocalLLMAddress?: (value: string) => void;
+  fetchLocalLLMModels?: () => Promise<boolean>;
   promptSettings: {
     extraction: string;
     initialLabelling: string;
@@ -104,11 +106,27 @@ export function AISettingsSection({
       {requiresConnectionSettings() && (
         <Field.Root>
           <Field.Label>LocalLLM接続設定</Field.Label>
-          <Input
-            placeholder="127.0.0.1:1234"
-            value={localLLMAddress}
-            onChange={(e) => setLocalLLMAddress && setLocalLLMAddress(e.target.value)}
-          />
+          <HStack>
+            <Input
+              placeholder="127.0.0.1:1234"
+              value={localLLMAddress}
+              onChange={(e) => setLocalLLMAddress && setLocalLLMAddress(e.target.value)}
+            />
+            <Button
+              onClick={async () => {
+                if (fetchLocalLLMModels) {
+                  const success = await fetchLocalLLMModels();
+                  if (success) {
+                    alert("モデルリストを取得しました");
+                  } else {
+                    alert("モデルリストの取得に失敗しました");
+                  }
+                }
+              }}
+            >
+              モデル取得
+            </Button>
+          </HStack>
           <Field.HelperText>
             ローカルで実行中のLLMサーバーのアドレスを指定してください。例: 127.0.0.1:1234
           </Field.HelperText>

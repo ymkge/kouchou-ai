@@ -108,7 +108,27 @@ export function useAISettings() {
         }
       });
     }
-  }, [provider, localLLMAddress]);
+  }, [provider]);
+  
+  /**
+   * LocalLLMのモデルリストを手動で取得
+   */
+  const fetchLocalLLMModels = async () => {
+    if (provider === "local" && localLLMAddress) {
+      try {
+        const models = await fetchModelsFromServer("local", localLLMAddress);
+        setLocalLLMModels(models);
+        if (models.length > 0) {
+          setModel(models[0].value);
+        }
+        return true;
+      } catch (error) {
+        console.error("LocalLLMモデルの取得に失敗しました:", error);
+        return false;
+      }
+    }
+    return false;
+  };
   
   const providerConfigs: Record<Provider, ProviderConfig> = {
     openai: {
@@ -249,5 +269,6 @@ export function useAISettings() {
     requiresConnectionSettings,
     resetAISettings,
     setIsEmbeddedAtLocal,
+    fetchLocalLLMModels,
   };
 }
