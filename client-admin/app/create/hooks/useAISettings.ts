@@ -13,6 +13,14 @@ export interface ProviderConfig {
   requiresConnection?: boolean;
 }
 
+const STORAGE_KEY_PREFIX = "kouchou_ai_";
+const STORAGE_KEYS = {
+  PROVIDER: `${STORAGE_KEY_PREFIX}provider`,
+  MODEL: `${STORAGE_KEY_PREFIX}model`,
+  WORKERS: `${STORAGE_KEY_PREFIX}workers`,
+  LOCAL_LLM_ADDRESS: `${STORAGE_KEY_PREFIX}local_llm_address`,
+};
+
 const OPENAI_MODELS: ModelOption[] = [
   { value: "gpt-4o-mini", label: "GPT-4o mini" },
   { value: "gpt-4o", label: "GPT-4o" },
@@ -22,8 +30,7 @@ const OPENAI_MODELS: ModelOption[] = [
 /**
  * サーバーからモデルリストを取得する関数
  * @param provider プロバイダー名
- * @param host LocalLLM用ホスト（localプロバイダーの場合のみ）
- * @param port LocalLLM用ポート（localプロバイダーの場合のみ）
+ * @param address LocalLLM用アドレス（localプロバイダーの場合のみ）
  */
 async function fetchModelsFromServer(
   provider: Provider,
@@ -74,19 +81,79 @@ async function fetchModelsFromServer(
 }
 
 /**
+ * LocalStorageから値を取得する関数
+ * @param key ストレージキー
+ * @param defaultValue デフォルト値
+ */
+function getFromStorage<T>(key: string, defaultValue: T): T {
+  if (typeof window === "undefined") {
+    return defaultValue;
+  }
+  
+  try {
+    const item = window.localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.error(`LocalStorageからの読み込みに失敗しました: ${key}`, error);
+    return defaultValue;
+  }
+}
+
+/**
+ * LocalStorageに値を保存する関数
+ * @param key ストレージキー
+ * @param value 保存する値
+ */
+function saveToStorage<T>(key: string, value: T): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error(`LocalStorageへの保存に失敗しました: ${key}`, error);
+  }
+}
+
+/**
  * AIモデル設定を管理するカスタムフック
  */
 export function useAISettings() {
-  const [provider, setProvider] = useState<Provider>("openai");
-  const [model, setModel] = useState<string>("gpt-4o-mini");
-  const [workers, setWorkers] = useState<number>(30);
+  const [provider, setProvider] = useState<Provider>(() => 
+    getFromStorage<Provider>(STORAGE_KEYS.PROVIDER, "openai")
+  );
+  const [model, setModel] = useState<string>(() => 
+    getFromStorage<string>(STORAGE_KEYS.MODEL, "gpt-4o-mini")
+  );
+  const [workers, setWorkers] = useState<number>(() => 
+    getFromStorage<number>(STORAGE_KEYS.WORKERS, 30)
+  );
   const [isPubcomMode, setIsPubcomMode] = useState<boolean>(true);
   const [isEmbeddedAtLocal, setIsEmbeddedAtLocal] = useState<boolean>(false);
   
-  const [localLLMAddress, setLocalLLMAddress] = useState<string>("localhost:11434");
+  const [localLLMAddress, setLocalLLMAddress] = useState<string>(() => 
+    getFromStorage<string>(STORAGE_KEYS.LOCAL_LLM_ADDRESS, "localhost:11434")
+  );
   
   const [openRouterModels, setOpenRouterModels] = useState<ModelOption[]>([]);
   const [localLLMModels, setLocalLLMModels] = useState<ModelOption[]>([]);
+  
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.PROVIDER, provider);
+  }, [provider]);
+  
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.MODEL, model);
+  }, [model]);
+  
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.WORKERS, workers);
+  }, [workers]);
+  
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.LOCAL_LLM_ADDRESS, localLLMAddress);
+  }, [localLLMAddress]);
   
   useEffect(() => {
     if (provider === "openrouter") {
@@ -247,6 +314,11 @@ export function useAISettings() {
     setLocalLLMAddress("localhost:11434");
     setOpenRouterModels([]);
     setLocalLLMModels([]);
+    
+    saveToStorage(STORAGE_KEYS.PROVIDER, "openai");
+    saveToStorage(STORAGE_KEYS.MODEL, "gpt-4o-mini");
+    saveToStorage(STORAGE_KEYS.WORKERS, 30);
+    saveToStorage(STORAGE_KEYS.LOCAL_LLM_ADDRESS, "localhost:11434");
   };
 
   return {
