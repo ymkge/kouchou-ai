@@ -134,26 +134,6 @@ export function AISettingsSection({
       )}
 
       <Field.Root>
-        <Field.Label>AIモデル</Field.Label>
-        <NativeSelect.Root w={"40%"}>
-          <NativeSelect.Field
-            value={model}
-            onChange={onModelChange}
-          >
-            {modelOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </NativeSelect.Field>
-          <NativeSelect.Indicator />
-        </NativeSelect.Root>
-        <Field.HelperText>
-          {getModelDescription()}
-        </Field.HelperText>
-      </Field.Root>
-
-      <Field.Root>
         <Field.Label>並列実行数</Field.Label>
         <HStack>
           <Button
@@ -178,6 +158,26 @@ export function AISettingsSection({
         </HStack>
         <Field.HelperText>
           LLM APIの並列実行数です。値を大きくすることでレポート出力が速くなりますが、APIプロバイダーのTierによってはレートリミットの上限に到達し、レポート出力が失敗する可能性があります。
+        </Field.HelperText>
+      </Field.Root>
+
+      <Field.Root>
+        <Field.Label>AIモデル</Field.Label>
+        <NativeSelect.Root w={"40%"}>
+          <NativeSelect.Field
+            value={model}
+            onChange={onModelChange}
+          >
+            {modelOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+        <Field.HelperText>
+          {getModelDescription()}
         </Field.HelperText>
       </Field.Root>
 
