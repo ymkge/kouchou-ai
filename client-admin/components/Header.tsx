@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 export function Header() {
   const [meta, setMeta] = useState<Meta | null>(null);
+  const [hasImage, setHasImage] = useState(false);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta`)
@@ -11,6 +12,16 @@ export function Header() {
       .then(data => setMeta(data))
       .catch(() => setMeta(null));
   }, []);
+
+  useEffect(() => {
+    if (!meta) {
+      setHasImage(false);
+      return;
+    }
+    fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta/reporter.png`)
+      .then(res => setHasImage(res.status === 200))
+      .catch(() => setHasImage(false));
+  }, [meta]);
 
   return (
     <HStack
@@ -21,7 +32,7 @@ export function Header() {
       maxW={"1200px"}
     >
       <HStack>
-        {meta && (
+        {meta && hasImage && (
           <Image
             src={`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta/reporter.png`}
             mx={"auto"}

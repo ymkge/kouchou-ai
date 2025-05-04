@@ -15,7 +15,10 @@ export function About({ meta }: AboutProps) {
   const [hasImage, setHasImage] = useState(false);
 
   useEffect(() => {
-    // 画像の存在を確認
+    if (!meta) {
+      setHasImage(false);
+      return;
+    }
     fetch(getImageFromServerSrc("/meta/reporter.png"))
       .then(response => {
         setHasImage(response.status === 200);
@@ -23,7 +26,7 @@ export function About({ meta }: AboutProps) {
       .catch(() => {
         setHasImage(false);
       });
-  }, []);
+  }, [meta]);
 
   return (
     <Box mx={"auto"} maxW={"750px"} mb={12}>
@@ -44,7 +47,7 @@ export function About({ meta }: AboutProps) {
         {meta.message}
       </Text>
       <VStack>
-        {meta.webLink && (
+        {hasImage && meta.webLink && (
           <Link
             href={meta.webLink}
             target={"_blank"}
