@@ -211,9 +211,9 @@ def request_to_local_llm(
                 "type": "json_schema",
                 "json_schema": {
                     "name": json_schema.__name__,
-                    "strict": True,           # ← スキーマ逸脱を弾く
+                    "strict": True,  # ← スキーマ逸脱を弾く
                     "schema": json_schema.schema(),
-                }
+                },
             }
 
         payload = {
@@ -232,7 +232,9 @@ def request_to_local_llm(
 
         return response.choices[0].message.content
     except Exception as e:
-        logging.error(f"LocalLLM API error: {e}, model:{model}, address:{address}, is_json:{is_json}, json_schema:{json_schema}, response_format:{response_format}")
+        logging.error(
+            f"LocalLLM API error: {e}, model:{model}, address:{address}, is_json:{is_json}, json_schema:{json_schema}, response_format:{response_format}"
+        )
         raise
 
 
@@ -455,6 +457,7 @@ def _basemodel_test():
 
     print("Pydantic(BaseModel) schema response example:")
     print(response)
+
 
 def _local_llm_test():
     # ローカルLLMにリクエストを送信するテスト

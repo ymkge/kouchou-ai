@@ -33,7 +33,7 @@ def hierarchical_overview(config):
         messages=messages,
         model=model,
         provider=provider,
-        local_llm_address=config.get("local_llm_address")
+        local_llm_address=config.get("local_llm_address"),
     )
 
     with open(path, "w") as file:

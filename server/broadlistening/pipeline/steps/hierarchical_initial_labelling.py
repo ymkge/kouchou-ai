@@ -108,8 +108,10 @@ def initial_labelling(
 
 class LabellingFromat(BaseModel):
     """ラベリング結果のフォーマットを定義する"""
+
     label: str = Field(..., description="クラスタのラベル名")
     description: str = Field(..., description="クラスタの説明文")
+
 
 def process_initial_labelling(
     cluster_id: str,
@@ -148,7 +150,7 @@ def process_initial_labelling(
             model=model,
             provider=provider,
             json_schema=LabellingFromat,
-            local_llm_address=local_llm_address
+            local_llm_address=local_llm_address,
         )
         response_json = json.loads(response)
         return LabellingResult(
