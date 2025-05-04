@@ -268,6 +268,7 @@ export default function Page() {
               getProviderDescription={aiSettings.getProviderDescription}
               getCurrentModels={aiSettings.getCurrentModels}
               requiresConnectionSettings={aiSettings.requiresConnectionSettings}
+              isEmbeddedAtLocalDisabled={aiSettings.isEmbeddedAtLocalDisabled}
               promptSettings={promptSettings}
             />
           </Presence>

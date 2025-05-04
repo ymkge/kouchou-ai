@@ -171,6 +171,10 @@ export function useAISettings() {
         }
       });
     }
+    
+    if (provider === "local") {
+      setIsEmbeddedAtLocal(true);
+    }
   }, [provider]);
   
   
@@ -298,6 +302,14 @@ export function useAISettings() {
   const requiresConnectionSettings = () => {
     return provider === "local";
   };
+  
+  /**
+   * 埋め込み処理をサーバ内で行うの設定が無効化されるべきかどうか
+   * LocalLLMプロバイダーの場合は常にtrueで無効化される
+   */
+  const isEmbeddedAtLocalDisabled = () => {
+    return provider === "local";
+  };
 
   /**
    * AI設定をリセット
@@ -337,6 +349,7 @@ export function useAISettings() {
     getProviderDescription,
     getCurrentModels,
     requiresConnectionSettings,
+    isEmbeddedAtLocalDisabled,
     resetAISettings,
     setIsEmbeddedAtLocal,
     fetchLocalLLMModels,
