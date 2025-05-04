@@ -3,7 +3,6 @@ LLMモデルリスト取得サービス
 """
 
 import httpx
-
 from openai import APIError, OpenAI
 
 from src.utils.logger import setup_logger
