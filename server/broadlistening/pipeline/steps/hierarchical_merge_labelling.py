@@ -5,8 +5,8 @@ from functools import partial
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 from pydantic import BaseModel, Field
+from tqdm import tqdm
 
 from services.llm import request_to_chat_openai
 
