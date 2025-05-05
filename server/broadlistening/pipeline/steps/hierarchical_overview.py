@@ -1,9 +1,16 @@
 """Create summaries for the clusters."""
 
+import json
+import re
+
 import pandas as pd
+from pydantic import BaseModel, Field
 
 from services.llm import request_to_chat_openai
 
+
+class OverviewResponse(BaseModel):
+    summary: str = Field(..., description="クラスターの全体的な要約")
 
 def hierarchical_overview(config):
     dataset = config["output_dir"]
@@ -34,7 +41,23 @@ def hierarchical_overview(config):
         model=model,
         provider=provider,
         local_llm_address=config.get("local_llm_address"),
+        json_schema=OverviewResponse,
     )
 
-    with open(path, "w") as file:
-        file.write(response)
+    try:
+        # structured outputとしてパースできるなら処理する
+        parsed_response = json.loads(response)
+        with open(path, "w") as file:
+            file.write(parsed_response["summary"])
+
+    except:
+        # thinkタグが出力されるReasoningモデル用に、thinkタグを除去する
+        thinking_removed = re.sub(
+            r'<think\b[^>]*>.*?</think>',
+            '',
+            response,
+            flags=re.DOTALL
+        )
+
+        with open(path, "w") as file:
+            file.write(thinking_removed)
