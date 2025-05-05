@@ -43,7 +43,7 @@ def request_to_openai(
     model: str = "gpt-4",
     is_json: bool = False,
     json_schema: dict | type[BaseModel] | None = None,
-) -> dict:
+) -> str:
     openai.api_type = "openai"
 
     try:
@@ -102,7 +102,7 @@ def request_to_azure_chatcompletion(
     messages: list[dict],
     is_json: bool = False,
     json_schema: dict | type[BaseModel] | None = None,
-) -> dict:
+) -> str:
     azure_endpoint = os.getenv("AZURE_CHATCOMPLETION_ENDPOINT")
     deployment = os.getenv("AZURE_CHATCOMPLETION_DEPLOYMENT_NAME")
     api_key = os.getenv("AZURE_CHATCOMPLETION_API_KEY")
@@ -166,7 +166,7 @@ def request_to_local_llm(
     is_json: bool = False,
     json_schema: dict | type[BaseModel] | None = None,
     address: str = "localhost:11434",
-) -> dict:
+) -> str:
     """ローカルLLM（OllamaやLM Studio）にリクエストを送信する関数
 
     OpenAI互換APIを使用して、指定されたアドレスのローカルLLMにリクエストを送信します。
@@ -245,7 +245,7 @@ def request_to_chat_openai(
     json_schema: dict | type[BaseModel] | None = None,
     provider: str = "openai",
     local_llm_address: str | None = None,
-) -> dict:
+) -> str:
     if provider == "azure":
         return request_to_azure_chatcompletion(messages, is_json, json_schema)
     elif provider == "openai":
