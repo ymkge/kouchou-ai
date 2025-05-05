@@ -31,24 +31,18 @@ export function useInputData(
 
   /**
    * 最適なカラムを選択する関数
-   * スコア計算に基づいてカラムを自動選択し、最適なカラムが見つからない場合は従来の方法でフォールバック
    */
   const selectBestColumn = useCallback((data: Record<string, any>[]) => {
-    if (data.length === 0) return;
-    
+    if (data.length === 0) return;    
     const columns = Object.keys(data[0]);
     setCsvColumns(columns);
     
     // スコアに基づいて最適なカラムを選択
     const bestColumn = getBestCommentColumn(data);
-    
     if (bestColumn) {
       setSelectedCommentColumn(bestColumn);
-    } else if (columns.includes("comment")) {
-      // 従来の方法でフォールバック
-      setSelectedCommentColumn("comment");
     }
-    
+
     onDataLoaded(data.length);
   }, [onDataLoaded]);
 

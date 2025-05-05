@@ -58,27 +58,10 @@ export function CsvFileTab({
                 const columns = Object.keys(parsed[0]);
                 setCsvColumns(columns);
 
-                 // MEMO: ここにコメントだと認識されるデフォルトカラムを追加
-                const defaultCommentColumns = [
-                  "comment",
-                  "コメント",
-                  "意見",
-                  "要望",
-                  "内容",
-                  "フィードバック",
-                ]
-
-                const foundDefaultColumns = columns.filter(col => defaultCommentColumns.includes(col));
-                if (foundDefaultColumns.length > 0) {
-                  // デフォルトカラムが見つかった場合はそれを選択
-                  setSelectedCommentColumn(foundDefaultColumns[0]);
-                } else {
-                  // 最適なカラムを自動選択
-                  const bestColumn = getBestCommentColumn(parsed);
-                  if (bestColumn) {
-                    // スコア計算に基づいて最適なカラムを選択
-                    setSelectedCommentColumn(bestColumn);
-                  }
+                // 最適なカラムを自動選択
+                const bestColumn = getBestCommentColumn(parsed);
+                if (bestColumn) {
+                  setSelectedCommentColumn(bestColumn);
                 }              
                 clusterSettings.setRecommended(parsed.length);
               }

@@ -23,6 +23,7 @@ function calculateVariance(values: number[]): number {
 }
 
 /**
+ * 文字列の配列から、最適なコメントカラムを選択する、駄目だったらスコア計算からカラムを返す
  * 各カラムのスコアを計算し、スコアが最も高いカラムを返す
  * score = 平均文字数 + k * 文字数の分散
  * 自由入力文の場合、文字数が多くなり、また、分散も大きくなるため、スコアが高くなる
@@ -38,6 +39,36 @@ export function getBestCommentColumn(
   if (data.length === 0) return null;
 
   const columns = Object.keys(data[0]);
+  
+  // コメントだと認識されるデフォルトカラム
+  const defaultCommentColumns = [
+    "comment",
+    "コメント",
+    "意見",
+    "要望",
+    "内容",
+    "フィードバック",
+    "feedback",
+    "ポスト",
+    "投稿",
+    "post",
+    "レビュー",
+    "review",
+    "感想", 
+  ];
+  
+  // デフォルトカラム名が部分一致するか確認
+  const foundDefaultColumns = columns.filter(col => 
+    defaultCommentColumns.some(defaultCol => 
+      col.toLowerCase().includes(defaultCol.toLowerCase())
+    )
+  );
+  // デフォルトカラムが1つだけ見つかった場合はそれを返す
+  if (foundDefaultColumns.length === 1) {
+    return foundDefaultColumns[0];
+  }
+  
+  // デフォルトカラムがない or 候補が2つ以上の場合は、文字数と分散に基づいてスコア計算
   let bestColumn = null;
   let highestScore = -1;
 
