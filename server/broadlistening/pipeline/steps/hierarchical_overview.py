@@ -12,6 +12,7 @@ from services.llm import request_to_chat_openai
 class OverviewResponse(BaseModel):
     summary: str = Field(..., description="クラスターの全体的な要約")
 
+
 def hierarchical_overview(config):
     dataset = config["output_dir"]
     path = f"outputs/{dataset}/hierarchical_overview.txt"
@@ -50,13 +51,13 @@ def hierarchical_overview(config):
         with open(path, "w") as file:
             file.write(parsed_response["summary"])
 
-    except:
+    except Exception:
         # thinkタグが出力されるReasoningモデル用に、thinkタグを除去する
         thinking_removed = re.sub(
-            r'<think\b[^>]*>.*?</think>',
-            '',
+            r"<think\b[^>]*>.*?</think>",
+            "",
             response,
-            flags=re.DOTALL
+            flags=re.DOTALL,
         )
 
         with open(path, "w") as file:
