@@ -31,12 +31,12 @@ def hierarchical_overview(config):
     descriptions = target_records["description"].to_list()
     target_records.set_index("id", inplace=True)
 
-    input = ""
+    input_text = ""
     for i, _ in enumerate(ids):
-        input += f"# Cluster {i}/{len(ids)}: {labels[i]}\n\n"
-        input += descriptions[i] + "\n\n"
+        input_text += f"# Cluster {i}/{len(ids)}: {labels[i]}\n\n"
+        input_text += descriptions[i] + "\n\n"
 
-    messages = [{"role": "system", "content": prompt}, {"role": "user", "content": input}]
+    messages = [{"role": "system", "content": prompt}, {"role": "user", "content": input_text}]
     response = request_to_chat_openai(
         messages=messages,
         model=model,
