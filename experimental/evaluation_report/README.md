@@ -31,7 +31,7 @@ project-root/
 ### 1. データの取得（例：Docker 環境から）
 
 ```bash
-docker cp kouchou-ai-api-1:/app/broadlistening/pipeline/outputs/5c783025-ab42-4676-b68b-7e1fe9858c05 ./input/
+docker cp kouchou-ai-api-1:/app/broadlistening/pipeline/outputs/5c783025-ab42-4676-b68b-7e1fe9858c05 ./inputs/
 ```
 
 この場合、`5c783025-ab42-4676-b68b-7e1fe9858c05` がデータセットIDになります。
