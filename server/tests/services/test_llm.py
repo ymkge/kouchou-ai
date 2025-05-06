@@ -323,8 +323,14 @@ class TestLLMService:
         # AzureOpenAIクライアントをモック化
         mock_client = MagicMock()
         # beta.chat.completions.parseの戻り値をモック化
-        # request_to_azure_chatcompletionはこの戻り値をそのまま返す
         mock_parse_response = MagicMock()
+        mock_choice = MagicMock()
+        mock_message = MagicMock()
+        mock_parsed = MagicMock()
+        mock_parsed.model_dump.return_value = {"test": "This is a test response"}
+        mock_message.parsed = mock_parsed
+        mock_choice.message = mock_message
+        mock_parse_response.choices = [mock_choice]
         mock_client.beta.chat.completions.parse.return_value = mock_parse_response
 
         # 環境変数をモック化
@@ -339,12 +345,11 @@ class TestLLMService:
             with patch("broadlistening.pipeline.services.llm.AzureOpenAI", return_value=mock_client):
                 response = request_to_azure_chatcompletion(messages, json_schema=TestModel)
 
-        # 戻り値がそのままmock_parse_responseであることを確認
-        assert response == mock_parse_response
+        assert response == {"test": "This is a test response"}
         # Pydantic BaseModelを指定していることを確認
         mock_client.beta.chat.completions.parse.assert_called_once()
         args, kwargs = mock_client.beta.chat.completions.parse.call_args
-        assert kwargs["response_model"] == TestModel
+        assert kwargs["response_format"] == TestModel
 
     def test_request_to_azure_chatcompletion_rate_limit_error(self):
         """request_to_azure_chatcompletion: レート制限エラーが発生した場合は例外を再発生させる"""
