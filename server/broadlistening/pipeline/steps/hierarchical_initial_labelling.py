@@ -152,7 +152,7 @@ def process_initial_labelling(
             json_schema=LabellingFromat,
             local_llm_address=local_llm_address,
         )
-        response_json = json.loads(response)
+        response_json = json.loads(response) if isinstance(response, str) else response
         return LabellingResult(
             cluster_id=cluster_id,
             label=response_json.get("label", "エラーでラベル名が取得できませんでした"),

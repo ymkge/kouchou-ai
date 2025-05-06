@@ -124,10 +124,10 @@ def request_to_azure_chatcompletion(
                 temperature=0,
                 n=1,
                 seed=0,
-                response_model=json_schema,
+                response_format=json_schema,
                 timeout=30,
             )
-            return response
+            return response.choices[0].message.parsed.model_dump()
         else:
             response_format = None
             if is_json:

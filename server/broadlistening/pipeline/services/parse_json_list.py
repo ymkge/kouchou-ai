@@ -74,13 +74,17 @@ def parse_response(response):
         return items
 
 
-def parse_extraction_response(response: str) -> list[str]:
+def parse_extraction_response(response: str | dict) -> list[str]:
     """
     structured outputで出力したextraction responseをパースする。
     responseは以下のような形式の文字列。
     {"arguments": ["arg1", "arg2", "arg3"]}
     """
+
     try:
+        if isinstance(response, dict):
+            return response["extractedOpinionList"]
+
         response_dict = json.loads(response)
         extracted_opinions = response_dict["extractedOpinionList"]
         # argumentsがリストでない場合は空のリストを返す

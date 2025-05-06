@@ -47,7 +47,11 @@ def hierarchical_overview(config):
 
     try:
         # structured outputとしてパースできるなら処理する
-        parsed_response = json.loads(response)
+        if isinstance(response, dict):
+            parsed_response = response
+        else:
+            parsed_response = json.loads(response)
+
         with open(path, "w") as file:
             file.write(parsed_response["summary"])
 

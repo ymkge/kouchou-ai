@@ -277,7 +277,7 @@ def process_merge_labelling(
             provider=config.get("provider", "openai"),
             local_llm_address=config.get("local_llm_address"),
         )
-        response_json = json.loads(response)
+        response_json = json.loads(response) if isinstance(response, str) else response
         return {
             current_columns.id: target_cluster_id,
             current_columns.label: response_json.get("label", "エラーでラベル名が取得できませんでした"),
