@@ -190,19 +190,26 @@
                 <th>一貫性</th>
                 <th>整合性</th>
                 <th>差異性</th>
-                <th>ベクトル空間</th>
-                <th>UMAP</th>
+                <th>まとまり具合</th>
+                <th>内訳: 中心との近さ</th>
+                <th>内訳: 他との距離</th>
             </tr>
             <tr>
                 <td class="score-{{ result.llm_avg_scaled.clarity }}">{{ result.llm_avg.clarity }}</td>
                 <td class="score-{{ result.llm_avg_scaled.coherence }}">{{ result.llm_avg.coherence }}</td>
                 <td class="score-{{ result.llm_avg_scaled.consistency }}">{{ result.llm_avg.consistency }}</td>
                 <td class="score-{{ result.llm_avg_scaled.distinctiveness }}">{{ result.llm_avg.distinctiveness }}</td>
-                <td class="score-{{ result.llm_avg_scaled.embedding }}">{{ result.llm_avg_scaled.embedding }}（{{
-                    result.silhouette_embedding_avg }}）</td>
-                <td class="score-{{ result.llm_avg_scaled.umap }}">{{ result.llm_avg_scaled.umap }}（{{
-                    result.silhouette_umap_avg }}）</td>
+                <td class="score-{{ result.silhouette_umap_avg_scaled.silhouette_score }}">
+                    {{ result.silhouette_umap_avg.silhouette_score }}（{{ result.silhouette_umap_avg.silhouette }}）
+                </td>
+                <td class="score-{{ result.silhouette_umap_avg_scaled.centroid_score }}">
+                    {{ result.silhouette_umap_avg.centroid_score }}（{{ result.silhouette_umap_avg.centroid_dist }}）
+                </td>
+                <td class="score-{{ result.silhouette_umap_avg_scaled.nearest_score }}">
+                    {{ result.silhouette_umap_avg.nearest_score }}（{{ result.silhouette_umap_avg.nearest_dist }}）
+                </td>
             </tr>
+
         </table>
         <details class="eval-help" style="margin-top:1.5rem;">
             <summary style="font-weight:bold; cursor:pointer;">📊 評価指標の見方（クリックで開閉）</summary>
@@ -219,40 +226,16 @@
                 </p>
 
                 <h4>2. 定量評価（まとまり具合のスコア）</h4>
-                <p>「クラスタ内の平均距離」と「最も近い別クラスタとの距離」を比較する <b>シルエットスコア</b> を使っています。</p>
+                <p>「クラスタ内の平均距離」と「最も近い別クラスタとの距離」を比較して得られる <b>シルエットスコア</b> を使っています。</p>
+
+                <p>シルエットスコアは、意見グループの <b>内部の密集度</b> と <b>他グループとの分離度</b> をあわせて評価する指標で、数値が高いほど「よくまとまっていて他と被っていない」状態といえます。
+                </p>
+
                 <table
-                    style="border-collapse:collapse; font-size:0.9rem;table-layout: fixed; width: 60%; margin-top: 0.3rem;">
+                    style="border-collapse:collapse; font-size:0.9rem; margin-top:0.3rem; table-layout: fixed; width: 60%;">
                     <thead>
                         <tr>
-                            <th style="border-bottom:1px solid #aaa;" colspan="6">ベクトル空間（Embedding）</th>
-                        </tr>
-                        <tr>
-                            <th style="padding:4px 10px; min-width: 100px;">1</th>
-                            <th>2</th>
-                            <th>3</th>
-                            <th>4</th>
-                            <th>5</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            {% for i in range(5) %}
-                            {% if i == 0 %}
-                            <td>{{ embed_thresholds[i] }} 未満</td>
-                            {% elif i == 4 %}
-                            <td>{{ embed_thresholds[i-1] }} 以上</td>
-                            {% else %}
-                            <td>{{ embed_thresholds[i-1] }}～{{ embed_thresholds[i] }}</td>
-                            {% endif %}
-                            {% endfor %}
-                        </tr>
-                    </tbody>
-                </table>
-                <table
-                    style="border-collapse:collapse; font-size:0.9rem; margin-top:0.3rem;table-layout: fixed; width: 60%; ">
-                    <thead>
-                        <tr>
-                            <th style="border-bottom:1px solid #aaa;" colspan="6">可視化空間（UMAP）</th>
+                            <th style="border-bottom:1px solid #aaa;" colspan="6">まとまり具合（シルエットスコア）の評価基準</th>
                         </tr>
                         <tr>
                             <th style="padding:2px 6px;">1</th>
@@ -276,13 +259,12 @@
                         </tr>
                     </tbody>
                 </table>
+
                 <p><span style="opacity:0.7;">※ 5 に近いほど「同じクラスタはギュッと密集、別クラスタとはハッキリ離れている」良い状態です。</span></p>
 
-                <h4>3. 用語解説</h4>
-                <ul style="margin-left:1rem;">
-                    <li><b>ベクトル空間</b> … 各意見を “単語の使い方” などで数百次元の座標に置いた <q>見えない高次元地図</q>。</li>
-                    <li><b>UMAP</b> … その高次元地図を折りたたんで 2 次元に描き直した <q>見取り図</q>。散布図の座標です。</li>
-                </ul>
+                <p><b>補助スコア「中心との近さ」「他との距離」について：</b><br>
+                    これらは、まとまり具合スコア（シルエット）と距離情報から <u>相対的に割り振った補助評価</u>です。<br>
+                    シルエットスコアほど厳密なものではありませんが、クラスタの「中でどれだけ近いか」「他とどれだけ離れているか」の内訳傾向を知る参考になります。</p>
                 <p style="margin-top:0.6rem;">
                     <b>活用イメージ：</b><br>
                     ・シルエットが低いクラスタ → まずはコメント一覧を確認し、<b>別クラスタ候補の意見</b>が混ざっていないか目視チェック。<br>
@@ -321,26 +303,30 @@
                             <th>一貫性</th>
                             <th>整合性</th>
                             <th>差異性</th>
-                            <th>ベクトル空間</th>
-                            <th>UMAP</th>
+                            <th>まとまり具合</th>
+                            <th>内訳: 中心との近さ</th>
+                            <th>内訳: 他との距離</th>
                         </tr>
                         <tr>
-                            <td class="score-{{ group.scores.clarity.scaled | int  }}">{{ group.scores.clarity.scaled
+                            <td class="score-{{ group.scores.clarity.scaled | int }}">{{ group.scores.clarity.scaled }}
+                            </td>
+                            <td class="score-{{ group.scores.coherence.scaled | int }}">{{ group.scores.coherence.scaled
                                 }}</td>
-                            <td class="score-{{ group.scores.coherence.scaled | int  }}">{{
-                                group.scores.coherence.scaled }}</td>
-                            <td class="score-{{ group.scores.consistency.scaled | int  }}">{{
-                                group.scores.consistency.scaled
-                                }}</td>
-                            <td class="score-{{ group.scores.distinctiveness.scaled | int  }}">{{
+                            <td class="score-{{ group.scores.consistency.scaled | int }}">{{
+                                group.scores.consistency.scaled }}</td>
+                            <td class="score-{{ group.scores.distinctiveness.scaled | int }}">{{
                                 group.scores.distinctiveness.scaled }}</td>
-                            <td class="score-{{ group.scores.embedding.scaled | int  }}">{{
-                                group.scores.embedding.scaled }}（{{
-                                "%.3f"|format(group.scores.embedding.raw) if group.scores.embedding.raw is number else
-                                "N/A" }}）</td>
-                            <td class="score-{{ group.scores.umap.scaled | int  }}">{{ group.scores.umap.scaled }}（{{
+                            <td class="score-{{ group.scores.umap.scaled | int }}">{{ group.scores.umap.scaled }}（{{
                                 "%.3f"|format(group.scores.umap.raw) if group.scores.umap.raw is number else "N/A" }}）
                             </td>
+                            <td class="score-{{ group.scores.umap.centroid_score | default(0) | int }}">{{
+                                group.scores.umap.centroid_score | default("N/A") }}（{{
+                                "%.3f"|format(group.scores.umap.centroid) if group.scores.umap.centroid is number else
+                                "N/A" }}）</td>
+                            <td class="score-{{ group.scores.umap.nearest_score | default(0) | int }}">{{
+                                group.scores.umap.nearest_score | default("N/A") }}（{{
+                                "%.3f"|format(group.scores.umap.nearest) if group.scores.umap.nearest is number else
+                                "N/A" }}）</td>
                         </tr>
                     </table>
 
@@ -371,22 +357,26 @@
                     <thead>
                         <tr>
                             <th style="width: 65%;">意見</th>
-                            <th class="eval-column">ベクトル空間</th>
-                            <th class="eval-column">UMAP</th>
+                            <th class="eval-column">まとまり具合</th>
+                            <th class="eval-column">内訳: 中心との近さ</th>
+                            <th class="eval-column">内訳: 他との距離</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for arg in group_args %}
                         <tr>
                             <td style="text-align: left;">{{ arg.argument }}</td>
-                            <td class="eval-column score-{{ arg.silhouette.embedding.scaled }}">
-                                {{ arg.silhouette.embedding.scaled }}（{{ "%.3f"|format(arg.silhouette.embedding.raw) if
-                                arg.silhouette.embedding.raw is number else "N/A" }}）
-                            </td>
-                            <td class="eval-column score-{{ arg.silhouette.umap.scaled }}">
-                                {{ arg.silhouette.umap.scaled }}（{{ "%.3f"|format(arg.silhouette.umap.raw) if
-                                arg.silhouette.umap.raw is number else "N/A" }}）
-                            </td>
+                            <td class="eval-column score-{{ arg.silhouette.umap.scaled }}">{{ arg.silhouette.umap.scaled
+                                }}（{{ "%.3f"|format(arg.silhouette.umap.raw) if arg.silhouette.umap.raw is number else
+                                "N/A" }}）</td>
+                            <td class="eval-column score-{{ arg.silhouette.umap.centroid_score | default(0) }}">{{
+                                arg.silhouette.umap.centroid_score | default("N/A") }}（{{
+                                "%.3f"|format(arg.silhouette.umap.centroid) if arg.silhouette.umap.centroid is number
+                                else "N/A" }}）</td>
+                            <td class="eval-column score-{{ arg.silhouette.umap.nearest_score | default(0) }}">{{
+                                arg.silhouette.umap.nearest_score | default("N/A") }}（{{
+                                "%.3f"|format(arg.silhouette.umap.nearest) if arg.silhouette.umap.nearest is number else
+                                "N/A" }}）</td>
                         </tr>
                         {% endfor %}
                     </tbody>

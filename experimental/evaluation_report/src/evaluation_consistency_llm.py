@@ -304,12 +304,12 @@ def main():
     parser.add_argument("--model", default="gpt-4o-mini")
     args = parser.parse_args()
 
-    dataset_path = Path("input") / args.dataset
-    output_dir = Path("output") / args.dataset
+    dataset_path = Path("inputs") / args.dataset
+    output_dir = Path("inputs") / args.dataset #他の処理のinputになるのでinputsにした
     cluster_data = load_cluster_data(dataset_path, args.level, args.max_samples)
 
     if args.mode == "print":
-        output_path = Path("output") / args.dataset / f"prompt_level{args.level}.txt"
+        output_path = Path("outputs") / args.dataset / f"prompt_level{args.level}.txt"
         evaluate_all_criteria_prompt_only(cluster_data, output_path)
         return    
     ccd_result = evaluate_batch_clarity_coherence_distinctiveness(cluster_data, args.model, args.mode)

@@ -7,7 +7,7 @@
 - **LLMを活用した4指標の自動評価**  
   明確さ（Clarity）、一貫性（Coherence）、整合性（Consistency）、差異性（Distinctiveness）
 
-- **ベクトル空間・UMAPに基づく分離評価**  
+- **まとまり具合（シルエットスコア）に基づく分離評価**  
   シルエットスコア（「クラスタ内の平均距離」と「最も近い別クラスタとの距離」）および1〜5段階スコアで定量的に評価
 
 - **レポート出力**  
@@ -17,10 +17,10 @@
 
 ```
 project-root/
-├── input/
-│   └── {dataset-id}/   ... 入力元データ（args.csv, clusters.csv 等）
-├── output/
-│   └── {dataset-id}/   ... 評価出力ファイル群（CSV, JSON, HTML）
+├── inputs/
+│   └── {dataset-id}/   ... 入力元データ（args.csv, clusters.csv,中間データJSON 等）
+├── outputs/
+│   └── {dataset-id}/   ... 評価出力ファイル群（CSV,  HTML）
 ├── src/
 │   └── run_evaluation.py   ... 一括実行スクリプト
 ```
@@ -77,14 +77,16 @@ python src/run_evaluation.py sample
 | `consistency` | 意見の整合性：意見とその説明の論理的一貫性 |
 | `distinctiveness` | 他クラスタとの差異：意見内容が他クラスタとどれだけ異なるか |
 | `llm_comment` | 評価の根拠や特徴をまとめたコメント（LLMによる出力） |
-| `embed_score_1to5` | ベクトル空間に基づく分離性評価（1〜5段階スコア） |
-| `silhouette_embed` | embeddingベースのシルエットスコア（–1〜+1） |
-| `umap_score_1to5` | 可視化（UMAP）に基づく分離性評価（1〜5段階スコア） |
-| `silhouette_umap` | UMAPベースのシルエットスコア（–1〜+1） |
+| `silhouette` | クラスタのまとまり具合を示す シルエットスコア（–1〜+1） |
+| `silhouette_score` | 上記スコアを5段階に正規化したもの（1〜5） |
+| `centroid_dist` | 同一クラスタ内の意見間の平均距離（中心との近さ） |
+| `centroid_score` | 上記スコアを5段階に正規化したもの（1〜5） |
+| `nearest_dist` | 最も近い別クラスタまでの距離（他クラスタとの距離） |
+| `nearest_score` | 上記スコアを5段階に正規化したもの（1〜5） |
 
 ### 2. `comment_evaluation.csv`
 
-`cluster_evaluation.csv` と同様の構成ですが、各「意見（コメント）」単位での評価を行った場合に出力されます。列の意味は共通です。
+`cluster_evaluation.csv` と同様の構成ですが、各「意見（コメント）」単位での評価を行った場合に出力されます。評価関連の列の意味は共通です。
 
 ---
 
@@ -98,7 +100,7 @@ python src/run_evaluation.py sample
 ## 備考
 
 * OpenAI APIキーは環境変数などで設定しておく必要があります。
-* 入力データ形式は `args.csv`, `hierarchical_clusters.csv`, `hierarchical_merge_labels.csv` が前提です。
+* 入力データ形式は `args.csv`, `embeddings.pkl`,`hierarchical_clusters.csv`, `hierarchical_merge_labels.csv` が前提です。
 * `print` モードではAPIを使わず、LLMに貼り付け可能なプロンプトを標準出力に出力します。  
   `--mode print` を指定すると、LLM評価は自動実行されず、ChatGPTなどで利用可能な評価用プロンプトが出力されます。
 
@@ -108,6 +110,6 @@ python src/run_evaluation.py sample
 - プロンプト内容を微調整・確認したい場合（例：評価基準の修正、説明追加など）  
 - OpenAI APIを使わず、無料枠や外部ツールで評価したい場合  
 
-出力されたプロンプトは `output/{dataset}/prompt_level{1 or 2}.txt` に保存され、内容は標準出力にも表示されます。  
-ChatGPTで得た評価結果を `output/{dataset}/evaluation_consistency_llm_level{1 or 2}.json` に保存すれば、  
+出力されたプロンプトは `outputs/{dataset}/prompt_level{1 or 2}.txt` に保存され、内容は標準出力にも表示されます。  
+ChatGPTで得た評価結果を `inputs/{dataset}/evaluation_consistency_llm_level{1 or 2}.json` に保存すれば、  
 オプションなしで再度実行することで CSV出力やHTMLレポートに反映されます。

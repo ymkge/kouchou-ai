@@ -1,11 +1,26 @@
 import argparse
 import json
-import os
-import pandas as pd
-import numpy as np
 from pathlib import Path
-from sklearn.metrics import silhouette_samples, silhouette_score
 from typing import Literal
+
+import numpy as np
+import pandas as pd
+from sklearn.metrics import pairwise_distances, silhouette_samples
+
+# 5段階評価用閾値
+UMAP_THRESHOLDS = [-0.25, 0.0, 0.25, 0.50]
+
+def scale_score(value, thresholds):
+    if value is None or (isinstance(value, float) and np.isnan(value)):
+        return None
+    for i, t in enumerate(thresholds):
+        if value < t:
+            return i + 1
+    return len(thresholds) + 1
+
+
+def clamp_score(val):
+    return max(1, min(5, val))
 
 
 def load_vectors(dataset_path: Path, source: Literal["embedding", "umap"]):
@@ -13,81 +28,150 @@ def load_vectors(dataset_path: Path, source: Literal["embedding", "umap"]):
         df = pd.read_pickle(dataset_path / "embeddings.pkl")
         vectors = np.vstack(df["embedding"].values)
         arg_ids = df["arg-id"].tolist()
-    elif source == "umap":
+    else:
         df = pd.read_csv(dataset_path / "hierarchical_clusters.csv")
         vectors = df[["x", "y"]].values
-        arg_ids = df["arg-id"].tolist()
-    else:
-        raise ValueError("Invalid source")
+        arg_ids = df["arg-id"].astype(str).tolist()
     return vectors, arg_ids
 
 
 def load_cluster_labels(dataset_path: Path, level: int):
     df = pd.read_csv(dataset_path / "hierarchical_clusters.csv")
-    cluster_col = f"cluster-level-{level}-id"
-    return df[["arg-id", cluster_col]].rename(columns={cluster_col: "cluster_id"})
+    col = f"cluster-level-{level}-id"
+    df["arg-id"] = df["arg-id"].astype(str)
+    return df[["arg-id", col]].rename(columns={col: "cluster_id"})
+
+
+def compute_centroid_distances(vectors: np.ndarray, labels: np.ndarray):
+    centroids = {lbl: vectors[labels == lbl].mean(axis=0) for lbl in np.unique(labels)}
+    centroid_dists = np.array([np.linalg.norm(v - centroids[lbl]) for v, lbl in zip(vectors, labels)])
+    label_list = list(centroids.keys())
+    centroid_array = np.vstack([centroids[l] for l in label_list])
+    dist_mat = pairwise_distances(vectors, centroid_array)
+    nearest_dists = []
+    for i, lbl in enumerate(labels):
+        own = label_list.index(lbl)
+        nearest_dists.append(np.delete(dist_mat[i], own).min())
+    return centroid_dists, np.array(nearest_dists)
 
 
 def compute_silhouette(dataset_path: Path, level: int, source: Literal["embedding", "umap"]):
     vectors, arg_ids = load_vectors(dataset_path, source)
-    cluster_df = load_cluster_labels(dataset_path, level)
+    labels_df = load_cluster_labels(dataset_path, level)
 
-    df = pd.DataFrame({"arg-id": arg_ids})
-    df = df.merge(cluster_df, on="arg-id", how="left")
+    metrics = pd.DataFrame({"arg-id": arg_ids})
+    metrics = metrics.merge(labels_df, on="arg-id", how="left")
 
-    labels = df["cluster_id"].values
-    unique_labels = np.unique(labels)
-    if len(unique_labels) < 2:
-        print(f"クラスタ数が2未満のため、{source}ベクトルでは評価をスキップします。")
-        return None, None, None
+    metrics["silhouette"] = silhouette_samples(vectors, metrics["cluster_id"].values)
+    centroid_dists, nearest_dists = compute_centroid_distances(vectors, metrics["cluster_id"].values)
+    metrics["centroid_dist"] = centroid_dists
+    metrics["nearest_dist"] = nearest_dists
 
-    score_all = silhouette_samples(vectors, labels, metric="euclidean")
-    df["score"] = score_all
+    # 数値列のみ平均をとる
+    numeric_cols = ["silhouette", "centroid_dist", "nearest_dist"]
+    cluster_stats = metrics.groupby("cluster_id")[numeric_cols].mean()
 
-    per_cluster_scores = df.groupby("cluster_id")["score"].mean().to_dict()
-    per_point_scores = df.set_index("arg-id")["score"].to_dict()
-    overall = silhouette_score(vectors, labels, metric="euclidean")
+    cd_min, cd_max = cluster_stats["centroid_dist"].min(), cluster_stats["centroid_dist"].max()
+    nd_min, nd_max = cluster_stats["nearest_dist"].min(), cluster_stats["nearest_dist"].max()
 
-    return per_cluster_scores, per_point_scores, overall
+    cohesion_s = 1 - 2 * ((cluster_stats["centroid_dist"] - cd_min) / (cd_max - cd_min))
+    separation_s = 2 * ((cluster_stats["nearest_dist"] - nd_min) / (nd_max - nd_min)) - 1
+
+    cluster_stats["silhouette_score"] = cluster_stats["silhouette"].apply(lambda x: scale_score(x, UMAP_THRESHOLDS))
+    cluster_stats["centroid_score"] = cohesion_s.apply(lambda x: scale_score(x, UMAP_THRESHOLDS))
+    cluster_stats["nearest_score"] = separation_s.apply(lambda x: scale_score(x, UMAP_THRESHOLDS))
+
+    adj_c, adj_n = [], []
+    for cid, row in cluster_stats.iterrows():
+        s = int(row["silhouette_score"])
+        tgt = s * 2
+        c0, n0 = int(row["centroid_score"]), int(row["nearest_score"])
+        d = tgt - (c0 + n0)
+        if d != 0:
+            add_c = (d + (1 if d > 0 else 0)) // 2
+            add_n = d - add_c
+            c = clamp_score(c0 + add_c)
+            n = clamp_score(n0 + add_n)
+            if c + n != tgt:
+                n = clamp_score(tgt - c)
+        else:
+            c, n = c0, n0
+        adj_c.append(c)
+        adj_n.append(n)
+    cluster_stats["centroid_score"] = adj_c
+    cluster_stats["nearest_score"] = adj_n
+
+    clusters = {
+        str(cid): {
+            "silhouette": float(row["silhouette"]),
+            "silhouette_score": int(row["silhouette_score"]),
+            "centroid_dist": float(row["centroid_dist"]),
+            "nearest_dist": float(row["nearest_dist"]),
+            "centroid_score": int(row["centroid_score"]),
+            "nearest_score": int(row["nearest_score"])
+        }
+        for cid, row in cluster_stats.iterrows()
+    }
+
+    overall_avg = {
+        "silhouette": float(metrics["silhouette"].mean()),
+        "centroid_dist": float(metrics["centroid_dist"].mean()),
+        "nearest_dist": float(metrics["nearest_dist"].mean())
+    }
+
+    points = {}
+    for _, row in metrics.iterrows():
+        aid = row["arg-id"]
+        sil_s = scale_score(row["silhouette"], UMAP_THRESHOLDS)
+        coh_s = 1 - 2 * ((row["centroid_dist"] - cd_min) / (cd_max - cd_min))
+        sep_s = 2 * ((row["nearest_dist"] - nd_min) / (nd_max - nd_min)) - 1
+        cent_s = scale_score(coh_s, UMAP_THRESHOLDS)
+        nei_s = scale_score(sep_s, UMAP_THRESHOLDS)
+        tgt = sil_s * 2
+        d0 = tgt - (cent_s + nei_s)
+        if d0 != 0:
+            ac = (d0 + (1 if d0 > 0 else 0)) // 2
+            an = d0 - ac
+            cent_s = clamp_score(cent_s + ac)
+            nei_s = clamp_score(nei_s + an)
+            if cent_s + nei_s != tgt:
+                nei_s = clamp_score(tgt - cent_s)
+        points[aid] = {
+            "silhouette": float(row["silhouette"]),
+            "silhouette_score": int(sil_s),
+            "centroid_dist": float(row["centroid_dist"]),
+            "nearest_dist": float(row["nearest_dist"]),
+            "centroid_score": int(cent_s),
+            "nearest_score": int(nei_s)
+        }
+
+    return clusters, overall_avg, points
 
 
-def save_json(obj, path):
+def save_json(obj, path: str):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(obj, f, indent=2, ensure_ascii=False)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="シルエットスコアによるクラスタ構造の内部評価")
-    parser.add_argument("--dataset", required=True, help="input/{dataset} の形式")
+    parser = argparse.ArgumentParser(description="クラスタ内部評価 (シルエット & 距離)")
+    parser.add_argument("--dataset", required=True)
     parser.add_argument("--level", type=int, default=1)
-    parser.add_argument("--source", choices=["embedding", "umap", "both"], default="both")
+    parser.add_argument("--source", choices=["embedding", "umap", "both"], default="umap")
     args = parser.parse_args()
 
-    dataset_path = Path("input") / args.dataset
-    output_path = Path("output") / args.dataset
-    output_path.mkdir(parents=True, exist_ok=True)
-
+    base_path = Path("inputs") / args.dataset
+    base_path.mkdir(parents=True, exist_ok=True)
     sources = [args.source] if args.source != "both" else ["embedding", "umap"]
 
-    for source in sources:
-        print(f"\n=== 評価ソース: {source} ===")
-        cluster_scores, point_scores, overall = compute_silhouette(dataset_path, args.level, source)
-
-        if cluster_scores is None:
-            print("スキップされました。")
+    for src in sources:
+        clusters, overall_avg, points = compute_silhouette(base_path, args.level, src)
+        if clusters is None:
             continue
-
-        base = output_path / f"silhouette_{source}_level{args.level}"
-        save_json({
-            "level": args.level,
-            "source": source,
-            "clusters": cluster_scores,
-            "overall_avg": overall
-        }, str(base) + "_clusters.json")
-
-        save_json(point_scores, str(base) + "_points.json")
-
-        print(f"✓ 出力完了: {base}_clusters.json, {base}_points.json")
+        base = base_path / f"silhouette_{src}_level{args.level}"
+        save_json({"level": args.level, "source": src, "clusters": clusters, "overall_avg": overall_avg}, str(base) + "_clusters.json")
+        save_json(points, str(base) + "_points.json")
+        print(f"出力完了: {base}_clusters.json, {base}_points.json")
 
 
 if __name__ == "__main__":

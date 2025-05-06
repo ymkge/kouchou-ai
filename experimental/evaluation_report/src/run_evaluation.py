@@ -32,8 +32,10 @@ def main():
 
     dataset = args.dataset
     level_option = args.level
-    output_dir = Path("output") / dataset
-
+    input_dir = Path("inputs") / dataset
+    output_dir = Path("outputs") / dataset
+    # 出力ディレクトリが存在しなければ作成
+    output_dir.mkdir(parents=True, exist_ok=True)
     levels = [1, 2] if level_option == "both" else [int(level_option)]
 
     # mode=print の場合は先にLLMプロンプト出力のみ行い、結果を使うように案内
@@ -60,21 +62,19 @@ def main():
     for level in levels:
         print(f"\n=== ステップ1: シルエットスコア（level {level}） ===")
         required_files = [
-            output_dir / f"silhouette_umap_level{level}_clusters.json",
-            output_dir / f"silhouette_umap_level{level}_points.json",
-            output_dir / f"silhouette_embedding_level{level}_clusters.json",
-            output_dir / f"silhouette_embedding_level{level}_points.json"
+            input_dir / f"silhouette_umap_level{level}_clusters.json",
+            input_dir / f"silhouette_umap_level{level}_points.json"
         ]
         if all_exist(required_files):
             for f in required_files:
                 print(f"✅ 出力ファイルが存在するためスキップします: {f}")
         else:
-            cmd = f"python {script_path('evaluate_silhouette_score.py')} --dataset {dataset} --level {level} --source both"
+            cmd = f"python {script_path('evaluate_silhouette_score.py')} --dataset {dataset} --level {level} --source umap"
             run_command(cmd, f"シルエットスコア計算（level {level}）")
 
     for level in levels:
         print(f"\n=== ステップ2: LLM評価（level {level}） ===")
-        out_path = output_dir / f"evaluation_consistency_llm_level{level}.json"
+        out_path = input_dir / f"evaluation_consistency_llm_level{level}.json"
         if out_path.exists():
             print(f"✅ 出力ファイルが存在するためスキップします: {out_path}")
         else:
