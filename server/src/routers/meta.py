@@ -41,7 +41,7 @@ async def get_metadata() -> Metadata:
                 brandColor=metadata.get("brandColor"),
                 isDefault=True,
             )
-        
+
         # カスタム環境の場合は、すべての値を返す
         return Metadata(
             reporter=metadata.get("reporter"),
@@ -106,7 +106,7 @@ async def get_metadata_json() -> Metadata:
                 brandColor=metadata.get("brandColor"),
                 isDefault=True,
             )
-        
+
         # カスタム環境の場合は、すべての値を返す
         return Metadata(
             reporter=metadata.get("reporter"),
