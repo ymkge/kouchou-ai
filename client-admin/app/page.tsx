@@ -841,6 +841,9 @@ export default function Page() {
             <Button size="xl">新しいレポートを作成する</Button>
           </Link>
           <DownloadBuildButton />
+          <Link href="/environment">
+            <Button size="xl" variant="outline">環境検証</Button>
+          </Link>
         </HStack>
       </Box>
     </div>
