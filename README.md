@@ -84,16 +84,6 @@
 2. カスタマイズ方法
    - `server/public/meta/custom` ディレクトリに以下のファイルを配置することで、レポート作成者情報をカスタマイズできます：
      - `metadata.json`: レポート作成者の基本情報
-       ```json
-       {
-         "reporter": "レポート作成者名",
-         "message": "レポート作成者からのメッセージ",
-         "webLink": "ウェブサイトのURL",
-         "privacyLink": "プライバシーポリシーのURL",
-         "termsLink": "利用規約のURL",
-         "brandColor": "ブランドカラー（CSSカラーコード）"
-       }
-       ```
      - `reporter.png`: レポート作成者のロゴ画像
      - `icon.png`: レポートのアイコン画像
      - `ogp.png`: レポートのOGP画像
