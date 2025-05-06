@@ -5,16 +5,12 @@ import type { Meta } from "@/type";
 import { Box, Button, Heading, Image, Text, VStack } from "@chakra-ui/react";
 import { ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 
 type AboutProps = {
   meta: Meta;
 };
 
 export function About({ meta }: AboutProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  console.log(meta);
-  console.log(meta.isDefault);
   return (
     <Box mx={"auto"} maxW={"750px"} mb={12}>
       <Heading textAlign={"center"} fontSize={"xl"} mb={5}>
@@ -29,8 +25,6 @@ export function About({ meta }: AboutProps) {
           objectFit={"cover"}
           maxW={"250px"}
           alt={meta.reporter}
-          onLoad={() => setImageLoaded(true)}
-          display={imageLoaded ? "block" : "none"}
         />
       )}
       <Text mb={5} whiteSpace={"pre-line"}>
