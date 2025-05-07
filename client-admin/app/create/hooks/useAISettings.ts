@@ -1,5 +1,5 @@
-import { useState, useEffect, ChangeEvent } from "react";
 import { toaster } from "@/components/ui/toaster";
+import { ChangeEvent, useEffect, useState } from "react";
 
 export type Provider = "openai" | "azure" | "openrouter" | "local";
 
@@ -38,48 +38,28 @@ async function fetchModelsFromServer(
   provider: Provider,
   address?: string
 ): Promise<ModelOption[]> {
-  try {
-    const params = new URLSearchParams({ provider });
-    if (provider === "local" && address) {
-      params.append("address", address);
-    }
-    
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/models?${params.toString()}`,
-      {
-        method: "GET",
-        headers: {
-          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-    
-    const models = await response.json();
-    return models;
-  } catch (error) {
-    console.error(`${provider}モデルの取得に失敗しました:`, error);
-    
-    if (provider === "openrouter") {
-      return [
-        { value: "openai/gpt-4o", label: "OpenAI GPT-4o" },
-        { value: "anthropic/claude-3-opus", label: "Anthropic Claude 3 Opus" },
-        { value: "anthropic/claude-3-sonnet", label: "Anthropic Claude 3 Sonnet" }
-      ];
-    } else if (provider === "local") {
-      return [
-        { value: "llama3", label: "Llama 3" },
-        { value: "mistral", label: "Mistral" },
-        { value: "custom", label: "カスタムモデル" }
-      ];
-    }
-    
-    return [];
+  const params = new URLSearchParams({ provider });
+  if (provider === "local" && address) {
+    params.append("address", address);
   }
+  
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/models?${params.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+  
+  const models = await response.json();
+  return models;
 }
 
 /**
