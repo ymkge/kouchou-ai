@@ -7,10 +7,7 @@ if not os.getenv('GITHUB_ACTIONS'):
     from dotenv import load_dotenv
     load_dotenv()
 
-EMBEDDING_MODEL = "text-embedding-3-small"
-COLLECTION_NAME = "issue_collection"
 GPT_MODEL = "gpt-4.1-nano"
-MAX_RESULTS = 3
 
 class Config:
     def __init__(self):
@@ -19,17 +16,26 @@ class Config:
         if self.github_token is None:
             print("GITHUB_TOKENが見つかりません ...")
         else:
-            print("GITHUB_TOKENからトークンを正常に取得しました。")
+            print("GITHUB_TOKENを正常に取得しました。")
         
         self.github_repo = os.getenv("GITHUB_REPOSITORY")
-        print("GITHUB_REPOSITORYの状態:", "取得済み" if self.github_repo else "見つかりません")
+        if self.github_repo is None:
+            print("GITHUB_REPOSITORYが見つかりません ...")
+        else:
+            print("GITHUB_REPOSITORYを正常に取得しました。")
         
         self.issue_number = os.getenv("GITHUB_EVENT_ISSUE_NUMBER")
-        if self.issue_number:
-            self.issue_number = int(self.issue_number)
-            print(f"GITHUB_EVENT_ISSUE_NUMBER: {self.issue_number}")
+        if self.issue_number is None:
+            print("GITHUB_EVENT_ISSUE_NUMBERが見つかりません ...")
         else:
-            print("GITHUB_EVENT_ISSUE_NUMBERが見つかりません")
+            print("GITHUB_EVENT_ISSUE_NUMBERを正常に取得しました。")
+
+        self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        if self.openai_api_key is None:
+            print("OPENAI_API_KEYが見つかりません ...")
+        else:
+            print("OPENAI_API_KEYを正常に取得しました。")
+
         print("設定の初期化が完了しました。")
 
 class GithubHandler:
@@ -149,21 +155,12 @@ def setup():
     """セットアップを行い、必要なオブジェクトを返す"""
     config = Config()
     github_handler = GithubHandler(config)
-
-    try:
-        openai_api_key = os.getenv("OPENAI_API_KEY")
-        if openai_api_key is None:
-            print("OPENAI_API_KEYが見つかりません ...")
-            return github_handler, None
-    except Exception as e:
-        print(f"OpenAI APIキーの取得中にエラーが発生しました: {e}")
-    openai_client = openai.Client(api_key=openai_api_key)
-
+    openai_client = openai.Client(api_key=config.openai_api_key) if config.openai_api_key else None
     return github_handler, openai_client
 
 def main():
     github_handler, openai_client = setup()
-    if github_handler is None or openai_client is None:
+    if not all([github_handler, openai_client]):
         print("セットアップに失敗しました。")
         return
 
