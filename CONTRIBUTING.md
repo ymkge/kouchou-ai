@@ -69,6 +69,7 @@
 - [@nasuka](https://github.com/nasuka)
 - [@shingo-ohki](https://github.com/shingo-ohki)
 - [@mtane0412](https://github.com/mtane0412)
+- [@tokoroten](https://github.com/tokoroten)
 
 上記のうち1名がapproveした場合にmainへのマージを行います。メンテナーは将来的に増やしていく予定です。
 
