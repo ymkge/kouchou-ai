@@ -51,14 +51,6 @@ python src/run_evaluation.py 5c783025-ab42-4676-b68b-7e1fe9858c05
 | `--mode`        | `api` または `print`（プロンプト出力のみ） | `--mode print`      |
 | `--model`       | 使用するOpenAIモデル名               | `--model gpt-4o-mini`    |
 
-### 4. サンプルの実行
-
-動作を確認したい場合は、あらかじめ用意されたサンプルデータセット `sample` を指定することで、  
-評価の流れ（シルエットスコア計算・LLMプロンプト生成・CSV/HTML出力）を一通り試すことができます。
-```bash
-python src/run_evaluation.py sample
-```
-
 
 ## クラスタリング評価結果の出力ファイルについて
 
