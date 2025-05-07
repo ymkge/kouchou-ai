@@ -2,7 +2,6 @@ import os
 import regex as re
 from github import Github
 import openai
-import json
 
 if not os.getenv('GITHUB_ACTIONS'):
     from dotenv import load_dotenv
@@ -127,6 +126,7 @@ class IssueProcessor:
                 
     def _analyze_and_add_content_labels(self, issue_content: str):
         """OpenAIを使ってIssueの内容からラベルを判定する"""
+        import json
         prompt = f"""以下はGitHubのIssueの内容です。この内容を分析して、解決すべき課題の分類として適切なラベルがもしあれば選んでください。明らかにそのラベルが適切であると判断できる場合以外はラベルを付与しないでください。画像は無視してください。
 
 Issue内容:
