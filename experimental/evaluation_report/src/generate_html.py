@@ -8,11 +8,16 @@ from jinja2 import Environment, FileSystemLoader
 
 
 def load_json(path: Path):
+    """UTF-8優先 → SJISフォールバックで読み込む"""
     if not path.exists():
         print(f"⚠️ Missing: {path}")
         return {}
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except UnicodeDecodeError:
+        with open(path, "r", encoding="shift_jis") as f:
+            return json.load(f)
 
 
 def mean(values):
@@ -37,6 +42,8 @@ def generate_html(slug: str, input_dir: Path, output_dir: Path, template_dir: Pa
     llm_scores_l1 = load_json(base_input / "evaluation_consistency_llm_level1.json")
     llm_scores_l2 = load_json(base_input / "evaluation_consistency_llm_level2.json")
     llm_scores = {**llm_scores_l1, **llm_scores_l2}
+    distinctiveness_comment1 = llm_scores_l1.pop("distinctiveness_comment", None)
+    distinctiveness_comment2 = llm_scores_l2.pop("distinctiveness_comment", None)
 
     silhouette_umap = load_json(base_input / "silhouette_umap_level1_clusters.json").get("clusters", {})
     silhouette_umap_lv2 = load_json(base_input / "silhouette_umap_level2_clusters.json").get("clusters", {})
@@ -58,7 +65,6 @@ def generate_html(slug: str, input_dir: Path, output_dir: Path, template_dir: Pa
                 "nearest_score": ump.get("nearest_score")
             }
         }
-
     cluster_by_id = {c["id"]: c for c in result_data["clusters"]}
     cluster_children = {}
     for c in result_data["clusters"]:
@@ -93,8 +99,8 @@ def generate_html(slug: str, input_dir: Path, output_dir: Path, template_dir: Pa
                 "centroid": umap.get("centroid_dist") if umap else None,
                 "centroid_score": umap.get("centroid_score") if umap else None,
                 "nearest": umap.get("nearest_dist") if umap else None,
-                "nearest_score": umap.get("nearest_score") if umap else None,
-            },
+                "nearest_score": umap.get("nearest_score") if umap else None
+            }
         }
 
         cluster["silhouette_umap"] = umap
@@ -148,7 +154,8 @@ def generate_html(slug: str, input_dir: Path, output_dir: Path, template_dir: Pa
         cluster_tree=cluster_tree,
         umap_thresholds=UMAP_THRESHOLDS,
         color_map=color_map,
-        
+        distinctiveness_comment1=distinctiveness_comment1, 
+        distinctiveness_comment2=distinctiveness_comment2,  
     )
 
     out_path = base_output / "report.html"

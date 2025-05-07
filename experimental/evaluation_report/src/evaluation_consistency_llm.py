@@ -17,6 +17,8 @@ from broadlistening.pipeline.services.llm import request_to_chat_openai
 
 def get_criteria_clarity() -> str:
     return """Clarity（明確さ）
+評価対象: ラベルおよび説明文
+
 1点: 何を伝えたいのかほとんどわからない。主語・述語があいまいで、意図が不明。
 2点: 主旨は掴めるが曖昧な表現や冗長さがあり、推測が必要。
 3点: おおむね意図は明確だが、情報の過不足や表現のぶれがある。
@@ -26,6 +28,8 @@ def get_criteria_clarity() -> str:
 
 def get_criteria_coherence() -> str:
     return """Coherence（一貫性）
+評価対象: ラベルおよび説明文
+
 1点: 論理のつながりが乏しく、要素がバラバラに並んでいる。
 2点: 流れはあるが、話題転換や論理の飛躍が目立つ。
 3点: 概ねつながっているが、一部あいまいな点や接続不足がある。
@@ -34,16 +38,23 @@ def get_criteria_coherence() -> str:
 """
 
 def get_criteria_distinctiveness() -> str:
-    return """Distinctiveness（他クラスタとの差異）
-1点: 内容が他クラスタと大きく重複している。
+    return """Distinctiveness（他意見グループとの差異）
+評価対象: ラベルおよび説明文（全意見グループまとめて比較）
+
+1点: 内容が他意見グループと大きく重複している。
 2点: 一部独自要素はあるが、判別しにくい。
 3点: 主要テーマは独自だが、細部に重複がある。
 4点: 独自性が高く、他と区別しやすい。
 5点: 完全に独自のテーマであり、明確に区別できる。
+
+全体を通じて共通している「背景」や「前提」について勘案し、それらを差異評価の対象から除外してください。そのうえで、主張や論点の違いに注目して意見グループ間の差異を判断してください。
+また、最後にdistinctiveness_commentとして全体を通しての「背景」や「前提」、類似点、改善案など総括を行ってください。総括では意見グループIDは使用せず必要があればラベル名を使ってください。
 """
 
 def get_criteria_consistency() -> str:
     return """Consistency（意見の整合度）
+評価対象: ラベル・説明文と意見グループ内の意見全体
+
 1点: 説明が意見と全く関係なく、内容が乖離している／論理的に矛盾している。
 2点: 意見の要点に触れているが、理由が不適切または論理の飛躍が大きい。
 3点: 概ね意見と一致するが、一部に不自然な説明や論理の曖昧さがある。
@@ -64,7 +75,7 @@ def get_prompt_criteria_text(criteria: list[str]) -> str:
     return "\n".join(parts)
 
 def get_prompt_batch() -> str:
-    return """以下の指標について、各クラスタを 1〜5 点で評価します。スコアは下記の基準に沿って判断してください。
+    return """以下の指標について、各意見グループを 1〜5 点で評価します。スコアは下記の基準に沿って判断してください。一見エラーのようなラベルでも全ての意見グループを採点してください。
 
 """ + get_prompt_criteria_text(["distinctiveness"]) + """
 出力形式は必ず JSON 形式でお願いします。
@@ -75,7 +86,8 @@ def get_prompt_batch() -> str:
   },
   "1_2": {
     "distinctiveness": 4
-  }
+  },
+  "distinctiveness_comment": "全体を通じて『AI技術への期待』という前提が共通しており、多くの意見グループが社会的課題へのAIの応用可能性を扱っている。その中で、物流・交通や医療、教育といった具体的な応用分野に焦点を当てている意見グループは相対的に差異性が高い。一方、抽象的なAIの利点を繰り返す意見グループ間では内容が重複しているため、今後はラベルにより焦点の違いを明確にする工夫が求められる。"
 }
 """
 
@@ -94,10 +106,10 @@ def get_prompt_cluster() -> str:
 """
 
 def get_prompt_header_all_criteria() -> str:
-    return """以下の４指標について、各クラスタを 1〜5 点で評価します。スコアは下記の基準に沿って判断してください。
+    return """以下の４指標について、各意見グループを 1〜5 点で評価します。スコアは下記の基準に沿って判断してください。
 
 """ + get_prompt_criteria_text(["clarity", "coherence", "distinctiveness", "consistency"]) + """
-また、各クラスタには簡潔なコメント（comment）も必ず記述してください。
+また、各意見グループには簡潔なコメント（comment）も必ず記述してください。
 スコアの根拠や気づいた改善点・特徴などを1〜2文でわかりやすくまとめてください。
 
 出力形式は必ず JSON 形式でお願いします。
@@ -111,13 +123,14 @@ def get_prompt_header_all_criteria() -> str:
     "comment": "環境影響評価の透明性と信頼性を強調しており、意見も明確で一貫している。"
   },
   ...
+  "distinctiveness_comment": "全体を通じて『AI技術への期待』という前提が共通しており、多くの意見グループが社会的課題へのAIの応用可能性を扱っている。その中で、物流・交通や医療、教育といった具体的な応用分野に焦点を当てている意見グループは相対的に差異性が高い。一方、抽象的なAIの利点を繰り返す意見グループ間では内容が重複しているため、今後はラベルにより焦点の違いを明確にする工夫が求められる。"
 }
 """
 
 def format_prompt_for_all_criteria(cluster_data: dict) -> str:
     prompt = get_prompt_header_all_criteria()
     for cluster_id, data in cluster_data.items():
-        prompt += "\n" + "=" * 30 + f"\n【クラスタID】{cluster_id}\n"
+        prompt += "\n" + "=" * 30 + f"\n【意見グループID】{cluster_id}\n"
         prompt += f"【ラベル】{data['label']}\n"
         prompt += f"【説明】\n{data['description']}\n"
         prompt += "【意見】\n"
@@ -182,19 +195,21 @@ def load_cluster_data(dataset_path: Path, level: int, max_samples: int) -> dict:
 def format_batch_prompt_for_ccd(cluster_data: dict) -> str:
     prompt = get_prompt_batch()
     for cluster_id, data in cluster_data.items():
-        prompt += "\n" + "=" * 30 + f"\n【クラスタID】{cluster_id}\n"
+        prompt += "\n" + "=" * 30 + f"\n【意見グループID】{cluster_id}\n"
         prompt += f"【ラベル】{data['label']}\n"
         prompt += f"【説明】\n{data['description']}\n"
     return prompt
 
 def format_prompt_for_consistency(cluster_id: str, data: dict) -> str:
     prompt = get_prompt_cluster()
-    prompt += f"\n【クラスタID】{cluster_id}\n"
+    prompt += f"\n【意見グループID】{cluster_id}\n"
+    prompt += f"【ラベル】{data['label']}\n"
     prompt += f"【説明】\n{data['description']}\n"
     prompt += "【意見】\n"
     for arg in data["arguments"]:
         prompt += f"- {arg}\n"
     return prompt
+
 
 def evaluate_batch_clarity_coherence_distinctiveness(cluster_data: dict, model: str, mode: str) -> dict:
     if mode == "print":
@@ -213,7 +228,7 @@ def evaluate_batch_clarity_coherence_distinctiveness(cluster_data: dict, model: 
             if cluster_id in results:
                 results[cluster_id]["label"] = cluster_data[cluster_id]["label"]
             else:
-                print(f"⚠️ クラスタ {cluster_id} の評価結果がレスポンスに見つかりませんでした。")
+                print(f"⚠️ 意見グループ {cluster_id} の評価結果がレスポンスに見つかりませんでした。")
         return results
     except Exception as e:
         print(f"❌ バッチ評価に失敗: {e}")
@@ -232,16 +247,22 @@ def evaluate_consistency_per_cluster(cluster_data: dict, model: str) -> dict:
             result = json.loads(response)
             results[cluster_id] = result
         except Exception as e:
-            print(f"❌ クラスタ {cluster_id} のConsistency評価に失敗: {e}")
+            print(f"❌ 意見グループ {cluster_id} のConsistency評価に失敗: {e}")
     return results
+
 
 def merge_ccd_and_consistency(ccd: dict, consistency: dict) -> dict:
     merged = {}
     for cluster_id in ccd:
-        merged[cluster_id] = {
-            **ccd.get(cluster_id, {}),
-            **consistency.get(cluster_id, {})
-        }
+        if isinstance(ccd[cluster_id], dict) and isinstance(consistency.get(cluster_id), dict):
+            merged[cluster_id] = {
+                **ccd.get(cluster_id, {}),
+                **consistency.get(cluster_id, {})
+            }
+    # distinctiveness_comment のような補足データも残したい場合：
+    for key in ccd:
+        if key not in merged and not isinstance(ccd[key], dict):
+            merged[key] = ccd[key]
     return merged
 
 def save_results(results: dict, output_path: Path):
@@ -296,7 +317,7 @@ def load_cluster_data(dataset_path: Path, level: int, max_samples: int) -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="クラスタ整合性評価（LLM使用）")
+    parser = argparse.ArgumentParser(description="意見グループ整合性評価（LLM使用）")
     parser.add_argument("--dataset", required=True, help="例: example")
     parser.add_argument("--level", type=int, default=1)
     parser.add_argument("--max-samples", type=int, default=1000)

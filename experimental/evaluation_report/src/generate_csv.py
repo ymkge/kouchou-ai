@@ -5,6 +5,20 @@ from pathlib import Path
 
 import pandas as pd
 
+
+# -----------------------------
+def load_json_with_fallback(path: Path):
+    """UTF-8優先 → SJISフォールバックでJSON読み込み"""
+    if not path.exists():
+        print(f"⚠️ Missing: {path}")
+        return {}
+    try:
+        with open(path, encoding='utf-8') as f:
+            return json.load(f)
+    except UnicodeDecodeError:
+        with open(path, encoding='shift_jis') as f:
+            return json.load(f)
+
 # -----------------------------
 # 引数でディレクトリ指定（例: python generate_csv.py 2）
 # -----------------------------
@@ -41,14 +55,10 @@ def generate_cluster_csv():
         else:
             raise KeyError("クラスタID列が見つかりません（'cluster_id' または 'id' が必要です）")
 
-    with open(EVAL_LLM_JSON_L1, encoding='utf-8') as f:
-        llm_scores_l1 = json.load(f)
-    with open(EVAL_LLM_JSON_L2, encoding='utf-8') as f:
-        llm_scores_l2 = json.load(f)
-    with open(SIL_UMAP_CLUSTER_JSON_L1, encoding='utf-8') as f:
-        umap_scores_l1 = json.load(f)["clusters"]
-    with open(SIL_UMAP_CLUSTER_JSON_L2, encoding='utf-8') as f:
-        umap_scores_l2 = json.load(f)["clusters"]
+    llm_scores_l1 = load_json_with_fallback(EVAL_LLM_JSON_L1)
+    llm_scores_l2 = load_json_with_fallback(EVAL_LLM_JSON_L2)
+    umap_scores_l1 = load_json_with_fallback(SIL_UMAP_CLUSTER_JSON_L1).get("clusters", {})
+    umap_scores_l2 = load_json_with_fallback(SIL_UMAP_CLUSTER_JSON_L2).get("clusters", {})
 
     llm_scores = {**llm_scores_l1, **llm_scores_l2}
     umap_scores = {**umap_scores_l1, **umap_scores_l2}
@@ -85,10 +95,8 @@ def generate_cluster_csv():
 # 意見単位の出力
 # -----------------------------
 def generate_comment_csv():
-    with open(RESULT_JSON, encoding='utf-8') as f:
-        result_data = json.load(f)
-    with open(SIL_POINTS_JSON, encoding='utf-8') as f:
-        point_scores = json.load(f)
+    result_data = load_json_with_fallback(RESULT_JSON)
+    point_scores = load_json_with_fallback(SIL_POINTS_JSON)
 
     arguments = result_data.get("arguments", [])
     rows = []

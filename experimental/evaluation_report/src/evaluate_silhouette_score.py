@@ -18,10 +18,8 @@ def scale_score(value, thresholds):
             return i + 1
     return len(thresholds) + 1
 
-
 def clamp_score(val):
     return max(1, min(5, val))
-
 
 def load_vectors(dataset_path: Path, source: Literal["embedding", "umap"]):
     if source == "embedding":
@@ -34,13 +32,25 @@ def load_vectors(dataset_path: Path, source: Literal["embedding", "umap"]):
         arg_ids = df["arg-id"].astype(str).tolist()
     return vectors, arg_ids
 
-
 def load_cluster_labels(dataset_path: Path, level: int):
     df = pd.read_csv(dataset_path / "hierarchical_clusters.csv")
     col = f"cluster-level-{level}-id"
     df["arg-id"] = df["arg-id"].astype(str)
     return df[["arg-id", col]].rename(columns={col: "cluster_id"})
 
+def duplicate_singleton_vectors(vectors, arg_ids, labels):
+    from collections import Counter
+    new_vectors, new_ids, new_labels = list(vectors), list(arg_ids), list(labels)
+    counter = Counter(labels)
+    for lbl in counter:
+        if counter[lbl] == 1:
+            idx = labels.index(lbl)
+            v = vectors[idx]
+            perturbation = np.random.normal(scale=1e-6, size=v.shape)
+            new_vectors.append(v + perturbation)
+            new_ids.append(arg_ids[idx] + "_dup")
+            new_labels.append(lbl)
+    return np.array(new_vectors), new_ids, new_labels
 
 def compute_centroid_distances(vectors: np.ndarray, labels: np.ndarray):
     centroids = {lbl: vectors[labels == lbl].mean(axis=0) for lbl in np.unique(labels)}
@@ -54,22 +64,26 @@ def compute_centroid_distances(vectors: np.ndarray, labels: np.ndarray):
         nearest_dists.append(np.delete(dist_mat[i], own).min())
     return centroid_dists, np.array(nearest_dists)
 
-
 def compute_silhouette(dataset_path: Path, level: int, source: Literal["embedding", "umap"]):
     vectors, arg_ids = load_vectors(dataset_path, source)
     labels_df = load_cluster_labels(dataset_path, level)
-
-    metrics = pd.DataFrame({"arg-id": arg_ids})
-    metrics = metrics.merge(labels_df, on="arg-id", how="left")
-
+    label_map = dict(zip(labels_df["arg-id"], labels_df["cluster_id"]))
+    labels = [label_map.get(i) for i in arg_ids]
+    
+    # 💡 補正を適用
+    vectors, arg_ids, labels = duplicate_singleton_vectors(vectors, arg_ids, labels)
+    
+    metrics = pd.DataFrame({"arg-id": arg_ids, "cluster_id": labels})
     metrics["silhouette"] = silhouette_samples(vectors, metrics["cluster_id"].values)
     centroid_dists, nearest_dists = compute_centroid_distances(vectors, metrics["cluster_id"].values)
     metrics["centroid_dist"] = centroid_dists
     metrics["nearest_dist"] = nearest_dists
 
-    # 数値列のみ平均をとる
+    # 複製行を除外してクラスタ平均計算
+    metrics_clean = metrics[~metrics["arg-id"].str.endswith("_dup")].copy()
+
     numeric_cols = ["silhouette", "centroid_dist", "nearest_dist"]
-    cluster_stats = metrics.groupby("cluster_id")[numeric_cols].mean()
+    cluster_stats = metrics_clean.groupby("cluster_id")[numeric_cols].mean()
 
     cd_min, cd_max = cluster_stats["centroid_dist"].min(), cluster_stats["centroid_dist"].max()
     nd_min, nd_max = cluster_stats["nearest_dist"].min(), cluster_stats["nearest_dist"].max()
@@ -114,9 +128,9 @@ def compute_silhouette(dataset_path: Path, level: int, source: Literal["embeddin
     }
 
     overall_avg = {
-        "silhouette": float(metrics["silhouette"].mean()),
-        "centroid_dist": float(metrics["centroid_dist"].mean()),
-        "nearest_dist": float(metrics["nearest_dist"].mean())
+        "silhouette": float(metrics_clean["silhouette"].mean()),
+        "centroid_dist": float(metrics_clean["centroid_dist"].mean()),
+        "nearest_dist": float(metrics_clean["nearest_dist"].mean())
     }
 
     points = {}
@@ -147,11 +161,9 @@ def compute_silhouette(dataset_path: Path, level: int, source: Literal["embeddin
 
     return clusters, overall_avg, points
 
-
 def save_json(obj, path: str):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(obj, f, indent=2, ensure_ascii=False)
-
 
 def main():
     parser = argparse.ArgumentParser(description="クラスタ内部評価 (シルエット & 距離)")
@@ -172,7 +184,6 @@ def main():
         save_json({"level": args.level, "source": src, "clusters": clusters, "overall_avg": overall_avg}, str(base) + "_clusters.json")
         save_json(points, str(base) + "_points.json")
         print(f"出力完了: {base}_clusters.json, {base}_points.json")
-
 
 if __name__ == "__main__":
     main()

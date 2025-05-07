@@ -211,6 +211,13 @@
             </tr>
 
         </table>
+        {% if distinctiveness_comment1 %}
+        <div style="margin-top: 1.5rem;">
+            <h4>🧭 差異性に関する総合評価１</h4>
+            <p style="white-space: pre-wrap;">{{ distinctiveness_comment1 }}</p>
+        </div>
+        {% endif %}
+
         <details class="eval-help" style="margin-top:1.5rem;">
             <summary style="font-weight:bold; cursor:pointer;">📊 評価指標の見方（クリックで開閉）</summary>
             <div style="padding:0.8rem 1.2rem; line-height:1.6;">
