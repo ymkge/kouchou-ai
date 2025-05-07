@@ -47,7 +47,7 @@ async def get_openrouter_models() -> list[dict[str, str]]:
             if response.status_code != 200:
                 slogger.error(f"OpenRouter API error: {response.status_code}")
                 raise ValueError("Failed to fetch models from OpenRouter API")
- 
+
             data = response.json()
 
             if not data or not isinstance(data.get("data"), list):
@@ -64,6 +64,7 @@ async def get_openrouter_models() -> list[dict[str, str]]:
     except Exception as e:
         slogger.error(f"Error fetching OpenRouter models: {e}")
         raise ValueError(f"Failed to fetch models from OpenRouter API: {e}") from e
+
 
 async def get_local_llm_models(address: str | None = None) -> list[dict[str, str]]:
     """LocalLLMのモデルリストをOpenAI互換APIから取得"""
@@ -91,6 +92,7 @@ async def get_local_llm_models(address: str | None = None) -> list[dict[str, str
     except Exception as e:
         slogger.error(f"Error fetching LocalLLM models: {e}")
         raise ValueError(f"Failed to fetch models from LocalLLM API: {e}") from e
+
 
 async def get_models_by_provider(provider: str, address: str | None = None) -> list[dict[str, str]]:
     """プロバイダーに応じたモデルリストを取得"""
