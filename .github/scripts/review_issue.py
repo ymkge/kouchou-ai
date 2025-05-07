@@ -29,6 +29,7 @@ class Config:
         if self.issue_number is None:
             print("GITHUB_EVENT_ISSUE_NUMBERが見つかりません ...")
         else:
+            self.issue_number = int(self.issue_number)
             print("GITHUB_EVENT_ISSUE_NUMBERを正常に取得しました。")
 
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
