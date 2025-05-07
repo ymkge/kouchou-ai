@@ -2,6 +2,7 @@ import os
 import regex as re
 from github import Github
 import openai
+import json
 
 if not os.getenv('GITHUB_ACTIONS'):
     from dotenv import load_dotenv
@@ -57,6 +58,20 @@ class IssueProcessor:
             'docker', 'documentation', 'e2e-test-required', 'enhancement', 
             'github_actions', 'good first issue', 'invalid', 'javascript', 'python'
         ]
+        self.labels_for_content = {
+            "documentation": "開発資料の提案",
+            "design": "UIデザインの提案",
+            "bug": "製品機能に不具合がある",
+            "enhancement": "製品機能改善の提案",
+            "good first issue": "軽微な修正",
+            "Algorithm": "製品機能を変えないアルゴリズムの改善（速度改善など）",
+            "e2e-test-required": "E2E testを実行します",
+            "github_actions": "Github Actions関連の提案",
+            "docker": "docker関連の提案",
+            "Client": "レポート画面またはレポート一覧画面の提案",
+            "Admin": "管理画面の提案",
+            "API": "API処理の提案"
+        }
 
     def process_issue(self, issue_content: str, issue_title: str = ""):
         """Issueを処理する"""
@@ -111,20 +126,19 @@ class IssueProcessor:
                 
     def _analyze_and_add_content_labels(self, issue_content: str):
         """OpenAIを使ってIssueの内容からラベルを判定する"""
-        prompt = f"""
-        以下はGitHubのIssueの内容です。この内容を分析して、最も適切なラベルを選んでください。
-        
-        Issue内容:
-        {issue_content}
-        
-        選択可能なラベル:
-        {', '.join(self.available_labels)}
-        
-        このIssueに付与すべきラベルを3つまで選んでJSON形式で返してください。
-        例: {{"labels": ["bug", "javascript", "enhancement"]}}
-        
-        Issueの内容に合わないラベルは選ばないでください。適切なラベルが1つか2つしかない場合は、無理に3つ選ぶ必要はありません。
-        """
+        prompt = f"""以下はGitHubのIssueの内容です。この内容を分析して、解決すべき課題の分類として適切なラベルがもしあれば選んでください。明らかにそのラベルが適切であると判断できる場合以外はラベルを付与しないでください。画像は無視してください。
+
+Issue内容:
+{issue_content}
+
+選択可能なラベルとその説明文:
+{json.dumps(self.labels_for_content)}
+
+このIssueに付与すべきラベルを3つまで選んでJSON形式で返してください。
+例: {"labels": ["documentation", "good first issue", "design"]}
+
+Issueの内容に合わないラベルは選ばないでください。適切なラベルが1つか2つしかない場合は、無理に3つ選ぶ必要はありません。
+"""
         
         try:
             response = self.openai_client.chat.completions.create(
