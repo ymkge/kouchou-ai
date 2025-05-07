@@ -26,6 +26,8 @@ export function validateFormValues({
   spreadsheetImported,
   selectedCommentColumn,
   csvColumns,
+  provider,
+  modelOptions,
 }: {
   input: string;
   question: string;
@@ -39,6 +41,8 @@ export function validateFormValues({
   spreadsheetImported: boolean;
   selectedCommentColumn: string;
   csvColumns: string[];
+  provider?: string;
+  modelOptions?: { value: string; label: string }[];
 }): { isValid: boolean; errorMessage?: string } {
   // 共通チェック
   const commonCheck = [
@@ -75,6 +79,13 @@ export function validateFormValues({
     return {
       isValid: false,
       errorMessage: "コメントカラムを選択してください",
+    };
+  }
+
+  if (provider === "local" && modelOptions && modelOptions.length === 0) {
+    return {
+      isValid: false,
+      errorMessage: "LocalLLMのモデルリストが空です。モデル取得ボタンを押してモデルリストを取得してください。",
     };
   }
 

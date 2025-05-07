@@ -117,12 +117,7 @@ export function AISettingsSection({
             <Button
               onClick={async () => {
                 if (fetchLocalLLMModels) {
-                  const success = await fetchLocalLLMModels();
-                  if (success) {
-                    alert("モデルリストを取得しました");
-                  } else {
-                    alert("モデルリストの取得に失敗しました");
-                  }
+                  await fetchLocalLLMModels();
                 }
               }}
             >

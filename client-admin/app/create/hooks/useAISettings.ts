@@ -1,4 +1,5 @@
 import { useState, useEffect, ChangeEvent } from "react";
+import { toaster } from "@/components/ui/toaster";
 
 export type Provider = "openai" | "azure" | "openrouter" | "local";
 
@@ -188,10 +189,26 @@ export function useAISettings() {
         setLocalLLMModels(models);
         if (models.length > 0) {
           setModel(models[0].value);
+          toaster.create({
+            type: "success",
+            title: "モデルリスト取得成功",
+            description: `${models.length}個のモデルを取得しました`,
+          });
+        } else {
+          toaster.create({
+            type: "warning",
+            title: "モデルリスト取得警告",
+            description: "モデルリストが空です。LocalLLMサーバーの設定を確認してください。",
+          });
         }
         return true;
       } catch (error) {
         console.error("LocalLLMモデルの取得に失敗しました:", error);
+        toaster.create({
+          type: "error",
+          title: "モデルリスト取得失敗",
+          description: "LocalLLMからモデルリストの取得に失敗しました。接続設定とサーバーの状態を確認してください。",
+        });
         return false;
       }
     }

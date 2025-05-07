@@ -72,6 +72,8 @@ export default function Page() {
       spreadsheetImported: inputData.spreadsheetImported,
       selectedCommentColumn: inputData.selectedCommentColumn,
       csvColumns: inputData.csvColumns,
+      provider: aiSettings.provider,
+      modelOptions: aiSettings.getCurrentModels(),
     });
 
     if (!validation.isValid) {
