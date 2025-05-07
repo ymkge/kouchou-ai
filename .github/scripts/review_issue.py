@@ -136,7 +136,7 @@ Issue内容:
 {json.dumps(self.labels_for_content)}
 
 このIssueに付与すべきラベルを3つまで選んでJSON形式で返してください。
-例: {"labels": ["documentation", "good first issue", "design"]}
+例: {{"labels": ["documentation", "good first issue", "design"]}}
 
 Issueの内容に合わないラベルは選ばないでください。適切なラベルが1つか2つしかない場合は、無理に3つ選ぶ必要はありません。
 """
