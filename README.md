@@ -70,7 +70,8 @@ GPU を搭載したマシンでローカル LLM を使用したい場合は、�
    docker compose up -d --profile ollama
    ```
 3. Ollama サービスが起動し、ポート 11434 で利用可能になります
-4. Ollama に使用したいモデルを読み込むとレポート生成時に指定できるようになります
+4. デフォルトでは `hf.co/elyza/Llama-e-ELYZA-JP-8B-GGUF:latest` モデルが自動的にダウンロードされます
+5. ダウンロードが完了したモデルはレポート生成時に選択して使用できます
 
 **前提条件**:
 
@@ -81,11 +82,15 @@ GPU を搭載したマシンでローカル LLM を使用したい場合は、�
   - NVIDIA Container Toolkit に相当するものがインストールされていること
     - Linux では nvidia-docker2 / NVIDIA Container Toolkit
     - Windows では Docker Desktop の GPU サポート設定
+  - デフォルトのモデルデータのダウンロードとインストールに約 5GB 以上の空きディスク容量が必要
 
 - **macOS**：
   - Apple Silicon (M1/M2/M3)やほとんどの Intel Mac では、NVIDIA GPU の利用は基本的に対応していません
 
-**注意**: ローカル LLM の使用には十分な GPU メモリが必要です。また、初回起動時にはモデルのダウンロードに時間がかかる場合があります。
+**注意**:
+
+- ローカル LLM の使用には十分な GPU メモリが必要です（8GB 以上推奨）
+- 初回起動時にはモデルのダウンロードに時間がかかる場合があります
 
 ### Google Analytics の設定
 
