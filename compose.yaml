@@ -76,6 +76,29 @@ services:
     networks:
       - app-network
       
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - app-network
+    profiles:
+      - ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  ollama-data:
+    driver: local
