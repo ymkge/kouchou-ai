@@ -117,7 +117,7 @@ export function useAISettings() {
   );
   
   const [localLLMAddress, setLocalLLMAddress] = useState<string>(() => 
-    getFromStorage<string>(STORAGE_KEYS.LOCAL_LLM_ADDRESS, "localhost:11434")
+    getFromStorage<string>(STORAGE_KEYS.LOCAL_LLM_ADDRESS, "ollama:11434")
   );
   
   const [openRouterModels, setOpenRouterModels] = useState<ModelOption[]>([]);
@@ -317,14 +317,14 @@ export function useAISettings() {
     setWorkers(30);
     setIsPubcomMode(true);
     setIsEmbeddedAtLocal(false);
-    setLocalLLMAddress("localhost:11434");
+    setLocalLLMAddress("ollama:11434");
     setOpenRouterModels([]);
     setLocalLLMModels([]);
     
     saveToStorage(STORAGE_KEYS.PROVIDER, "openai");
     saveToStorage(STORAGE_KEYS.MODEL, "gpt-4o-mini");
     saveToStorage(STORAGE_KEYS.WORKERS, 30);
-    saveToStorage(STORAGE_KEYS.LOCAL_LLM_ADDRESS, "localhost:11434");
+    saveToStorage(STORAGE_KEYS.LOCAL_LLM_ADDRESS, "ollama:11434");
     saveToStorage(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, false);
   };
 
