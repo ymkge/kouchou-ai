@@ -94,6 +94,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    command: sh -c "ollama serve & sleep 10 && ollama pull hf.co/elyza/Llama-e-ELYZA-JP-8B-GGUF:latest && tail -f /dev/null"
 
 networks:
   app-network:
