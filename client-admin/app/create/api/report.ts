@@ -11,24 +11,28 @@ export async function createReport({
   intro,
   comments,
   cluster,
+  provider,
   model,
   workers,
   prompt,
   is_pubcom,
   inputType,
   is_embedded_at_local,
+  local_llm_address,
 }: {
   input: string;
   question: string;
   intro: string;
   comments: CsvData[];
   cluster: [number, number];
+  provider: string;
   model: string;
   workers: number;
   prompt: PromptSettings;
   is_pubcom: boolean;
   inputType: string;
   is_embedded_at_local: boolean;
+  local_llm_address?: string;
 }): Promise<void> {
   try {
     const response = await fetch(
@@ -45,12 +49,14 @@ export async function createReport({
           intro,
           comments,
           cluster,
+          provider,
           model,
           workers,
           prompt,
           is_pubcom,
           inputType,
           is_embedded_at_local,
+          local_llm_address,
         }),
       }
     );
