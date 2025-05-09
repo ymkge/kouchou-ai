@@ -60,6 +60,38 @@
     - 環境変数（.env）を編集した場合は、`docker compose down` を実行した後、 `docker compose up --build` を実行してアプリケーションを起動してください
       - 一部の環境変数は Docker イメージのビルド時に埋め込まれているため、環境変数を変更した場合はビルドの再実行が必要となります
 
+### ローカル LLM の使用
+
+GPU を搭載したマシンでローカル LLM を使用したい場合は、以下の手順に従ってください：
+
+1. `.env`ファイルに`WITH_GPU=true`を設定します
+2. 以下のコマンドを実行して Ollama を含めたサービスを起動します：
+   ```sh
+   docker compose up -d --profile ollama
+   ```
+3. Ollama サービスが起動し、ポート 11434 で利用可能になります
+4. デフォルトでは `hf.co/elyza/Llama-3-ELYZA-JP-8B-GGUF` モデルが自動的にダウンロードされます
+5. ダウンロードが完了したモデルはレポート生成時に選択して使用できます
+
+**前提条件**:
+
+- **Linux**・**Windows**：
+
+  - NVIDIA の GPU が搭載されていること
+  - 適切な NVIDIA ドライバーがインストールされていること
+  - NVIDIA Container Toolkit に相当するものがインストールされていること
+    - Linux では nvidia-docker2 / NVIDIA Container Toolkit
+    - Windows では Docker Desktop の GPU サポート設定
+  - デフォルトのモデルデータのダウンロードとインストールに約 5GB 以上の空きディスク容量が必要
+
+- **macOS**：
+  - Apple Silicon (M1/M2/M3)やほとんどの Intel Mac では、NVIDIA GPU の利用は基本的に対応していません
+
+**注意**:
+
+- ローカル LLM の使用には十分な GPU メモリが必要です（8GB 以上推奨）
+- 初回起動時にはモデルのダウンロードに時間がかかる場合があります
+
 ### Google Analytics の設定
 
 - Google Analytics 4（GA4）を使用して、ユーザーのアクセス解析を行うことができます
@@ -78,15 +110,17 @@
 レポート作成者に関する情報（ロゴ画像やリンクなど）をカスタマイズするには、以下の手順で設定してください。
 
 1. デフォルト環境について
+
    - デフォルト環境（`server/public/meta/default`）では、画像やリンクは表示されません
    - これはテスト環境用の設定であり、本番環境では使用しないでください
 
 2. カスタマイズ方法
+
    - `server/public/meta/custom` ディレクトリに以下のファイルを配置することで、レポート作成者情報をカスタマイズできます：
      - `metadata.json`: レポート作成者の基本情報
      - `reporter.png`: レポート作成者のロゴ画像
      - `icon.png`: レポートのアイコン画像
-     - `ogp.png`: レポートのOGP画像
+     - `ogp.png`: レポートの OGP 画像
 
 3. 表示の条件
    - 画像の表示：`reporter.png`が`custom`ディレクトリに存在する場合のみ表示されます

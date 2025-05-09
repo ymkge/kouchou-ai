@@ -23,6 +23,9 @@ const STORAGE_KEYS = {
   IS_EMBEDDED_AT_LOCAL: `${STORAGE_KEY_PREFIX}is_embedded_at_local`,
 };
 
+// LocalLLMのデフォルトアドレスを定数化
+const DEFAULT_LOCAL_LLM_ADDRESS = process.env.NEXT_PUBLIC_LOCAL_LLM_ADDRESS || "ollama:11434";
+
 const OPENAI_MODELS: ModelOption[] = [
   { value: "gpt-4o-mini", label: "GPT-4o mini" },
   { value: "gpt-4o", label: "GPT-4o" },
@@ -117,7 +120,7 @@ export function useAISettings() {
   );
   
   const [localLLMAddress, setLocalLLMAddress] = useState<string>(() => 
-    getFromStorage<string>(STORAGE_KEYS.LOCAL_LLM_ADDRESS, "localhost:11434")
+    getFromStorage<string>(STORAGE_KEYS.LOCAL_LLM_ADDRESS, DEFAULT_LOCAL_LLM_ADDRESS)
   );
   
   const [openRouterModels, setOpenRouterModels] = useState<ModelOption[]>([]);
@@ -317,14 +320,14 @@ export function useAISettings() {
     setWorkers(30);
     setIsPubcomMode(true);
     setIsEmbeddedAtLocal(false);
-    setLocalLLMAddress("localhost:11434");
+    setLocalLLMAddress(DEFAULT_LOCAL_LLM_ADDRESS);
     setOpenRouterModels([]);
     setLocalLLMModels([]);
     
     saveToStorage(STORAGE_KEYS.PROVIDER, "openai");
     saveToStorage(STORAGE_KEYS.MODEL, "gpt-4o-mini");
     saveToStorage(STORAGE_KEYS.WORKERS, 30);
-    saveToStorage(STORAGE_KEYS.LOCAL_LLM_ADDRESS, "localhost:11434");
+    saveToStorage(STORAGE_KEYS.LOCAL_LLM_ADDRESS, DEFAULT_LOCAL_LLM_ADDRESS);
     saveToStorage(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, false);
   };
 
