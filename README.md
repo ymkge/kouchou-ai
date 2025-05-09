@@ -70,7 +70,7 @@ GPU を搭載したマシンでローカル LLM を使用したい場合は、�
    docker compose up -d --profile ollama
    ```
 3. Ollama サービスが起動し、ポート 11434 で利用可能になります
-4. デフォルトでは `hf.co/elyza/Llama-e-ELYZA-JP-8B-GGUF:latest` モデルが自動的にダウンロードされます
+4. デフォルトでは `hf.co/elyza/Llama-3-ELYZA-JP-8B-GGUF` モデルが自動的にダウンロードされます
 5. ダウンロードが完了したモデルはレポート生成時に選択して使用できます
 
 **前提条件**:
