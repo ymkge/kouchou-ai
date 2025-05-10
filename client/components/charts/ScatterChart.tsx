@@ -17,7 +17,7 @@ export function ScatterChart({
   targetLevel,
   onHover,
   showClusterLabels,
-  maxLabelWidth = 10  // デフォルト値として15文字を設定
+  maxLabelWidth = 10  // デフォルト値として10文字を設定
 }: Props) {
   const targetClusters = clusterList.filter(
     (cluster) => cluster.level === targetLevel,
