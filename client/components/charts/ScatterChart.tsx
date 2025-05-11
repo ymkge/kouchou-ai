@@ -8,7 +8,6 @@ type Props = {
   targetLevel: number;
   onHover?: () => void;
   showClusterLabels?: boolean;
-  maxLabelWidth?: number;  // ラベルの最大横幅を指定するプロパティを追加
 };
 
 export function ScatterChart({
