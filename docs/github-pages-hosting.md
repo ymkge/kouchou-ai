@@ -4,9 +4,7 @@
 
 静的エクスポートを使用することで、サーバーサイドの処理を必要とせずに、静的なHTMLファイルとしてアプリケーションを配信できます。
 
-## 1. GitHubの準備
-
-### 1.1 リポジトリの作成
+## 1. GitHubリポジトリの作成
 
 1. GitHubにログインし、新しいリポジトリを作成します（例: `kouchou-ai-reports`）
 2. リポジトリを作成したら、ローカルにクローンします
@@ -15,15 +13,6 @@
 git clone https://github.com/ユーザー名/kouchou-ai-reports.git
 cd kouchou-ai-reports
 ```
-
-### 1.2 GitHub Pagesの設定
-
-1. リポジトリの「Settings」タブを開きます
-2. 左側のメニューから「Pages」を選択します
-3. 「Source」セクションで、以下のように設定します：
-    - Branch: `main`
-    - Folder: `/(root)`
-4. 「Save」ボタンをクリックします
 
 ## 2. 環境変数の設定
 
@@ -80,7 +69,18 @@ git commit -m "Update static files"
 git push origin main
 ```
 
-## 5. デプロイの確認
+
+## 5. GitHub Pagesの設定
+
+1. リポジトリの「Settings」タブを開きます
+2. 左側のメニューから「Pages」を選択します
+3. 「Source」セクションで、以下のように設定します：
+    - Branch: `main`
+    - Folder: `/(root)`
+4. 「Save」ボタンをクリックします
+
+
+## 6. デプロイの確認
 
 プッシュが完了すると、GitHub Actionsによってデプロイが実行されます。デプロイが完了したら、以下のURLでアクセスできます：
 
