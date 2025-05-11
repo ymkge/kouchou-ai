@@ -62,6 +62,7 @@ export function ScatterChart({
     "#cdb4db",
     "#fcbf49",
   ];
+
   const clusterColorMap = targetClusters.reduce(
     (acc, cluster, index) => {
       acc[cluster.id] = softColors[index % softColors.length];
@@ -69,9 +70,10 @@ export function ScatterChart({
     },
     {} as Record<string, string>,
   );
+
   const clusterColorMapA = targetClusters.reduce(
     (acc, cluster, index) => {
-      const alpha = 0.7; // アルファ値を指定
+      const alpha = 0.8; // アルファ値を指定
       acc[cluster.id] = softColors[index % softColors.length] + Math.floor(alpha * 255).toString(16).padStart(2, '0');
       return acc;
     },
@@ -190,9 +192,7 @@ export function ScatterChart({
             weight: 700,
           },
           bgcolor: clusterColorMapA[data.cluster.id], // 背景はアルファ付き
-          bordercolor: clusterColorMap[data.cluster.id], // ボーダーはアルファ無し
-          borderpad: 8,
-          borderwidth: 1,
+          borderpad: 10,
           width: annotationLabelWidth,
           align: 'left',
         })) : [],
