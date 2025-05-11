@@ -144,6 +144,8 @@ make client-build-static
 
 `out/` ディレクトリに静的ファイルが出力されますので、Web サーバーに配置してください。
 
+静的エクスポートしたレポートをGithub Pagesにホスティングする手順は[GitHub Pagesの静的ファイルホスティング手順](./docs/github-pages-hosting.md)を参照。
+
 ## アーキテクチャ概要
 
 本システムは以下のサービスで構成されています。
