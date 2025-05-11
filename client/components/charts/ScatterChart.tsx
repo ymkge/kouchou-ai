@@ -76,9 +76,6 @@ export function ScatterChart({
   const wrapLabelText = (text: string, maxWidth: number): string => {
     if (!text || text.length <= maxWidth) return text;
     
-    // HTML方式: span要素で幅を制限して自動改行させる
-    // return `<span style="display:inline-block;max-width:${maxWidth * 10}px;word-wrap:break-word;">${text}</span>`;
-    
     // テキスト分割方式: 指定の文字数ごとに改行を挿入
     const regex = new RegExp(`.{1,${maxWidth}}`, 'g');
     const lines = text.match(regex);
