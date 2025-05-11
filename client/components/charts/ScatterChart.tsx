@@ -120,18 +120,22 @@ export function ScatterChart({
     return result;
   };
 
-  const onUpdate = (_event: any) => {
+  const onUpdate = (_event: unknown) => {
     // Plotly単体で設定できないデザインを、onUpdateのタイミングでSVGをオーバーライドして解決する
 
     // アノテーションの角を丸にする
     const bgRound = 4
-    document.querySelectorAll('g.annotation').forEach((g) => {
-      const bg = g.querySelector('rect.bg');
-      if (bg) {
-        bg.setAttribute('rx', `${bgRound}px`);
-        bg.setAttribute('ry', `${bgRound}px`);
-      }
-    });
+    try {
+      document.querySelectorAll('g.annotation').forEach((g) => {
+        const bg = g.querySelector('rect.bg');
+        if (bg) {
+          bg.setAttribute('rx', `${bgRound}px`);
+          bg.setAttribute('ry', `${bgRound}px`);
+        }
+      });
+    } catch (error) {
+      console.error('アノテーション要素の角丸化に失敗しました:', error);
+    }
   }
 
   const clusterData = targetClusters.map((cluster) => {
