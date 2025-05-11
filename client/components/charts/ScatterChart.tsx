@@ -84,6 +84,7 @@ export function ScatterChart({
   const annotationFontsize = 14; // フォントサイズを指定
 
   // ラベルのテキストを折り返すための関数
+  // ラベルのテキストを折り返すための関数
   const wrapLabelText = (text: string): string => {
     // 英語と日本語の文字数を考慮して、適切な長さで折り返す
 
@@ -98,13 +99,14 @@ export function ScatterChart({
       const char = text[i];
 
       // 英字と日本語で文字幅を考慮
-      const charWidth = /[\x00-\x7F]/.test(char) ? alphabetWidth : 1;
+      // ASCIIの範囲（半角文字）かそれ以外（全角文字）かで幅を判定
+      const charWidth = /[!-~]/.test(char) ? alphabetWidth : 1;
       const charLength = charWidth * annotationFontsize;
       currentLineLength += charLength;
 
       if (currentLineLength > annotationLabelWidth) {
         // 現在の行が最大幅を超えた場合、改行
-        result += currentLine + '<br>';
+        result += `${currentLine}<br>`;
         currentLine = char; // 新しい行の開始
         currentLineLength = charLength; // 新しい行の長さをリセット
       } else {
@@ -114,7 +116,7 @@ export function ScatterChart({
     
     // 最後の行を追加
     if (currentLine) {
-      result += currentLine;
+      result += `${currentLine}`;
     }
     
     return result;
