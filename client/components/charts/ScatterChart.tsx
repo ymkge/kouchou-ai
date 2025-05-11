@@ -17,7 +17,6 @@ export function ScatterChart({
   targetLevel,
   onHover,
   showClusterLabels,
-  maxLabelWidth = 10  // デフォルト値として10文字を設定
 }: Props) {
   const targetClusters = clusterList.filter(
     (cluster) => cluster.level === targetLevel,
@@ -72,14 +71,44 @@ export function ScatterChart({
     {} as Record<string, string>,
   );
 
-  // ラベルテキストを指定された幅で改行するヘルパー関数
-  const wrapLabelText = (text: string, maxWidth: number): string => {
-    if (!text || text.length <= maxWidth) return text;
+  const annotationLabelWidth = 228; // ラベルの最大横幅を指定
+  const annotationFontsize = 14; // フォントサイズを指定
+
+  // ラベルのテキストを折り返すための関数
+  const wrapLabelText = (text: string): string => {
+    // 英語と日本語の文字数を考慮して、適切な長さで折り返す
+
+    const alphabetWidth = 0.6; // 英字の幅
+
+    let result = '';
+    let currentLine = '';
+    let currentLineLength = 0;
     
-    // テキスト分割方式: 指定の文字数ごとに改行を挿入
-    const regex = new RegExp(`.{1,${maxWidth}}`, 'g');
-    const lines = text.match(regex);
-    return lines ? lines.join('<br>') : text;
+    // 文字ごとに処理
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+
+      // 英字と日本語で文字幅を考慮
+      const charWidth = /[\x00-\x7F]/.test(char) ? alphabetWidth : 1;
+      const charLength = charWidth * annotationFontsize;
+      currentLineLength += charLength;
+
+      if (currentLineLength > annotationLabelWidth) {
+        // 現在の行が最大幅を超えた場合、改行
+        result += currentLine + '<br>';
+        currentLine = char; // 新しい行の開始
+        currentLineLength = charLength; // 新しい行の長さをリセット
+      } else {
+        currentLine += char; // 現在の行に文字を追加
+      }
+    }
+    
+    // 最後の行を追加
+    if (currentLine) {
+      result += currentLine;
+    }
+    
+    return result;
   };
 
   const clusterData = targetClusters.map((cluster) => {
@@ -146,20 +175,20 @@ export function ScatterChart({
         annotations: showClusterLabels ? clusterData.map((data) => ({
           x: data.centerX,
           y: data.centerY,
-          text: wrapLabelText(data.cluster.label, maxLabelWidth), // ラベルを折り返し処理
+          text: wrapLabelText(data.cluster.label), // ラベルを折り返し処理
           showarrow: false,
           font: {
             color: "white",
-            size: 14,
+            size: annotationFontsize,
             weight: 700,
           },
           bgcolor: clusterColorMap[data.cluster.id],
           opacity: 0.8,
           bordercolor: clusterColorMap[data.cluster.id],
-          borderpad: 4,
+          borderpad: 8,
           borderwidth: 1,
-          width: maxLabelWidth * 14 + 5, // ラベルのフォントサイズに合わせる
-          align: 'center', // テキストを中央揃えに
+          width: annotationLabelWidth,
+          align: 'left',
         })) : [],
         showlegend: false,
       }}
