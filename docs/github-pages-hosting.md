@@ -35,15 +35,22 @@ NEXT_PUBLIC_STATIC_EXPORT_BASE_PATH=
 ```
 
 
-## 3. 静的ビルドの実行
+## 3. 静的エクスポートの実行
 
-以下のコマンドを実行して、静的ビルドを行います：
+以下のコマンドを実行して、静的エクスポートを行います：
 
 ```bash
 make client-build-static
 ```
 
 このコマンドでビルド結果が`out`ディレクトリにコピーされます。
+
+**注意**: `NEXT_PUBLIC_STATIC_EXPORT_BASE_PATH` を変更した際はビルドが必要です。以下のコマンドでビルドしたうえで静的エクスポートしてください。
+
+```bash
+make build && make client-build-static
+```
+
 
 ## 4. 静的ファイルのデプロイ
 
