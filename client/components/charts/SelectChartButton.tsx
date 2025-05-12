@@ -69,13 +69,15 @@ export function SelectChartButton({
       align={"center"}
       mb={2}
     >
-      <Box w="100%" maxW="xl" mx="auto">
+      <Box w="100%" display="flex" justifyContent="center">
         <SegmentGroup.Root 
           value={selected}
           onChange={handleChange}
           orientation={isVertical ? "vertical" : "horizontal"}
           size="md"
           colorScheme="gray"
+          bg="gray.200"
+          _selected={{ bg: "gray.100", color: "gray.500" }}
         >
           <SegmentGroup.Indicator />
           <SegmentGroup.Items items={items} />
