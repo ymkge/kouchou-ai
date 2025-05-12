@@ -81,7 +81,11 @@ export function SelectChartButton({
           size="md"
           bg="gray.200"
         >
-          <SegmentGroup.Indicator bg="white" />
+          <SegmentGroup.Indicator 
+            bg="white" 
+            border="1px solid #E4E4E7"
+            boxShadow="0 4px 6px 0 rgba(0, 0, 0, 0.1)"
+          />
           <SegmentGroup.Items items={items} />
         </SegmentGroup.Root>
       </Box>
