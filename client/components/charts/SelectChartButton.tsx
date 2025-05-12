@@ -55,6 +55,11 @@ export function SelectChartButton({
     },
   ];
   
+  const handleChange = (event: React.FormEvent<HTMLDivElement>) => {
+    const value = (event.target as HTMLInputElement).value;
+    onChange(value);
+  };
+
   return (
     <HStack
       w={"100%"}
@@ -67,7 +72,7 @@ export function SelectChartButton({
       <Box w="100%" maxW="xl" mx="auto">
         <SegmentGroup.Root 
           value={selected}
-          onChange={onChange}
+          onChange={handleChange}
           orientation={isVertical ? "vertical" : "horizontal"}
           size="md"
           colorScheme="gray"
