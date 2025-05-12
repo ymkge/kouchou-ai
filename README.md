@@ -59,6 +59,7 @@
     - ブラウザで http://localhost:4000 にアクセスすることで管理画面にアクセス可能
     - 環境変数（.env）を編集した場合は、`docker compose down` を実行した後、 `docker compose up --build` を実行してアプリケーションを起動してください
       - 一部の環境変数は Docker イメージのビルド時に埋め込まれているため、環境変数を変更した場合はビルドの再実行が必要となります
+    - すべてのモジュールを起動すると遅い場合は `docker compose up --no-deps client api` など適宜絞って起動できます
 
 ### ローカル LLM の使用
 
