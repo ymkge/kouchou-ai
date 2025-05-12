@@ -45,8 +45,7 @@ export function SelectChartButton({
         }
         colorPalette={"gray"}
         bg={"gray.100"}
-        selectedBg={"gray.200"}
-        selectedColor={"gray.500"}
+        _selected={{ bg: "gray.200", color: "gray.500" }}
         mx={"auto"}
       >
         {isVertical ? (
