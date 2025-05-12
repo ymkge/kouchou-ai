@@ -1,6 +1,5 @@
-import { RadioCardItem, RadioCardRoot } from "@/components/ui/radio-card";
 import { Tooltip } from "@/components/ui/tooltip";
-import { Button, HStack, Icon, VStack, useBreakpointValue } from "@chakra-ui/react";
+import { Button, HStack, Icon, Box, useBreakpointValue, SegmentGroup } from "@chakra-ui/react";
 import { CogIcon, FullscreenIcon } from "lucide-react";
 import type React from "react";
 import { AllViewIcon, DenseViewIcon, HierarchyViewIcon } from "@/components/icons/ViewIcons";
@@ -22,6 +21,40 @@ export function SelectChartButton({
 }: Props) {
   const isVertical = useBreakpointValue({ base: true, md: false });
   
+  const items = [
+    {
+      value: "scatterAll",
+      label: (
+        <HStack>
+          <Icon as={AllViewIcon} />
+          <Box>全体</Box>
+        </HStack>
+      ),
+      isDisabled: false,
+    },
+    {
+      value: "scatterDensity",
+      label: (
+        <HStack>
+          <Icon as={DenseViewIcon} />
+          <Box>濃い意見</Box>
+        </HStack>
+      ),
+      isDisabled: !isDenseGroupEnabled,
+      tooltip: !isDenseGroupEnabled ? "この設定条件では抽出できませんでした" : undefined,
+    },
+    {
+      value: "treemap",
+      label: (
+        <HStack>
+          <Icon as={HierarchyViewIcon} />
+          <Box>階層</Box>
+        </HStack>
+      ),
+      isDisabled: false,
+    },
+  ];
+  
   return (
     <HStack
       w={"100%"}
@@ -31,138 +64,32 @@ export function SelectChartButton({
       align={"center"}
       mb={2}
     >
-      <RadioCardRoot
-        orientation={isVertical ? "vertical" : "horizontal"}
-        align="center"
-        justify="center"
-        w={"100%"}
-        maxW={"xl"}
-        size={"md"}
-        display={"block"}
-        value={selected}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          onChange(e.target.value)
-        }
-        colorPalette={"gray"}
-        bg={"gray.100"}
-        _selected={{ bg: "gray.200", color: "gray.500" }}
-        mx={"auto"}
-      >
-        {isVertical ? (
-          <VStack align={"stretch"} gap={2}>
-            <RadioCardItem
-              value={"scatterAll"}
-              label={"全体"}
-              indicator={false}
-              icon={
-                <Icon>
-                  <AllViewIcon />
-                </Icon>
-              }
-              cursor={"pointer"}
-            />
-            <RadioCardItem
-              value={"scatterDensity"}
-              label={"濃い意見"}
-              indicator={false}
-              icon={
-                <Icon>
-                  <DenseViewIcon />
-                </Icon>
-              }
-              cursor={"pointer"}
-              disabled={!isDenseGroupEnabled}
-              disabledReason={"この設定条件では抽出できませんでした"}
-            />
-            <RadioCardItem
-              value={"treemap"}
-              label={"階層"}
-              indicator={false}
-              icon={
-                <Icon>
-                  <HierarchyViewIcon />
-                </Icon>
-              }
-              cursor={"pointer"}
-            />
-          </VStack>
-        ) : (
-          <HStack align={"stretch"} gap={2}>
-            <RadioCardItem
-              value={"scatterAll"}
-              label={"全体"}
-              indicator={false}
-              icon={
-                <Icon>
-                  <AllViewIcon />
-                </Icon>
-              }
-              cursor={"pointer"}
-            />
-            <RadioCardItem
-              value={"scatterDensity"}
-              label={"濃い意見"}
-              indicator={false}
-              icon={
-                <Icon>
-                  <DenseViewIcon />
-                </Icon>
-              }
-              cursor={"pointer"}
-              disabled={!isDenseGroupEnabled}
-              disabledReason={"この設定条件では抽出できませんでした"}
-            />
-            <RadioCardItem
-              value={"treemap"}
-              label={"階層"}
-              indicator={false}
-              icon={
-                <Icon>
-                  <HierarchyViewIcon />
-                </Icon>
-              }
-              cursor={"pointer"}
-            />
-          </HStack>
-        )}
-      </RadioCardRoot>
+      <Box w="100%" maxW="xl" mx="auto">
+        <SegmentGroup.Root 
+          value={selected}
+          onChange={onChange}
+          orientation={isVertical ? "vertical" : "horizontal"}
+          size="md"
+          colorScheme="gray"
+        >
+          <SegmentGroup.Indicator />
+          <SegmentGroup.Items items={items} />
+        </SegmentGroup.Root>
+      </Box>
+      
       <HStack>
         <Tooltip content={"表示設定"} openDelay={0} closeDelay={0}>
           <Button
             onClick={onClickDensitySetting}
             variant={"outline"}
-            h={"50px"}
+            h={"40px"}
           >
-            <Icon>
-              <CogIcon />
-            </Icon>
+            <Icon as={CogIcon} />
           </Button>
         </Tooltip>
         <Tooltip content={"全画面表示"} openDelay={0} closeDelay={0}>
-          <Button onClick={onClickFullscreen} variant={"outline"} h={"50px"}>
-            <Icon>
-              <FullscreenIcon />
-            </Icon>
-          </Button>
-        </Tooltip>
-      </HStack>
-      <HStack>
-        <Tooltip content={"表示設定"} openDelay={0} closeDelay={0}>
-          <Button
-            onClick={onClickDensitySetting}
-            variant={"outline"}
-            h={"50px"}
-          >
-            <Icon>
-              <CogIcon />
-            </Icon>
-          </Button>
-        </Tooltip>
-        <Tooltip content={"全画面表示"} openDelay={0} closeDelay={0}>
-          <Button onClick={onClickFullscreen} variant={"outline"} h={"50px"}>
-            <Icon>
-              <FullscreenIcon />
-            </Icon>
+          <Button onClick={onClickFullscreen} variant={"outline"} h={"40px"}>
+            <Icon as={FullscreenIcon} />
           </Button>
         </Tooltip>
       </HStack>
