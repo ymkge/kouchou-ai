@@ -1,8 +1,8 @@
+import { AllViewIcon, DenseViewIcon, HierarchyViewIcon } from "@/components/icons/ViewIcons";
 import { Tooltip } from "@/components/ui/tooltip";
-import { Button, HStack, Icon, Box, useBreakpointValue, SegmentGroup } from "@chakra-ui/react";
+import { Box, Button, HStack, Icon, SegmentGroup, useBreakpointValue } from "@chakra-ui/react";
 import { CogIcon, FullscreenIcon } from "lucide-react";
 import type React from "react";
-import { AllViewIcon, DenseViewIcon, HierarchyViewIcon } from "@/components/icons/ViewIcons";
 
 type Props = {
   selected: string;
@@ -61,45 +61,50 @@ export function SelectChartButton({
   };
 
   return (
-    <HStack
+    <Box
       w={"100%"}
       maxW={"1200px"}
       mx={"auto"}
-      justify={"space-between"}
-      align={"center"}
       mb={2}
+      position="relative"
     >
-      <Box w="100%" display="flex" justifyContent="center">
+      {/* セグメントグループを中央に配置 */}
+      <Box 
+        w="100%" 
+        display="flex" 
+        justifyContent="center"
+      >
         <SegmentGroup.Root 
           value={selected}
           onChange={handleChange}
           orientation={isVertical ? "vertical" : "horizontal"}
           size="md"
-          colorScheme="gray"
           bg="gray.200"
-          _selected={{ bg: "gray.100", color: "gray.500" }}
         >
-          <SegmentGroup.Indicator />
+          <SegmentGroup.Indicator bg="white" />
           <SegmentGroup.Items items={items} />
         </SegmentGroup.Root>
       </Box>
       
-      <HStack>
-        <Tooltip content={"表示設定"} openDelay={0} closeDelay={0}>
-          <Button
-            onClick={onClickDensitySetting}
-            variant={"outline"}
-            h={"40px"}
-          >
-            <Icon as={CogIcon} />
-          </Button>
-        </Tooltip>
-        <Tooltip content={"全画面表示"} openDelay={0} closeDelay={0}>
-          <Button onClick={onClickFullscreen} variant={"outline"} h={"40px"}>
-            <Icon as={FullscreenIcon} />
-          </Button>
-        </Tooltip>
-      </HStack>
-    </HStack>
+      {/* ボタンを右側に絶対配置 */}
+      <Box position="absolute" right="0" top="0">
+        <HStack>
+          <Tooltip content={"表示設定"} openDelay={0} closeDelay={0}>
+            <Button
+              onClick={onClickDensitySetting}
+              variant={"outline"}
+              h={"40px"}
+            >
+              <Icon as={CogIcon} />
+            </Button>
+          </Tooltip>
+          <Tooltip content={"全画面表示"} openDelay={0} closeDelay={0}>
+            <Button onClick={onClickFullscreen} variant={"outline"} h={"40px"}>
+              <Icon as={FullscreenIcon} />
+            </Button>
+          </Tooltip>
+        </HStack>
+      </Box>
+    </Box>
   );
 }
