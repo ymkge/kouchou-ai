@@ -26,8 +26,8 @@ export function SelectChartButton({
       value: "scatterAll",
       label: (
         <HStack>
-          <Icon as={AllViewIcon} />
-          <Box>全体</Box>
+          <Icon as={AllViewIcon} w="6" mr={3} />
+          <Box color="gray.500" fontWeight={selected === "scatterAll" ? "bold" : "normal"} px={4} py={2}>全体</Box>
         </HStack>
       ),
       isDisabled: false,
@@ -36,8 +36,8 @@ export function SelectChartButton({
       value: "scatterDensity",
       label: (
         <HStack>
-          <Icon as={DenseViewIcon} />
-          <Box>濃い意見</Box>
+          <Icon as={DenseViewIcon} w="6" mr={3} />
+          <Box color="gray.500" fontWeight={selected === "scatterDensity" ? "bold" : "normal"} px={4} py={2}>濃い意見</Box>
         </HStack>
       ),
       isDisabled: !isDenseGroupEnabled,
@@ -47,8 +47,8 @@ export function SelectChartButton({
       value: "treemap",
       label: (
         <HStack>
-          <Icon as={HierarchyViewIcon} />
-          <Box>階層</Box>
+          <Icon as={HierarchyViewIcon} w="6" mr={3} />
+          <Box color="gray.500" fontWeight={selected === "treemap" ? "bold" : "normal"} px={4} py={2}>階層</Box>
         </HStack>
       ),
       isDisabled: false,
@@ -79,7 +79,7 @@ export function SelectChartButton({
           onChange={handleChange}
           orientation={isVertical ? "vertical" : "horizontal"}
           size="md"
-          bg="gray.200"
+          bg="gray.100"
         >
           <SegmentGroup.Indicator 
             bg="white" 
