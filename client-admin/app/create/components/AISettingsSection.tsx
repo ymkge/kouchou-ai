@@ -110,7 +110,7 @@ export function AISettingsSection({
           <Field.Label>LocalLLM接続設定</Field.Label>
           <HStack>
             <Input
-              placeholder="127.0.0.1:1234"
+              placeholder="ollama:11434"
               value={localLLMAddress}
               onChange={(e) => setLocalLLMAddress && setLocalLLMAddress(e.target.value)}
             />
@@ -125,7 +125,7 @@ export function AISettingsSection({
             </Button>
           </HStack>
           <Field.HelperText>
-            ローカルで実行中のLLMサーバーのアドレスを指定してください。例: 127.0.0.1:1234
+            ローカルで実行中のLLMサーバーのアドレスを指定してください。例: ollama:11434
           </Field.HelperText>
         </Field.Root>
       )}
