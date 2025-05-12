@@ -49,7 +49,7 @@ export function SelectChartButton({
         mx={"auto"}
       >
         {isVertical ? (
-          <VStack align={"stretch"} spacing={2}>
+          <VStack align={"stretch"} gap={2}>
             <RadioCardItem
               value={"scatterAll"}
               label={"全体"}
@@ -87,7 +87,7 @@ export function SelectChartButton({
             />
           </VStack>
         ) : (
-          <HStack align={"stretch"} spacing={2}>
+          <HStack align={"stretch"} gap={2}>
             <RadioCardItem
               value={"scatterAll"}
               label={"全体"}
