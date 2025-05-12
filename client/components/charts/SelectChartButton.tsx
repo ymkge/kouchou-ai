@@ -1,6 +1,6 @@
 import { AllViewIcon, DenseViewIcon, HierarchyViewIcon } from "@/components/icons/ViewIcons";
 import { Tooltip } from "@/components/ui/tooltip";
-import { Box, Button, HStack, Icon, SegmentGroup, useBreakpointValue } from "@chakra-ui/react";
+import { Box, Button, HStack, Icon, SegmentGroup, Stack, useBreakpointValue } from "@chakra-ui/react";
 import { CogIcon, FullscreenIcon } from "lucide-react";
 import type React from "react";
 
@@ -19,12 +19,18 @@ export function SelectChartButton({
   onClickFullscreen,
   isDenseGroupEnabled,
 }: Props) {
-  const isVertical = useBreakpointValue({ base: true, md: false });
+  const isVertical = useBreakpointValue({ base: true, sm: true, md: false });
+  const isMobile = useBreakpointValue({ base: true, sm: true, md: false });
   
   const items = [
     {
       value: "scatterAll",
-      label: (
+      label: isVertical ? (
+        <Stack direction="column" gap={0} alignItems="center" py={1}>
+          <Icon as={AllViewIcon} w="4" h="4" />
+          <Box color="gray.500" fontWeight={selected === "scatterAll" ? "bold" : "normal"} fontSize="2xs" lineHeight="1">全体</Box>
+        </Stack>
+      ) : (
         <HStack>
           <Icon as={AllViewIcon} w="6" mr={3} />
           <Box color="gray.500" fontWeight={selected === "scatterAll" ? "bold" : "normal"} px={4} py={2}>全体</Box>
@@ -34,7 +40,12 @@ export function SelectChartButton({
     },
     {
       value: "scatterDensity",
-      label: (
+      label: isVertical ? (
+        <Stack direction="column" gap={0} alignItems="center" py={1}>
+          <Icon as={DenseViewIcon} w="4" h="4" />
+          <Box color="gray.500" fontWeight={selected === "scatterDensity" ? "bold" : "normal"} fontSize="2xs" lineHeight="1">濃い意見</Box>
+        </Stack>
+      ) : (
         <HStack>
           <Icon as={DenseViewIcon} w="6" mr={3} />
           <Box color="gray.500" fontWeight={selected === "scatterDensity" ? "bold" : "normal"} px={4} py={2}>濃い意見</Box>
@@ -45,7 +56,12 @@ export function SelectChartButton({
     },
     {
       value: "treemap",
-      label: (
+      label: isVertical ? (
+        <Stack direction="column" gap={0} alignItems="center" py={1}>
+          <Icon as={HierarchyViewIcon} w="4" h="4" />
+          <Box color="gray.500" fontWeight={selected === "treemap" ? "bold" : "normal"} fontSize="2xs" lineHeight="1">階層</Box>
+        </Stack>
+      ) : (
         <HStack>
           <Icon as={HierarchyViewIcon} w="6" mr={3} />
           <Box color="gray.500" fontWeight={selected === "treemap" ? "bold" : "normal"} px={4} py={2}>階層</Box>
@@ -65,7 +81,7 @@ export function SelectChartButton({
       w={"100%"}
       maxW={"1200px"}
       mx={"auto"}
-      mb={2}
+      mb={isMobile ? 10 : 2} // モバイル表示時は下部にボタンを配置するためのスペースを確保
       position="relative"
     >
       {/* セグメントグループを中央に配置 */}
@@ -78,7 +94,7 @@ export function SelectChartButton({
           value={selected}
           onChange={handleChange}
           orientation={isVertical ? "vertical" : "horizontal"}
-          size="md"
+          size={isMobile ? "sm" : "md"}
           bg="gray.100"
         >
           <SegmentGroup.Indicator 
@@ -90,25 +106,74 @@ export function SelectChartButton({
         </SegmentGroup.Root>
       </Box>
       
-      {/* ボタンを右側に絶対配置 */}
-      <Box position="absolute" right="0" top="0">
-        <HStack>
-          <Tooltip content={"表示設定"} openDelay={0} closeDelay={0}>
-            <Button
-              onClick={onClickDensitySetting}
-              variant={"outline"}
-              h={"40px"}
-            >
-              <Icon as={CogIcon} />
-            </Button>
-          </Tooltip>
-          <Tooltip content={"全画面表示"} openDelay={0} closeDelay={0}>
-            <Button onClick={onClickFullscreen} variant={"outline"} h={"40px"}>
-              <Icon as={FullscreenIcon} />
-            </Button>
-          </Tooltip>
-        </HStack>
-      </Box>
+      {/* ボタンを配置（モバイル表示時は下部中央に配置） */}
+      {isMobile ? (
+        <Box 
+          position="absolute"
+          bottom="-40px"
+          left="0"
+          right="0"
+          display="flex"
+          justifyContent="center"
+          mt={4}
+        >
+          <HStack gap={2}>
+            <Tooltip content={"表示設定"} openDelay={0} closeDelay={0}>
+              <Button
+                onClick={onClickDensitySetting}
+                variant={"outline"}
+                h={"30px"}
+                w={"30px"}
+                p={0}
+              >
+                <Icon as={CogIcon} boxSize={3.5} />
+              </Button>
+            </Tooltip>
+            <Tooltip content={"全画面表示"} openDelay={0} closeDelay={0}>
+              <Button 
+                onClick={onClickFullscreen} 
+                variant={"outline"} 
+                h={"30px"}
+                w={"30px"}
+                p={0}
+              >
+                <Icon as={FullscreenIcon} boxSize={3.5} />
+              </Button>
+            </Tooltip>
+          </HStack>
+        </Box>
+      ) : (
+        <Box 
+          position="absolute" 
+          right="0" 
+          top="0"
+        >
+          <HStack gap={1}>
+            <Tooltip content={"表示設定"} openDelay={0} closeDelay={0}>
+              <Button
+                onClick={onClickDensitySetting}
+                variant={"outline"}
+                h={"40px"}
+                w={"40px"}
+                p={0}
+              >
+                <Icon as={CogIcon} boxSize={5} />
+              </Button>
+            </Tooltip>
+            <Tooltip content={"全画面表示"} openDelay={0} closeDelay={0}>
+              <Button 
+                onClick={onClickFullscreen} 
+                variant={"outline"} 
+                h={"40px"}
+                w={"40px"}
+                p={0}
+              >
+                <Icon as={FullscreenIcon} boxSize={5} />
+              </Button>
+            </Tooltip>
+          </HStack>
+        </Box>
+      )}
     </Box>
   );
 }
