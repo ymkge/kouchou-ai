@@ -8,12 +8,19 @@ export type Meta = {
   brandColor?: string; // ブランドカラー
 };
 
+export enum ReportVisibility {
+  PUBLIC = "public",
+  PRIVATE = "private",
+  UNLISTED = "unlisted",
+}
+
 export type Report = {
   slug: string;
   status: string;
   title: string;
   description: string;
-  isPublic?: boolean;
+  isPubcom: boolean;
+  visibility: ReportVisibility;
   createdAt?: string; // 作成日時（ISO形式の文字列）
 };
 

@@ -1,6 +1,7 @@
 from typing import Literal
 
 from src.schemas.base import SchemaBaseModel
+from src.schemas.report import ReportVisibility
 
 
 class Comment(SchemaBaseModel):
@@ -41,3 +42,9 @@ class ReportMetadataUpdate(SchemaBaseModel):
 
     title: str | None = None  # レポートのタイトル
     description: str | None = None  # レポートの調査概要
+
+
+class ReportVisibilityUpdate(SchemaBaseModel):
+    """レポートの可視性更新用スキーマ"""
+
+    visibility: ReportVisibility  # レポートの可視性
