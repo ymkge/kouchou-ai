@@ -182,8 +182,7 @@ export function AISettingsSection({
           精度に関しては未検証であり、OpenAIを使った場合と大きく異なる結果になる可能性があります。
           {isEmbeddedAtLocalDisabled?.() && (
             <span style={{ color: "red" }}>
-              ※
-              LocalLLMプロバイダーを選択している場合、この設定は強制的にONになります
+              ※ LocalLLMプロバイダーを選択している場合、この設定は強制的にONになります
             </span>
           )}
         </Field.HelperText>
