@@ -2,12 +2,7 @@
 
 import { getApiBaseUrl } from "@/app/utils/api";
 import { Header } from "@/components/Header";
-import {
-  MenuContent,
-  MenuItem,
-  MenuRoot,
-  MenuTrigger,
-} from "@/components/ui/menu";
+import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { Report } from "@/type";
@@ -115,18 +110,15 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
       if (cancelled) return;
 
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports/${slug}/status/step-json`,
-          {
-            headers: {
-              "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-              "Content-Type": "application/json",
-              // キャッシュを防止するためのヘッダーを追加
-              "Cache-Control": "no-cache, no-store, must-revalidate",
-              Pragma: "no-cache",
-            },
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports/${slug}/status/step-json`, {
+          headers: {
+            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+            "Content-Type": "application/json",
+            // キャッシュを防止するためのヘッダーを追加
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
           },
-        );
+        });
 
         if (response.ok) {
           const data = await response.json();
@@ -212,47 +204,31 @@ function ReportCard({
   setReports?: (reports: Report[] | undefined) => void;
 }) {
   const statusDisplay = getStatusDisplay(report.status);
-  const { progress, errorStep } = useReportProgressPoll(
-    report.slug,
-    report.status !== "ready",
-  );
+  const { progress, errorStep } = useReportProgressPoll(report.slug, report.status !== "ready");
 
   const currentStepIndex =
-    progress === "completed"
-      ? steps.length
-      : stepKeys.indexOf(progress) === -1
-        ? 0
-        : stepKeys.indexOf(progress);
+    progress === "completed" ? steps.length : stepKeys.indexOf(progress) === -1 ? 0 : stepKeys.indexOf(progress);
 
   const [lastProgress, setLastProgress] = useState<string | null>(null);
 
   // 編集ダイアログの状態管理
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editTitle, setEditTitle] = useState(report.title);
-  const [editDescription, setEditDescription] = useState(
-    report.description || "",
-  );
+  const [editDescription, setEditDescription] = useState(report.description || "");
 
   // エラー状態の判定
   const isErrorState = progress === "error" || report.status === "error";
 
   // progress が変更されたときにレポート状態を更新
   useEffect(() => {
-    if (
-      (progress === "completed" || progress === "error") &&
-      progress !== lastProgress
-    ) {
+    if ((progress === "completed" || progress === "error") && progress !== lastProgress) {
       setLastProgress(progress);
 
       if (progress === "completed" && setReports) {
-        const updatedReports = reports?.map((r) =>
-          r.slug === report.slug ? { ...r, status: "ready" } : r,
-        );
+        const updatedReports = reports?.map((r) => (r.slug === report.slug ? { ...r, status: "ready" } : r));
         setReports(updatedReports);
       } else if (progress === "error" && setReports) {
-        const updatedReports = reports?.map((r) =>
-          r.slug === report.slug ? { ...r, status: "error" } : r,
-        );
+        const updatedReports = reports?.map((r) => (r.slug === report.slug ? { ...r, status: "error" } : r));
         setReports(updatedReports);
       }
     }
@@ -277,10 +253,7 @@ function ReportCard({
       }
       onClick={(e) => {
         if (report.status === "ready") {
-          window.open(
-            `${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`,
-            "_blank",
-          );
+          window.open(`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`, "_blank");
         }
         return true;
       }}
@@ -288,33 +261,16 @@ function ReportCard({
       <Card.Body>
         <HStack justify="space-between">
           <HStack>
-            <Box
-              mr={3}
-              color={isErrorState ? "red.600" : statusDisplay.iconColor}
-            >
-              {isErrorState ? (
-                <CircleAlertIcon size={30} />
-              ) : (
-                statusDisplay.icon
-              )}
+            <Box mr={3} color={isErrorState ? "red.600" : statusDisplay.iconColor}>
+              {isErrorState ? <CircleAlertIcon size={30} /> : statusDisplay.icon}
             </Box>
             <Box>
-              <LinkOverlay
-                href={`/${report.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Text
-                  fontSize="md"
-                  fontWeight="bold"
-                  color={isErrorState ? "red.600" : statusDisplay.textColor}
-                >
+              <LinkOverlay href={`/${report.slug}`} target="_blank" rel="noopener noreferrer">
+                <Text fontSize="md" fontWeight="bold" color={isErrorState ? "red.600" : statusDisplay.textColor}>
                   {report.title}
                 </Text>
               </LinkOverlay>
-              <Card.Description>
-                {`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`}
-              </Card.Description>
+              <Card.Description>{`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`}</Card.Description>
               {report.createdAt && (
                 <Text fontSize="xs" color="gray.500" mb={1}>
                   作成日時:{" "}
@@ -325,19 +281,13 @@ function ReportCard({
               )}
               {report.status !== "ready" && (
                 <Box mt={2}>
-                  <Steps.Root
-                    defaultStep={currentStepIndex}
-                    count={steps.length}
-                  >
+                  <Steps.Root defaultStep={currentStepIndex} count={steps.length}>
                     <Steps.List>
                       {steps.map((step, index) => {
                         const isCompleted = index < currentStepIndex;
 
                         const stepColor = (() => {
-                          if (
-                            progress === "error" &&
-                            index === currentStepIndex
-                          ) {
+                          if (progress === "error" && index === currentStepIndex) {
                             return "red.500";
                           }
                           if (isCompleted) return "green.500";
@@ -345,29 +295,16 @@ function ReportCard({
                         })();
 
                         return (
-                          <Steps.Item
-                            key={step.id}
-                            index={index}
-                            title={step.title}
-                          >
+                          <Steps.Item key={step.id} index={index} title={step.title}>
                             <Flex direction="column" align="center">
-                              <Steps.Indicator
-                                boxSize="24px"
-                                bg={stepColor}
-                                position="relative"
-                              />
+                              <Steps.Indicator boxSize="24px" bg={stepColor} position="relative" />
                               <Steps.Title
                                 mt={1}
                                 fontSize="sm"
                                 whiteSpace="nowrap"
                                 textAlign="center"
                                 color={stepColor}
-                                fontWeight={
-                                  progress === "error" &&
-                                  index === currentStepIndex
-                                    ? "bold"
-                                    : "normal"
-                                }
+                                fontWeight={progress === "error" && index === currentStepIndex ? "bold" : "normal"}
                               >
                                 {step.title}
                               </Steps.Title>
@@ -399,14 +336,7 @@ function ReportCard({
               pointerEvents="auto"
               zIndex="10"
             >
-              <Button
-                variant="solid"
-                size="sm"
-                bg="white"
-                color="black"
-                zIndex="50"
-                pointerEvents="auto"
-              >
+              <Button variant="solid" size="sm" bg="white" color="black" zIndex="50" pointerEvents="auto">
                 <Flex align="center" gap={2}>
                   <ExternalLinkIcon size={16} />
                   <Text>レポートを見る</Text>
@@ -424,11 +354,7 @@ function ReportCard({
                       e.stopPropagation();
                     }}
                   >
-                    <Tooltip
-                      content="CSVファイルをダウンロード"
-                      openDelay={0}
-                      closeDelay={0}
-                    >
+                    <Tooltip content="CSVファイルをダウンロード" openDelay={0} closeDelay={0}>
                       <Icon>
                         <DownloadIcon />
                       </Icon>
@@ -449,23 +375,15 @@ function ReportCard({
                             onClick={async (e) => {
                               e.stopPropagation();
                               try {
-                                const response = await fetch(
-                                  `${getApiBaseUrl()}/admin/comments/${report.slug}/csv`,
-                                  {
-                                    headers: {
-                                      "x-api-key":
-                                        process.env.NEXT_PUBLIC_ADMIN_API_KEY ||
-                                        "",
-                                      "Content-Type": "application/json",
-                                    },
+                                const response = await fetch(`${getApiBaseUrl()}/admin/comments/${report.slug}/csv`, {
+                                  headers: {
+                                    "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                                    "Content-Type": "application/json",
                                   },
-                                );
+                                });
                                 if (!response.ok) {
                                   const errorData = await response.json();
-                                  throw new Error(
-                                    errorData.detail ||
-                                      "CSV ダウンロードに失敗しました",
-                                  );
+                                  throw new Error(errorData.detail || "CSV ダウンロードに失敗しました");
                                 }
                                 const blob = await response.blob();
                                 const url = window.URL.createObjectURL(blob);
@@ -489,23 +407,15 @@ function ReportCard({
                             onClick={async (e) => {
                               e.stopPropagation();
                               try {
-                                const response = await fetch(
-                                  `${getApiBaseUrl()}/admin/comments/${report.slug}/csv`,
-                                  {
-                                    headers: {
-                                      "x-api-key":
-                                        process.env.NEXT_PUBLIC_ADMIN_API_KEY ||
-                                        "",
-                                      "Content-Type": "application/json",
-                                    },
+                                const response = await fetch(`${getApiBaseUrl()}/admin/comments/${report.slug}/csv`, {
+                                  headers: {
+                                    "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                                    "Content-Type": "application/json",
                                   },
-                                );
+                                });
                                 if (!response.ok) {
                                   const errorData = await response.json();
-                                  throw new Error(
-                                    errorData.detail ||
-                                      "CSV ダウンロードに失敗しました",
-                                  );
+                                  throw new Error(errorData.detail || "CSV ダウンロードに失敗しました");
                                 }
                                 const blob = await response.blob();
                                 const text = await blob.text();
@@ -557,39 +467,24 @@ function ReportCard({
                       defaultValue={[report.visibility.toString()]}
                       onValueChange={async (value) => {
                         // valueは配列の可能性があるため、最初の要素を取得
-                        const selected = Array.isArray(value?.value)
-                          ? value?.value[0]
-                          : value?.value;
-                        if (
-                          !selected ||
-                          selected === report.visibility.toString()
-                        )
-                          return;
+                        const selected = Array.isArray(value?.value) ? value?.value[0] : value?.value;
+                        if (!selected || selected === report.visibility.toString()) return;
                         try {
-                          const response = await fetch(
-                            `${getApiBaseUrl()}/admin/reports/${report.slug}/visibility`,
-                            {
-                              method: "PATCH",
-                              headers: {
-                                "x-api-key":
-                                  process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                                "Content-Type": "application/json",
-                              },
-                              body: JSON.stringify({ visibility: selected }),
+                          const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/visibility`, {
+                            method: "PATCH",
+                            headers: {
+                              "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                              "Content-Type": "application/json",
                             },
-                          );
+                            body: JSON.stringify({ visibility: selected }),
+                          });
                           if (!response.ok) {
                             const errorData = await response.json();
-                            throw new Error(
-                              errorData.detail ||
-                                "公開状態の変更に失敗しました",
-                            );
+                            throw new Error(errorData.detail || "公開状態の変更に失敗しました");
                           }
                           const data = await response.json();
                           const updatedReports = reports?.map((r) =>
-                            r.slug === report.slug
-                              ? { ...r, visibility: data.visibility }
-                              : r,
+                            r.slug === report.slug ? { ...r, visibility: data.visibility } : r,
                           );
                           if (setReports) {
                             setReports(updatedReports);
@@ -627,18 +522,12 @@ function ReportCard({
             )}
             <MenuRoot>
               <MenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <Button variant="ghost" size="lg" onClick={(e) => e.stopPropagation()}>
                   <EllipsisIcon />
                 </Button>
               </MenuTrigger>
               <MenuContent>
-                <MenuItem value="duplicate">
-                  レポートを複製して新規作成(開発中)
-                </MenuItem>
+                <MenuItem value="duplicate">レポートを複製して新規作成(開発中)</MenuItem>
                 <MenuItem
                   value="edit"
                   onClick={(e) => {
@@ -655,19 +544,14 @@ function ReportCard({
                   color="fg.error"
                   onClick={async (e) => {
                     e.stopPropagation();
-                    if (
-                      confirm(
-                        `レポート「${report.title}」を削除してもよろしいですか？`,
-                      )
-                    ) {
+                    if (confirm(`レポート「${report.title}」を削除してもよろしいですか？`)) {
                       try {
                         const response = await fetch(
                           `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports/${report.slug}`,
                           {
                             method: "DELETE",
                             headers: {
-                              "x-api-key":
-                                process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                              "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
                               "Content-Type": "application/json",
                             },
                           },
@@ -677,9 +561,7 @@ function ReportCard({
                           window.location.reload();
                         } else {
                           const errorData = await response.json();
-                          throw new Error(
-                            errorData.detail || "レポートの削除に失敗しました",
-                          );
+                          throw new Error(errorData.detail || "レポートの削除に失敗しました");
                         }
                       } catch (error) {
                         console.error(error);
@@ -747,37 +629,28 @@ function ReportCard({
                 </VStack>
               </Dialog.Body>
               <Dialog.Footer>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsEditDialogOpen(false)}
-                >
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                   キャンセル
                 </Button>
                 <Button
                   ml={3}
                   onClick={async () => {
                     try {
-                      const response = await fetch(
-                        `${getApiBaseUrl()}/admin/reports/${report.slug}/metadata`,
-                        {
-                          method: "PATCH",
-                          headers: {
-                            "x-api-key":
-                              process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                            "Content-Type": "application/json",
-                          },
-                          body: JSON.stringify({
-                            title: editTitle,
-                            description: editDescription,
-                          }),
+                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/metadata`, {
+                        method: "PATCH",
+                        headers: {
+                          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                          "Content-Type": "application/json",
                         },
-                      );
+                        body: JSON.stringify({
+                          title: editTitle,
+                          description: editDescription,
+                        }),
+                      });
 
                       if (!response.ok) {
                         const errorData = await response.json();
-                        throw new Error(
-                          errorData.detail || "メタデータの更新に失敗しました",
-                        );
+                        throw new Error(errorData.detail || "メタデータの更新に失敗しました");
                       }
 
                       // レポート一覧を更新
@@ -869,12 +742,7 @@ function DownloadBuildButton() {
   };
 
   return (
-    <Button
-      size="xl"
-      onClick={handleDownload}
-      loading={isLoading}
-      loadingText="エクスポート中"
-    >
+    <Button size="xl" onClick={handleDownload} loading={isLoading} loadingText="エクスポート中">
       全レポートをエクスポート
     </Button>
   );
@@ -885,16 +753,13 @@ export default function Page() {
 
   useEffect(() => {
     (async () => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports`,
-        {
-          method: "GET",
-          headers: {
-            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-            "Content-Type": "application/json",
-          },
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports`, {
+        method: "GET",
+        headers: {
+          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+          "Content-Type": "application/json",
         },
-      );
+      });
       if (!response.ok) return;
       setReports(await response.json());
     })();
@@ -920,12 +785,7 @@ export default function Page() {
         {reports &&
           reports.length > 0 &&
           reports.map((report) => (
-            <ReportCard
-              key={report.slug}
-              report={report}
-              reports={reports}
-              setReports={setReports}
-            />
+            <ReportCard key={report.slug} report={report} reports={reports} setReports={setReports} />
           ))}
         <HStack justify="center" mt={10}>
           <Link href="/create">

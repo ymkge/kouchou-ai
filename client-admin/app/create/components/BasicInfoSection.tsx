@@ -39,9 +39,7 @@ export function BasicInfoSection({
           onChange={onIntroChange}
           placeholder="例：このAI生成レポートは、パブリックコメントにおいて寄せられた意見に基づいています。"
         />
-        <Field.HelperText>
-          コメントの集計期間や、コメントの収集元など、調査の概要を記載します
-        </Field.HelperText>
+        <Field.HelperText>コメントの集計期間や、コメントの収集元など、調査の概要を記載します</Field.HelperText>
       </Field.Root>
 
       <Field.Root>
@@ -60,9 +58,7 @@ export function BasicInfoSection({
             IDは英小文字、数字、ハイフンのみ使用できます
           </Text>
         )}
-        <Field.HelperText>
-          英字小文字と数字とハイフンのみ(URLで利用されます)
-        </Field.HelperText>
+        <Field.HelperText>英字小文字と数字とハイフンのみ(URLで利用されます)</Field.HelperText>
       </Field.Root>
     </>
   );

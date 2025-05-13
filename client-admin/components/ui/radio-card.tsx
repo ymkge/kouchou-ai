@@ -14,10 +14,7 @@ interface RadioCardItemProps extends RadioCard.ItemProps {
   disabledReason?: React.ReactNode;
 }
 
-export const RadioCardItem = React.forwardRef<
-  HTMLInputElement,
-  RadioCardItemProps
->(function RadioCardItem(props, ref) {
+export const RadioCardItem = React.forwardRef<HTMLInputElement, RadioCardItemProps>(function RadioCardItem(props, ref) {
   const {
     inputProps,
     label,
@@ -55,11 +52,7 @@ export const RadioCardItem = React.forwardRef<
           <ContentWrapper>
             {icon}
             {label && <RadioCard.ItemText>{label}</RadioCard.ItemText>}
-            {description && (
-              <RadioCard.ItemDescription>
-                {description}
-              </RadioCard.ItemDescription>
-            )}
+            {description && <RadioCard.ItemDescription>{description}</RadioCard.ItemDescription>}
             {indicatorPlacement === "inside" && indicator}
           </ContentWrapper>
         )}

@@ -32,10 +32,7 @@ function calculateVariance(values: number[]): number {
  * @param k 分散に掛ける係数（デフォルト: 2.0）
  * @returns スコアが最も高いカラム名
  */
-export function getBestCommentColumn(
-  data: Record<string, unknown>[],
-  k = 2.0,
-): string | null {
+export function getBestCommentColumn(data: Record<string, unknown>[], k = 2.0): string | null {
   if (data.length === 0) return null;
 
   const columns = Object.keys(data[0]);
@@ -59,9 +56,7 @@ export function getBestCommentColumn(
 
   // デフォルトカラム名が部分一致するか確認
   const foundDefaultColumns = columns.filter((col) =>
-    defaultCommentColumns.some((defaultCol) =>
-      col.toLowerCase().includes(defaultCol.toLowerCase()),
-    ),
+    defaultCommentColumns.some((defaultCol) => col.toLowerCase().includes(defaultCol.toLowerCase())),
   );
   // デフォルトカラムが1つだけ見つかった場合はそれを返す
   if (foundDefaultColumns.length === 1) {

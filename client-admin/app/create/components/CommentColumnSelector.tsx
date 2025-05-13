@@ -16,10 +16,7 @@ export function CommentColumnSelector({
     <Field.Root mt={4}>
       <Field.Label>コメントカラム選択</Field.Label>
       <NativeSelect.Root w={"60%"}>
-        <NativeSelect.Field
-          value={selectedColumn}
-          onChange={(e) => onColumnChange(e.target.value)}
-        >
+        <NativeSelect.Field value={selectedColumn} onChange={(e) => onColumnChange(e.target.value)}>
           <option value="">選択してください</option>
           {columns.map((col) => (
             <option key={col} value={col}>

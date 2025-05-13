@@ -24,8 +24,7 @@ const STORAGE_KEYS = {
 };
 
 // LocalLLMのデフォルトアドレスを定数化
-const DEFAULT_LOCAL_LLM_ADDRESS =
-  process.env.NEXT_PUBLIC_LOCAL_LLM_ADDRESS || "ollama:11434";
+const DEFAULT_LOCAL_LLM_ADDRESS = process.env.NEXT_PUBLIC_LOCAL_LLM_ADDRESS || "ollama:11434";
 
 const OPENAI_MODELS: ModelOption[] = [
   { value: "gpt-4o-mini", label: "GPT-4o mini" },
@@ -38,25 +37,19 @@ const OPENAI_MODELS: ModelOption[] = [
  * @param provider プロバイダー名
  * @param address LocalLLM用アドレス（localプロバイダーの場合のみ）
  */
-async function fetchModelsFromServer(
-  provider: Provider,
-  address?: string,
-): Promise<ModelOption[]> {
+async function fetchModelsFromServer(provider: Provider, address?: string): Promise<ModelOption[]> {
   const params = new URLSearchParams({ provider });
   if (provider === "local" && address) {
     params.append("address", address);
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/models?${params.toString()}`,
-    {
-      method: "GET",
-      headers: {
-        "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-        "Content-Type": "application/json",
-      },
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/models?${params.toString()}`, {
+    method: "GET",
+    headers: {
+      "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+      "Content-Type": "application/json",
     },
-  );
+  });
 
   if (!response.ok) {
     throw new Error(`API error: ${response.status}`);
@@ -106,25 +99,16 @@ function saveToStorage<T>(key: string, value: T): void {
  * AIモデル設定を管理するカスタムフック
  */
 export function useAISettings() {
-  const [provider, setProvider] = useState<Provider>(() =>
-    getFromStorage<Provider>(STORAGE_KEYS.PROVIDER, "openai"),
-  );
-  const [model, setModel] = useState<string>(() =>
-    getFromStorage<string>(STORAGE_KEYS.MODEL, "gpt-4o-mini"),
-  );
-  const [workers, setWorkers] = useState<number>(() =>
-    getFromStorage<number>(STORAGE_KEYS.WORKERS, 30),
-  );
+  const [provider, setProvider] = useState<Provider>(() => getFromStorage<Provider>(STORAGE_KEYS.PROVIDER, "openai"));
+  const [model, setModel] = useState<string>(() => getFromStorage<string>(STORAGE_KEYS.MODEL, "gpt-4o-mini"));
+  const [workers, setWorkers] = useState<number>(() => getFromStorage<number>(STORAGE_KEYS.WORKERS, 30));
   const [isPubcomMode, setIsPubcomMode] = useState<boolean>(true);
   const [isEmbeddedAtLocal, setIsEmbeddedAtLocal] = useState<boolean>(() =>
     getFromStorage<boolean>(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, false),
   );
 
   const [localLLMAddress, setLocalLLMAddress] = useState<string>(() =>
-    getFromStorage<string>(
-      STORAGE_KEYS.LOCAL_LLM_ADDRESS,
-      DEFAULT_LOCAL_LLM_ADDRESS,
-    ),
+    getFromStorage<string>(STORAGE_KEYS.LOCAL_LLM_ADDRESS, DEFAULT_LOCAL_LLM_ADDRESS),
   );
 
   const [openRouterModels, setOpenRouterModels] = useState<ModelOption[]>([]);
@@ -184,8 +168,7 @@ export function useAISettings() {
           toaster.create({
             type: "warning",
             title: "モデルリスト取得警告",
-            description:
-              "モデルリストが空です。LocalLLMサーバーの設定を確認してください。",
+            description: "モデルリストが空です。LocalLLMサーバーの設定を確認してください。",
           });
         }
         return true;
@@ -194,8 +177,7 @@ export function useAISettings() {
         toaster.create({
           type: "error",
           title: "モデルリスト取得失敗",
-          description:
-            "LocalLLMからモデルリストの取得に失敗しました。接続設定とサーバーの状態を確認してください。",
+          description: "LocalLLMからモデルリストの取得に失敗しました。接続設定とサーバーの状態を確認してください。",
         });
         return false;
       }
@@ -214,13 +196,11 @@ export function useAISettings() {
     },
     openrouter: {
       models: openRouterModels,
-      description:
-        "OpenRouterを使用して複数のモデルにアクセスします。（将来対応予定）",
+      description: "OpenRouterを使用して複数のモデルにアクセスします。（将来対応予定）",
     },
     local: {
       models: localLLMModels,
-      description:
-        "ローカルで実行されているLLMサーバーに接続します。（将来対応予定）",
+      description: "ローカルで実行されているLLMサーバーに接続します。（将来対応予定）",
       requiresConnection: true,
     },
   };

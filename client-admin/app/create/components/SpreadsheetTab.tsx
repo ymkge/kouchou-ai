@@ -1,12 +1,4 @@
-import {
-  Button,
-  Field,
-  HStack,
-  Input,
-  Tabs,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+import { Button, Field, HStack, Input, Tabs, Text, VStack } from "@chakra-ui/react";
 import type { useClusterSettings } from "../hooks/useClusterSettings";
 import type { SpreadsheetComment } from "../types";
 import { ClusterSettingsSection } from "./ClusterSettingsSection";

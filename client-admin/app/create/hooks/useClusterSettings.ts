@@ -5,8 +5,7 @@ import type { ClusterSettings } from "../types";
 export function useClusterSettings(initialLv1 = 5, initialLv2 = 50) {
   const [clusterLv1, setClusterLv1] = useState<number>(initialLv1);
   const [clusterLv2, setClusterLv2] = useState<number>(initialLv2);
-  const [recommendedClusters, setRecommendedClusters] =
-    useState<ClusterSettings | null>(null);
+  const [recommendedClusters, setRecommendedClusters] = useState<ClusterSettings | null>(null);
   const [autoAdjusted, setAutoAdjusted] = useState<boolean>(false);
 
   // コメント数から意見グループ数を計算

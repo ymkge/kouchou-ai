@@ -1,13 +1,5 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Button,
-  Field,
-  HStack,
-  Input,
-  NativeSelect,
-  Textarea,
-  VStack,
-} from "@chakra-ui/react";
+import { Button, Field, HStack, Input, NativeSelect, Textarea, VStack } from "@chakra-ui/react";
 
 /**
  * AI設定セクションコンポーネント
@@ -133,13 +125,7 @@ export function AISettingsSection({
           <Button onClick={onDecreaseWorkers} variant="outline">
             -
           </Button>
-          <Input
-            type="number"
-            value={workers.toString()}
-            min={1}
-            max={100}
-            onChange={onWorkersChange}
-          />
+          <Input type="number" value={workers.toString()} min={1} max={100} onChange={onWorkersChange} />
           <Button onClick={onIncreaseWorkers} variant="outline">
             +
           </Button>
@@ -195,9 +181,7 @@ export function AISettingsSection({
           value={promptSettings.extraction}
           onChange={(e) => promptSettings.setExtraction(e.target.value)}
         />
-        <Field.HelperText>
-          AIに提示する抽出プロンプトです(通常は変更不要です)
-        </Field.HelperText>
+        <Field.HelperText>AIに提示する抽出プロンプトです(通常は変更不要です)</Field.HelperText>
       </Field.Root>
 
       <Field.Root>
@@ -207,9 +191,7 @@ export function AISettingsSection({
           value={promptSettings.initialLabelling}
           onChange={(e) => promptSettings.setInitialLabelling(e.target.value)}
         />
-        <Field.HelperText>
-          AIに提示する初期ラベリングプロンプトです(通常は変更不要です)
-        </Field.HelperText>
+        <Field.HelperText>AIに提示する初期ラベリングプロンプトです(通常は変更不要です)</Field.HelperText>
       </Field.Root>
 
       <Field.Root>
@@ -219,9 +201,7 @@ export function AISettingsSection({
           value={promptSettings.mergeLabelling}
           onChange={(e) => promptSettings.setMergeLabelling(e.target.value)}
         />
-        <Field.HelperText>
-          AIに提示する統合ラベリングプロンプトです(通常は変更不要です)
-        </Field.HelperText>
+        <Field.HelperText>AIに提示する統合ラベリングプロンプトです(通常は変更不要です)</Field.HelperText>
       </Field.Root>
 
       <Field.Root>
@@ -231,9 +211,7 @@ export function AISettingsSection({
           value={promptSettings.overview}
           onChange={(e) => promptSettings.setOverview(e.target.value)}
         />
-        <Field.HelperText>
-          AIに提示する要約プロンプトです(通常は変更不要です)
-        </Field.HelperText>
+        <Field.HelperText>AIに提示する要約プロンプトです(通常は変更不要です)</Field.HelperText>
       </Field.Root>
     </VStack>
   );
