@@ -13,9 +13,6 @@ type AboutProps = {
 export function About({ meta }: AboutProps) {
   return (
     <Box mx={"auto"} maxW={"750px"} mb={12}>
-      <Heading textAlign={"center"} fontSize={"xl"} mb={5}>
-        About
-      </Heading>
       {/* カスタム環境の場合のみ表示 */}
       {!meta.isDefault && (
         <Image

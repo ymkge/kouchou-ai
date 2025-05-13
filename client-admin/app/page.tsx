@@ -810,11 +810,8 @@ export default function Page() {
     <div className="container">
       <Header />
       <Box mx="auto" maxW="1000px" mb={5}>
-        <Heading textAlign="center" fontSize="xl" mb={5}>
-          Admin Dashboard
-        </Heading>
-        <Heading textAlign="center" fontSize="xl" mb={5}>
-          Reports
+        <Heading textAlign="left" fontSize="xl" mb={8}>
+          レポート管理
         </Heading>
         {!reports && (
           <VStack>
