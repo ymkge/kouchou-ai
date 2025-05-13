@@ -18,7 +18,7 @@ function calculateMean(values: number[]): number {
 function calculateVariance(values: number[]): number {
   if (values.length <= 1) return 0;
   const mean = calculateMean(values);
-  const squaredDifferences = values.map((value) => Math.pow(value - mean, 2));
+  const squaredDifferences = values.map((value) => (value - mean) ** 2);
   return calculateMean(squaredDifferences);
 }
 
@@ -33,7 +33,7 @@ function calculateVariance(values: number[]): number {
  * @returns スコアが最も高いカラム名
  */
 export function getBestCommentColumn(
-  data: Record<string, any>[],
+  data: Record<string, unknown>[],
   k = 2.0,
 ): string | null {
   if (data.length === 0) return null;

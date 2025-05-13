@@ -39,7 +39,7 @@ export function useInputData(onDataLoaded: (commentCount: number) => void) {
    * 最適なカラムを選択する関数
    */
   const selectBestColumn = useCallback(
-    (data: Record<string, any>[]) => {
+    (data: Record<string, unknown>[]) => {
       if (data.length === 0) return;
       const columns = Object.keys(data[0]);
       setCsvColumns(columns);

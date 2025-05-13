@@ -49,7 +49,7 @@ export default function Page() {
    * タブ切り替え時の処理
    */
   const handleTabValueChange = (details: { value: string }) => {
-    inputData.setInputType(details.value as any);
+    inputData.setInputType(details.value as "file" | "spreadsheet");
   };
 
   /**

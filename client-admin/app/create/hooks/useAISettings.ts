@@ -280,9 +280,11 @@ export function useAISettings() {
     if (provider === "openai" || provider === "azure") {
       if (model === "gpt-4o-mini") {
         return "GPT-4o mini：最も安価に利用できるモデルです。価格の詳細はOpenAIが公開しているAPI料金のページをご参照ください。";
-      } else if (model === "gpt-4o") {
+      }
+      if (model === "gpt-4o") {
         return "GPT-4o：gpt-4o-miniと比較して高性能なモデルです。性能は高くなりますが、gpt-4o-miniと比較してOpenAI APIの料金は高くなります。";
-      } else if (model === "o3-mini") {
+      }
+      if (model === "o3-mini") {
         return "o3-mini：gpt-4oよりも高度な推論能力を備えたモデルです。性能はより高くなりますが、gpt-4oと比較してOpenAI APIの料金は高くなります。";
       }
     }
