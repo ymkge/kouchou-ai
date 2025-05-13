@@ -7,15 +7,15 @@ from fastapi.responses import FileResponse, ORJSONResponse
 from fastapi.security.api_key import APIKeyHeader
 
 from src.config import settings
-from src.schemas.admin_report import ReportInput, ReportMetadataUpdate
+from src.schemas.admin_report import ReportInput, ReportMetadataUpdate, ReportVisibilityUpdate
 from src.schemas.report import Report, ReportStatus
 from src.services.llm_models import get_models_by_provider
 from src.services.report_launcher import launch_report_generation
 from src.services.report_status import (
     load_status_as_reports,
     set_status,
-    toggle_report_public_state,
     update_report_metadata,
+    update_report_visibility_state,
 )
 from src.utils.logger import setup_logger
 
@@ -116,11 +116,13 @@ async def delete_report(slug: str, api_key: str = Depends(verify_admin_api_key))
 
 
 @router.patch("/admin/reports/{slug}/visibility")
-async def update_report_visibility(slug: str, api_key: str = Depends(verify_admin_api_key)) -> dict:
+async def update_report_visibility(
+    slug: str, visibility_update: ReportVisibilityUpdate, api_key: str = Depends(verify_admin_api_key)
+) -> dict:
     try:
-        is_public = toggle_report_public_state(slug)
+        visibility = update_report_visibility_state(slug, visibility_update.visibility)
 
-        return {"success": True, "isPublic": is_public}
+        return {"success": True, "visibility": visibility}
     except ValueError as e:
         slogger.error(f"ValueError: {e}", exc_info=True)
         raise HTTPException(status_code=404, detail=str(e)) from e

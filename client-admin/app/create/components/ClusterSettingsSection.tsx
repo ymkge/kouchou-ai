@@ -1,6 +1,6 @@
 import { Button, Field, HStack, Input, Text } from "@chakra-ui/react";
 import { ChevronRightIcon } from "lucide-react";
-import { ClusterSettings } from "../types";
+import type { ClusterSettings } from "../types";
 
 export function ClusterSettingsSection({
   clusterLv1,
@@ -8,7 +8,7 @@ export function ClusterSettingsSection({
   recommendedClusters,
   autoAdjusted,
   onLv1Change,
-  onLv2Change
+  onLv2Change,
 }: {
   clusterLv1: number;
   clusterLv2: number;
@@ -23,10 +23,7 @@ export function ClusterSettingsSection({
     <Field.Root mt={4}>
       <Field.Label>意見グループ数設定</Field.Label>
       <HStack w={"100%"}>
-        <Button
-          onClick={() => onLv1Change(clusterLv1 - 1)}
-          variant="outline"
-        >
+        <Button onClick={() => onLv1Change(clusterLv1 - 1)} variant="outline">
           -
         </Button>
         <Input
@@ -41,17 +38,11 @@ export function ClusterSettingsSection({
             }
           }}
         />
-        <Button
-          onClick={() => onLv1Change(clusterLv1 + 1)}
-          variant="outline"
-        >
+        <Button onClick={() => onLv1Change(clusterLv1 + 1)} variant="outline">
           +
         </Button>
         <ChevronRightIcon width="100px" />
-        <Button
-          onClick={() => onLv2Change(clusterLv2 - 1)}
-          variant="outline"
-        >
+        <Button onClick={() => onLv2Change(clusterLv2 - 1)} variant="outline">
           -
         </Button>
         <Input
@@ -74,10 +65,7 @@ export function ClusterSettingsSection({
             }
           }}
         />
-        <Button
-          onClick={() => onLv2Change(clusterLv2 + 1)}
-          variant="outline"
-        >
+        <Button onClick={() => onLv2Change(clusterLv2 + 1)} variant="outline">
           +
         </Button>
       </HStack>

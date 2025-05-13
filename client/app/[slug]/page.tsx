@@ -39,9 +39,7 @@ export async function generateStaticParams() {
   }
 }
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   try {
     const slug = (await params).slug;
     const metaResponse = await fetch(`${getApiBaseUrl()}/meta/metadata.json`);
@@ -56,14 +54,14 @@ export async function generateMetadata({
     }
 
     const { getBasePath } = await import("@/app/utils/image-src");
-    
+
     const meta: Meta = await metaResponse.json();
     const result: Result = await resultResponse.json();
     const metaData: Metadata = {
       title: `${result.config.question} - ${meta.reporter}`,
       description: `${result.overview}`,
     };
-    
+
     // 静的エクスポート時はmetadataBaseを設定しない（相対パスを使用するため）
     if (process.env.NEXT_PUBLIC_OUTPUT_MODE !== "export") {
       // 開発環境やSSR時のみmetadataBaseを設定
@@ -103,10 +101,10 @@ export default async function Page({ params }: PageProps) {
   return (
     <>
       <div className={"container"}>
-      <Header meta={meta} />
-      <Overview result={result} />
-      <ClientContainer result={result} />
-      <Analysis result={result} />
+        <Header meta={meta} />
+        <Overview result={result} />
+        <ClientContainer result={result} />
+        <Analysis result={result} />
         <BackButton />
         <Separator my={12} maxW={"750px"} mx={"auto"} />
         <About meta={meta} />

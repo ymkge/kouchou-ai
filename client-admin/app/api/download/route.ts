@@ -1,12 +1,9 @@
 import type { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
-  const buildRes = await fetch(
-    `${process.env.CLIENT_STATIC_BUILD_BASEPATH}/build`,
-    {
-      method: "POST",
-    },
-  );
+  const buildRes = await fetch(`${process.env.CLIENT_STATIC_BUILD_BASEPATH}/build`, {
+    method: "POST",
+  });
 
   if (!buildRes.ok || !buildRes.body) {
     return new Response(JSON.stringify({ message: "Build failed" }), {

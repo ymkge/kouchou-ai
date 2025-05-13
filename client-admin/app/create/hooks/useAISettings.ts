@@ -1,5 +1,5 @@
 import { toaster } from "@/components/ui/toaster";
-import { ChangeEvent, useEffect, useState } from "react";
+import { type ChangeEvent, useEffect, useState } from "react";
 
 export type Provider = "openai" | "azure" | "openrouter" | "local";
 
@@ -29,7 +29,7 @@ const DEFAULT_LOCAL_LLM_ADDRESS = process.env.NEXT_PUBLIC_LOCAL_LLM_ADDRESS || "
 const OPENAI_MODELS: ModelOption[] = [
   { value: "gpt-4o-mini", label: "GPT-4o mini" },
   { value: "gpt-4o", label: "GPT-4o" },
-  { value: "o3-mini", label: "o3-mini" }
+  { value: "o3-mini", label: "o3-mini" },
 ];
 
 /**
@@ -37,30 +37,24 @@ const OPENAI_MODELS: ModelOption[] = [
  * @param provider プロバイダー名
  * @param address LocalLLM用アドレス（localプロバイダーの場合のみ）
  */
-async function fetchModelsFromServer(
-  provider: Provider,
-  address?: string
-): Promise<ModelOption[]> {
+async function fetchModelsFromServer(provider: Provider, address?: string): Promise<ModelOption[]> {
   const params = new URLSearchParams({ provider });
   if (provider === "local" && address) {
     params.append("address", address);
   }
-  
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/models?${params.toString()}`,
-    {
-      method: "GET",
-      headers: {
-        "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-        "Content-Type": "application/json",
-      },
-    }
-  );
-  
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/models?${params.toString()}`, {
+    method: "GET",
+    headers: {
+      "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+      "Content-Type": "application/json",
+    },
+  });
+
   if (!response.ok) {
     throw new Error(`API error: ${response.status}`);
   }
-  
+
   const models = await response.json();
   return models;
 }
@@ -74,7 +68,7 @@ function getFromStorage<T>(key: string, defaultValue: T): T {
   if (typeof window === "undefined") {
     return defaultValue;
   }
-  
+
   try {
     const item = window.localStorage.getItem(key);
     return item ? JSON.parse(item) : defaultValue;
@@ -93,7 +87,7 @@ function saveToStorage<T>(key: string, value: T): void {
   if (typeof window === "undefined") {
     return;
   }
-  
+
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
@@ -105,63 +99,56 @@ function saveToStorage<T>(key: string, value: T): void {
  * AIモデル設定を管理するカスタムフック
  */
 export function useAISettings() {
-  const [provider, setProvider] = useState<Provider>(() => 
-    getFromStorage<Provider>(STORAGE_KEYS.PROVIDER, "openai")
-  );
-  const [model, setModel] = useState<string>(() => 
-    getFromStorage<string>(STORAGE_KEYS.MODEL, "gpt-4o-mini")
-  );
-  const [workers, setWorkers] = useState<number>(() => 
-    getFromStorage<number>(STORAGE_KEYS.WORKERS, 30)
-  );
+  const [provider, setProvider] = useState<Provider>(() => getFromStorage<Provider>(STORAGE_KEYS.PROVIDER, "openai"));
+  const [model, setModel] = useState<string>(() => getFromStorage<string>(STORAGE_KEYS.MODEL, "gpt-4o-mini"));
+  const [workers, setWorkers] = useState<number>(() => getFromStorage<number>(STORAGE_KEYS.WORKERS, 30));
   const [isPubcomMode, setIsPubcomMode] = useState<boolean>(true);
-  const [isEmbeddedAtLocal, setIsEmbeddedAtLocal] = useState<boolean>(() => 
-    getFromStorage<boolean>(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, false)
+  const [isEmbeddedAtLocal, setIsEmbeddedAtLocal] = useState<boolean>(() =>
+    getFromStorage<boolean>(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, false),
   );
-  
-  const [localLLMAddress, setLocalLLMAddress] = useState<string>(() => 
-    getFromStorage<string>(STORAGE_KEYS.LOCAL_LLM_ADDRESS, DEFAULT_LOCAL_LLM_ADDRESS)
+
+  const [localLLMAddress, setLocalLLMAddress] = useState<string>(() =>
+    getFromStorage<string>(STORAGE_KEYS.LOCAL_LLM_ADDRESS, DEFAULT_LOCAL_LLM_ADDRESS),
   );
-  
+
   const [openRouterModels, setOpenRouterModels] = useState<ModelOption[]>([]);
   const [localLLMModels, setLocalLLMModels] = useState<ModelOption[]>([]);
-  
+
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.PROVIDER, provider);
   }, [provider]);
-  
+
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.MODEL, model);
   }, [model]);
-  
+
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.WORKERS, workers);
   }, [workers]);
-  
+
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.LOCAL_LLM_ADDRESS, localLLMAddress);
   }, [localLLMAddress]);
-  
+
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, isEmbeddedAtLocal);
   }, [isEmbeddedAtLocal]);
-  
+
   useEffect(() => {
     if (provider === "openrouter") {
-      fetchModelsFromServer("openrouter").then(models => {
+      fetchModelsFromServer("openrouter").then((models) => {
         setOpenRouterModels(models);
         if (models.length > 0) {
           setModel(models[0].value);
         }
       });
     }
-    
+
     if (provider === "local") {
       setIsEmbeddedAtLocal(true);
     }
   }, [provider]);
-  
-  
+
   /**
    * LocalLLMのモデルリストを手動で取得
    */
@@ -197,34 +184,34 @@ export function useAISettings() {
     }
     return false;
   };
-  
+
   const providerConfigs: Record<Provider, ProviderConfig> = {
     openai: {
       models: OPENAI_MODELS,
-      description: "OpenAI APIを使用します。OpenAIのAPIキーが必要です。"
+      description: "OpenAI APIを使用します。OpenAIのAPIキーが必要です。",
     },
     azure: {
       models: OPENAI_MODELS, // Azureは同じモデルリストを使用
-      description: "Azure OpenAI Serviceを使用します。Azureの設定が必要です。"
+      description: "Azure OpenAI Serviceを使用します。Azureの設定が必要です。",
     },
     openrouter: {
       models: openRouterModels,
-      description: "OpenRouterを使用して複数のモデルにアクセスします。（将来対応予定）"
+      description: "OpenRouterを使用して複数のモデルにアクセスします。（将来対応予定）",
     },
     local: {
       models: localLLMModels,
       description: "ローカルで実行されているLLMサーバーに接続します。（将来対応予定）",
-      requiresConnection: true
-    }
+      requiresConnection: true,
+    },
   };
-  
+
   /**
    * プロバイダー変更時のハンドラー
    */
   const handleProviderChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const newProvider = e.target.value as Provider;
     setProvider(newProvider);
-    
+
     if (providerConfigs[newProvider].models.length > 0) {
       setModel(providerConfigs[newProvider].models[0].value);
     }
@@ -273,36 +260,38 @@ export function useAISettings() {
     if (provider === "openai" || provider === "azure") {
       if (model === "gpt-4o-mini") {
         return "GPT-4o mini：最も安価に利用できるモデルです。価格の詳細はOpenAIが公開しているAPI料金のページをご参照ください。";
-      } else if (model === "gpt-4o") {
+      }
+      if (model === "gpt-4o") {
         return "GPT-4o：gpt-4o-miniと比較して高性能なモデルです。性能は高くなりますが、gpt-4o-miniと比較してOpenAI APIの料金は高くなります。";
-      } else if (model === "o3-mini") {
+      }
+      if (model === "o3-mini") {
         return "o3-mini：gpt-4oよりも高度な推論能力を備えたモデルです。性能はより高くなりますが、gpt-4oと比較してOpenAI APIの料金は高くなります。";
       }
     }
     return "";
   };
-  
+
   /**
    * プロバイダー説明文を取得
    */
   const getProviderDescription = () => {
     return providerConfigs[provider as Provider].description;
   };
-  
+
   /**
    * 現在のプロバイダーのモデルリストを取得
    */
   const getCurrentModels = () => {
     return providerConfigs[provider as Provider].models;
   };
-  
+
   /**
    * LocalLLM接続設定が必要かどうか
    */
   const requiresConnectionSettings = () => {
     return provider === "local";
   };
-  
+
   /**
    * 埋め込み処理をサーバ内で行うの設定が無効化されるべきかどうか
    * LocalLLMプロバイダーの場合は常にtrueで無効化される
@@ -323,7 +312,7 @@ export function useAISettings() {
     setLocalLLMAddress(DEFAULT_LOCAL_LLM_ADDRESS);
     setOpenRouterModels([]);
     setLocalLLMModels([]);
-    
+
     saveToStorage(STORAGE_KEYS.PROVIDER, "openai");
     saveToStorage(STORAGE_KEYS.MODEL, "gpt-4o-mini");
     saveToStorage(STORAGE_KEYS.WORKERS, 30);

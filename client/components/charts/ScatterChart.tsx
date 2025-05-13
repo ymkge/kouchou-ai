@@ -10,16 +10,8 @@ type Props = {
   showClusterLabels?: boolean;
 };
 
-export function ScatterChart({
-  clusterList,
-  argumentList,
-  targetLevel,
-  onHover,
-  showClusterLabels,
-}: Props) {
-  const targetClusters = clusterList.filter(
-    (cluster) => cluster.level === targetLevel,
-  );
+export function ScatterChart({ clusterList, argumentList, targetLevel, onHover, showClusterLabels }: Props) {
+  const targetClusters = clusterList.filter((cluster) => cluster.level === targetLevel);
   const softColors = [
     "#7ac943",
     "#3fa9f5",
@@ -148,14 +140,11 @@ export function ScatterChart({
   };
 
   const clusterData = targetClusters.map((cluster) => {
-    const clusterArguments = argumentList.filter((arg) =>
-      arg.cluster_ids.includes(cluster.id),
-    );
+    const clusterArguments = argumentList.filter((arg) => arg.cluster_ids.includes(cluster.id));
     const xValues = clusterArguments.map((arg) => arg.x);
     const yValues = clusterArguments.map((arg) => arg.y);
     const texts = clusterArguments.map(
-      (arg) =>
-        `<b>${cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`,
+      (arg) => `<b>${cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`,
     );
 
     const centerX = xValues.reduce((sum, val) => sum + val, 0) / xValues.length;
@@ -246,9 +235,7 @@ export function ScatterChart({
 }
 
 function avoidModBarCoveringShrinkButton(): void {
-  const modeBarContainer = document.querySelector(
-    ".modebar-container",
-  ) as HTMLElement;
+  const modeBarContainer = document.querySelector(".modebar-container") as HTMLElement;
   if (!modeBarContainer) return;
   const modeBar = modeBarContainer.children[0] as HTMLElement;
   const shrinkButton = document.getElementById("fullScreenButtons");

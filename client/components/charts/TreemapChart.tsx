@@ -10,33 +10,17 @@ type Props = {
   onTreeZoom: (level: string) => void;
 };
 
-export function TreemapChart({
-  clusterList,
-  argumentList,
-  onHover,
-  level,
-  onTreeZoom,
-}: Props) {
+export function TreemapChart({ clusterList, argumentList, onHover, level, onTreeZoom }: Props) {
   const convertedArgumentList = argumentList.map(convertArgumentToCluster);
-  const list = [
-    { ...clusterList[0], parent: "" },
-    ...clusterList.slice(1),
-    ...convertedArgumentList,
-  ];
+  const list = [{ ...clusterList[0], parent: "" }, ...clusterList.slice(1), ...convertedArgumentList];
   const ids = list.map((node) => node.id);
   const labels = list.map((node) => {
-    return node.id === level
-      ? node.label.replace(/(.{50})/g, "$1<br />")
-      : node.label.replace(/(.{15})/g, "$1<br />");
+    return node.id === level ? node.label.replace(/(.{50})/g, "$1<br />") : node.label.replace(/(.{15})/g, "$1<br />");
   });
   const parents = list.map((node) => node.parent);
   const values = list.map((node) => node.value);
-  const customdata = list.map((node) =>
-    node.takeaway.replace(/(.{15})/g, "$1<br />"),
-  );
-  const data: Partial<
-    PlotData & { maxdepth: number; pathbar: { thickness: number } }
-  > = {
+  const customdata = list.map((node) => node.takeaway.replace(/(.{15})/g, "$1<br />"));
+  const data: Partial<PlotData & { maxdepth: number; pathbar: { thickness: number } }> = {
     type: "treemap",
     ids: ids,
     labels: labels,
@@ -91,8 +75,7 @@ export function TreemapChart({
       }}
       onClick={(event) => {
         const clickedNode = event.points[0];
-        const newLevel =
-          clickedNode.data.ids[clickedNode.pointNumber]?.toString() || "0";
+        const newLevel = clickedNode.data.ids[clickedNode.pointNumber]?.toString() || "0";
         onTreeZoom(newLevel);
         // 元々のクリックイベントはキャンセルされるので無限ループにはならない
       }}
@@ -130,10 +113,7 @@ function darkenColor(elem: Element, originalColor: string) {
     /rgb\((\d+), (\d+), (\d+)\)/,
     (match, r, g, b) => `rgb(${dark(r)}, ${dark(g)}, ${dark(b)})`,
   );
-  const newStyle =
-    elem.attributes
-      .getNamedItem("style")
-      ?.value.replace(originalColor, darkenedColor) || "";
+  const newStyle = elem.attributes.getNamedItem("style")?.value.replace(originalColor, darkenedColor) || "";
   elem.setAttribute("style", newStyle);
 }
 

@@ -1,4 +1,4 @@
-import { SpreadsheetComment } from "../types";
+import type { SpreadsheetComment } from "../types";
 import { handleApiError } from "../utils/error-handler";
 
 /**
@@ -6,20 +6,17 @@ import { handleApiError } from "../utils/error-handler";
  */
 export async function importSpreadsheet(url: string, fileName: string): Promise<void> {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/spreadsheet/import`,
-      {
-        method: "POST",
-        headers: {
-          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url,
-          file_name: fileName,
-        }),
-      }
-    );
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/spreadsheet/import`, {
+      method: "POST",
+      headers: {
+        "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url,
+        file_name: fileName,
+      }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -37,14 +34,11 @@ export async function importSpreadsheet(url: string, fileName: string): Promise<
  */
 export async function getSpreadsheetData(id: string): Promise<{ comments: SpreadsheetComment[] }> {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/spreadsheet/data/${id}`,
-      {
-        headers: {
-          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-        },
-      }
-    );
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/spreadsheet/data/${id}`, {
+      headers: {
+        "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+      },
+    });
 
     if (!response.ok) {
       throw new Error("スプレッドシートデータの取得に失敗しました");
@@ -61,15 +55,12 @@ export async function getSpreadsheetData(id: string): Promise<{ comments: Spread
  */
 export async function deleteSpreadsheetData(id: string): Promise<void> {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/inputs/${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-        },
-      }
-    );
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/inputs/${id}`, {
+      method: "DELETE",
+      headers: {
+        "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+      },
+    });
 
     if (!response.ok) {
       throw new Error("データのクリアに失敗しました");
