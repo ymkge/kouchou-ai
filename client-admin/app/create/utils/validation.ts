@@ -85,7 +85,8 @@ export function validateFormValues({
   if (provider === "local" && modelOptions && modelOptions.length === 0) {
     return {
       isValid: false,
-      errorMessage: "LocalLLMのモデルリストが空です。モデル取得ボタンを押してモデルリストを取得してください。",
+      errorMessage:
+        "LocalLLMのモデルリストが空です。モデル取得ボタンを押してモデルリストを取得してください。",
     };
   }
 

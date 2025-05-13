@@ -14,23 +14,26 @@ export async function generateMetadata(): Promise<Metadata> {
     const metaResponse = await fetch(`${getApiBaseUrl()}/meta/metadata.json`);
     const meta: Meta = await metaResponse.json();
 
-    const { getBasePath, getRelativeUrl } = await import("@/app/utils/image-src");
+    const { getBasePath, getRelativeUrl } = await import(
+      "@/app/utils/image-src"
+    );
 
     const metadata: Metadata = {
       title: `${meta.reporter} - 広聴AI(デジタル民主主義2030ブロードリスニング)`,
       description: meta.message || "",
       openGraph: {
-        images: [getRelativeUrl('/meta/ogp.png')],
+        images: [getRelativeUrl("/meta/ogp.png")],
       },
     };
-    
+
     // 静的エクスポート時はmetadataBaseを設定しない（相対パスを使用するため）
     if (process.env.NEXT_PUBLIC_OUTPUT_MODE !== "export") {
       // 開発環境やSSR時のみmetadataBaseを設定
-      const defaultHost = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      const defaultHost =
+        process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
       metadata.metadataBase = new URL(defaultHost + getBasePath());
     }
-    
+
     return metadata;
   } catch (_e) {
     console.error("Failed to fetch metadata for generateMetadata:", _e);

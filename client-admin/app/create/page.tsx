@@ -26,7 +26,7 @@ import { useBasicInfo } from "./hooks/useBasicInfo";
 import { useClusterSettings } from "./hooks/useClusterSettings";
 import { useInputData } from "./hooks/useInputData";
 import { usePromptSettings } from "./hooks/usePromptSettings";
-import { CsvData, parseCsv } from "./parseCsv";
+import { type CsvData, parseCsv } from "./parseCsv";
 import { showErrorToast } from "./utils/error-handler";
 import { validateFormValues } from "./utils/validation";
 
@@ -49,7 +49,7 @@ export default function Page() {
    * タブ切り替え時の処理
    */
   const handleTabValueChange = (details: { value: string }) => {
-    inputData.setInputType(details.value as any);
+    inputData.setInputType(details.value as "file" | "spreadsheet");
   };
 
   /**
@@ -98,7 +98,7 @@ export default function Page() {
           source: null,
           url: null,
         }));
-        
+
         if (comments.length < clusterSettings.clusterLv2) {
           const confirmProceed = window.confirm(
             `csvファイルの行数 (${comments.length}) が設定された意見グループ数 (${clusterSettings.clusterLv2}) を下回っています。このまま続けますか？
@@ -110,7 +110,10 @@ export default function Page() {
             return;
           }
         }
-      } else if (inputData.inputType === "spreadsheet" && inputData.spreadsheetImported) {
+      } else if (
+        inputData.inputType === "spreadsheet" &&
+        inputData.spreadsheetImported
+      ) {
         comments = inputData.spreadsheetData.map((row, index) => ({
           id: row.id || `spreadsheet-${index + 1}`,
           comment: (row as unknown as Record<string, unknown>)[
@@ -132,7 +135,7 @@ export default function Page() {
 
     try {
       const promptData = promptSettings.getPromptSettings();
-      
+
       await createReport({
         input: basicInfo.input,
         question: basicInfo.question,
@@ -146,15 +149,18 @@ export default function Page() {
         is_pubcom: aiSettings.isPubcomMode,
         inputType: inputData.inputType,
         is_embedded_at_local: aiSettings.isEmbeddedAtLocal,
-        local_llm_address: aiSettings.provider === "local" ? aiSettings.localLLMAddress : undefined,
+        local_llm_address:
+          aiSettings.provider === "local"
+            ? aiSettings.localLLMAddress
+            : undefined,
       });
-      
+
       toaster.create({
         duration: 5000,
         type: "success",
         title: "レポート作成を開始しました",
       });
-      
+
       router.replace("/");
     } catch (e) {
       showErrorToast(toaster, e, "レポート作成に失敗しました");

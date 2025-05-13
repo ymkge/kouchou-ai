@@ -1,5 +1,5 @@
-import { CsvData } from "../parseCsv";
-import { PromptSettings } from "../types";
+import type { CsvData } from "../parseCsv";
+import type { PromptSettings } from "../types";
 import { handleApiError } from "../utils/error-handler";
 
 /**
@@ -58,7 +58,7 @@ export async function createReport({
           is_embedded_at_local,
           local_llm_address,
         }),
-      }
+      },
     );
 
     if (!response.ok) {

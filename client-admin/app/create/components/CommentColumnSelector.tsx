@@ -4,7 +4,7 @@ import { Field, NativeSelect } from "@chakra-ui/react";
 export function CommentColumnSelector({
   columns,
   selectedColumn,
-  onColumnChange
+  onColumnChange,
 }: {
   columns: string[];
   selectedColumn: string;

@@ -5,7 +5,7 @@
 export const getBasePath = (): string => {
   const isStaticExport = process.env.NEXT_PUBLIC_OUTPUT_MODE === "export";
   const basePath = process.env.NEXT_PUBLIC_STATIC_EXPORT_BASE_PATH || "";
-  
+
   return isStaticExport ? basePath : "";
 };
 
@@ -16,10 +16,10 @@ export const getBasePath = (): string => {
  */
 export const getRelativeUrl = (path: string): string => {
   const basePath = getBasePath();
-  
+
   // パスが / で始まることを確認し、先頭の / を除去
-  const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-  
+  const cleanPath = path.startsWith("/") ? path.substring(1) : path;
+
   // basePathとパスを結合
   return `${basePath}/${cleanPath}`;
 };
@@ -33,36 +33,36 @@ export const getRelativeUrl = (path: string): string => {
  */
 export const getImageFromServerSrc = (src: string): string => {
   // 空文字列の場合は早期リターン
-  if (!src) return '';
-  
+  if (!src) return "";
+
   try {
     // 絶対URLの場合はそのまま返す（有効なURLかどうかを検証）
     new URL(src);
     return src;
   } catch (error) {
     // 相対パスの場合の処理
-    
+
     // 静的エクスポートモードの場合
     if (process.env.NEXT_PUBLIC_OUTPUT_MODE === "export") {
       const basePath = getBasePath();
-      
+
       // パスが / で始まる場合は除去
-      const cleanSrc = src.startsWith('/') ? src.substring(1) : src;
-      
+      const cleanSrc = src.startsWith("/") ? src.substring(1) : src;
+
       // basePathとパスを結合
       return `${basePath}/${cleanSrc}`;
     }
 
     // 開発環境やサーバーサイドレンダリング時
-    const basePath = process.env.NEXT_PUBLIC_API_BASEPATH || '';
-    
+    const basePath = process.env.NEXT_PUBLIC_API_BASEPATH || "";
+
     // パスが既にbasePathで始まっていないことを確認
     if (basePath && src.startsWith(basePath)) {
       return src;
     }
-    
+
     // パスが / で始まることを確認
-    const normalizedSrc = src.startsWith('/') ? src : `/${src}`;
+    const normalizedSrc = src.startsWith("/") ? src : `/${src}`;
     return `${basePath}${normalizedSrc}`;
   }
 };

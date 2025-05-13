@@ -7,10 +7,10 @@ import {
   Box,
   Button,
   Card,
-  Heading,
   HStack,
+  Heading,
   Text,
-  VStack
+  VStack,
 } from "@chakra-ui/react";
 import { CircleAlertIcon, CircleCheckIcon } from "lucide-react";
 import { useState } from "react";
@@ -37,7 +37,7 @@ export default function Page() {
             "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       const result = await response.json();
@@ -68,7 +68,8 @@ export default function Page() {
           </Card.Header>
           <Card.Body>
             <Text mb={4}>
-              ChatGPT API キーの設定を検証します。API キーが正しく設定されているか確認できます。 <br/>
+              ChatGPT API キーの設定を検証します。API
+              キーが正しく設定されているか確認できます。 <br />
               （注意、検証のためにChatGPTのAPIを利用するため、約0.005円の費用がかかります）
             </Text>
 
@@ -100,17 +101,16 @@ export default function Page() {
                   </Box>
                   <VStack align="flex-start">
                     <Text fontWeight="bold" mb={1}>
-                      {verificationResult.success
-                        ? "検証成功"
-                        : "検証失敗"}
+                      {verificationResult.success ? "検証成功" : "検証失敗"}
                     </Text>
                     <Text mb={1}>{verificationResult.message}</Text>
                     {verificationResult.error_type === "insufficient_quota" && (
                       <Text mb={1} color="orange.600" fontWeight="bold">
-                        デポジット残高不足: APIキーのデポジット残高が不足しています。残高を追加してください。
+                        デポジット残高不足:
+                        APIキーのデポジット残高が不足しています。残高を追加してください。
                       </Text>
                     )}
-                    
+
                     {verificationResult.error_detail && (
                       <Text mb={1} fontSize="sm" color="gray.600">
                         詳細: {verificationResult.error_detail}
@@ -130,7 +130,8 @@ export default function Page() {
         </Card.Root>
 
         <Text fontSize="sm" color="gray.500" mt={8} textAlign="center">
-          注意: API キーの検証は既存の環境設定を確認するだけで、設定自体は変更しません。
+          注意: API
+          キーの検証は既存の環境設定を確認するだけで、設定自体は変更しません。
           設定を変更するには .env ファイルを直接編集してください。
         </Text>
       </Box>

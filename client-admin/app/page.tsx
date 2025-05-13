@@ -31,7 +31,7 @@ import {
   Text,
   Textarea,
   VStack,
-  createListCollection
+  createListCollection,
 } from "@chakra-ui/react";
 import {
   CircleAlertIcon,
@@ -123,7 +123,7 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
               "Content-Type": "application/json",
               // キャッシュを防止するためのヘッダーを追加
               "Cache-Control": "no-cache, no-store, must-revalidate",
-              "Pragma": "no-cache"
+              Pragma: "no-cache",
             },
           },
         );
@@ -188,7 +188,6 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
   useEffect(() => {
     // 完了またはエラーでかつリロード済みでない場合
     if ((progress === "completed" || progress === "error") && !hasReloaded) {
-
       setHasReloaded(true);
 
       const reloadTimeout = setTimeout(() => {
@@ -226,50 +225,62 @@ function ReportCard({
         : stepKeys.indexOf(progress);
 
   const [lastProgress, setLastProgress] = useState<string | null>(null);
-  
+
   // 編集ダイアログの状態管理
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editTitle, setEditTitle] = useState(report.title);
-  const [editDescription, setEditDescription] = useState(report.description || "");
+  const [editDescription, setEditDescription] = useState(
+    report.description || "",
+  );
 
   // エラー状態の判定
   const isErrorState = progress === "error" || report.status === "error";
 
   // progress が変更されたときにレポート状態を更新
   useEffect(() => {
-    if ((progress === "completed" || progress === "error") && progress !== lastProgress) {
+    if (
+      (progress === "completed" || progress === "error") &&
+      progress !== lastProgress
+    ) {
       setLastProgress(progress);
 
       if (progress === "completed" && setReports) {
         const updatedReports = reports?.map((r) =>
-          r.slug === report.slug ? { ...r, status: "ready" } : r
+          r.slug === report.slug ? { ...r, status: "ready" } : r,
         );
         setReports(updatedReports);
       } else if (progress === "error" && setReports) {
         const updatedReports = reports?.map((r) =>
-          r.slug === report.slug ? { ...r, status: "error" } : r
+          r.slug === report.slug ? { ...r, status: "error" } : r,
         );
         setReports(updatedReports);
       }
     }
   }, [progress, lastProgress, reports, setReports, report.slug]);
   return (
-    <LinkBox as={Card.Root}
+    <LinkBox
+      as={Card.Root}
       key={report.slug}
       mb={4}
       borderLeftWidth={10}
       borderLeftColor={isErrorState ? "red.600" : statusDisplay.borderColor}
       position="relative"
       transition="all 0.2s"
-      role="group"
       pointerEvents={isEditDialogOpen ? "none" : "auto"}
-      _hover={report.status === "ready" && !isEditDialogOpen ? {
-        backgroundColor: "gray.50",
-        cursor: "pointer",
-      } : {}}
+      _hover={
+        report.status === "ready" && !isEditDialogOpen
+          ? {
+              backgroundColor: "gray.50",
+              cursor: "pointer",
+            }
+          : {}
+      }
       onClick={(e) => {
         if (report.status === "ready") {
-          window.open(`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`, "_blank");
+          window.open(
+            `${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`,
+            "_blank",
+          );
         }
         return true;
       }}
@@ -277,7 +288,10 @@ function ReportCard({
       <Card.Body>
         <HStack justify="space-between">
           <HStack>
-            <Box mr={3} color={isErrorState ? "red.600" : statusDisplay.iconColor}>
+            <Box
+              mr={3}
+              color={isErrorState ? "red.600" : statusDisplay.iconColor}
+            >
               {isErrorState ? (
                 <CircleAlertIcon size={30} />
               ) : (
@@ -290,7 +304,11 @@ function ReportCard({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Text fontSize="md" fontWeight="bold" color={isErrorState ? "red.600" : statusDisplay.textColor}>
+                <Text
+                  fontSize="md"
+                  fontWeight="bold"
+                  color={isErrorState ? "red.600" : statusDisplay.textColor}
+                >
                   {report.title}
                 </Text>
               </LinkOverlay>
@@ -300,10 +318,9 @@ function ReportCard({
               {report.createdAt && (
                 <Text fontSize="xs" color="gray.500" mb={1}>
                   作成日時:{" "}
-                  {new Date(report.createdAt).toLocaleString(
-                    "ja-JP",
-                    { timeZone: "Asia/Tokyo" },
-                  )}
+                  {new Date(report.createdAt).toLocaleString("ja-JP", {
+                    timeZone: "Asia/Tokyo",
+                  })}
                 </Text>
               )}
               {report.status !== "ready" && (
@@ -317,7 +334,10 @@ function ReportCard({
                         const isCompleted = index < currentStepIndex;
 
                         const stepColor = (() => {
-                          if (progress === "error" && index === currentStepIndex) {
+                          if (
+                            progress === "error" &&
+                            index === currentStepIndex
+                          ) {
                             return "red.500";
                           }
                           if (isCompleted) return "green.500";
@@ -342,14 +362,17 @@ function ReportCard({
                                 whiteSpace="nowrap"
                                 textAlign="center"
                                 color={stepColor}
-                                fontWeight={progress === "error" && index === currentStepIndex ? "bold" : "normal"}
+                                fontWeight={
+                                  progress === "error" &&
+                                  index === currentStepIndex
+                                    ? "bold"
+                                    : "normal"
+                                }
                               >
                                 {step.title}
                               </Steps.Title>
                             </Flex>
-                            <Steps.Separator
-                              borderColor={stepColor}
-                            />
+                            <Steps.Separator borderColor={stepColor} />
                           </Steps.Item>
                         );
                       })}
@@ -394,24 +417,24 @@ function ReportCard({
           <HStack position="relative" zIndex="20">
             {report.status === "ready" && report.isPubcom && (
               <Popover.Root>
-                  <Popover.Trigger asChild>
-                    <Button
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
+                <Popover.Trigger asChild>
+                  <Button
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <Tooltip
+                      content="CSVファイルをダウンロード"
+                      openDelay={0}
+                      closeDelay={0}
                     >
-                      <Tooltip
-                        content="CSVファイルをダウンロード"
-                        openDelay={0}
-                        closeDelay={0}
-                      >
-                        <Icon>
-                          <DownloadIcon />
-                        </Icon>
-                      </Tooltip>
-                    </Button>
-                  </Popover.Trigger>
+                      <Icon>
+                        <DownloadIcon />
+                      </Icon>
+                    </Tooltip>
+                  </Button>
+                </Popover.Trigger>
                 <Portal>
                   <Popover.Positioner>
                     <Popover.Content>
@@ -431,14 +454,18 @@ function ReportCard({
                                   {
                                     headers: {
                                       "x-api-key":
-                                        process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                                        process.env.NEXT_PUBLIC_ADMIN_API_KEY ||
+                                        "",
                                       "Content-Type": "application/json",
                                     },
                                   },
                                 );
                                 if (!response.ok) {
                                   const errorData = await response.json();
-                                  throw new Error(errorData.detail || "CSV ダウンロードに失敗しました");
+                                  throw new Error(
+                                    errorData.detail ||
+                                      "CSV ダウンロードに失敗しました",
+                                  );
                                 }
                                 const blob = await response.blob();
                                 const url = window.URL.createObjectURL(blob);
@@ -467,20 +494,26 @@ function ReportCard({
                                   {
                                     headers: {
                                       "x-api-key":
-                                        process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                                        process.env.NEXT_PUBLIC_ADMIN_API_KEY ||
+                                        "",
                                       "Content-Type": "application/json",
                                     },
                                   },
                                 );
                                 if (!response.ok) {
                                   const errorData = await response.json();
-                                  throw new Error(errorData.detail || "CSV ダウンロードに失敗しました");
+                                  throw new Error(
+                                    errorData.detail ||
+                                      "CSV ダウンロードに失敗しました",
+                                  );
                                 }
                                 const blob = await response.blob();
                                 const text = await blob.text();
                                 // UTF-8 BOMを追加
                                 const bom = "\uFEFF";
-                                const bomBlob = new Blob([bom + text], { type: "text/csv;charset=utf-8" });
+                                const bomBlob = new Blob([bom + text], {
+                                  type: "text/csv;charset=utf-8",
+                                });
                                 const url = window.URL.createObjectURL(bomBlob);
                                 const link = document.createElement("a");
                                 link.href = url;
@@ -503,36 +536,43 @@ function ReportCard({
             )}
             {report.status === "ready" && (
               <Box
-                onClick={e => e.stopPropagation()}
-                onMouseDown={e => e.stopPropagation()}
-                onPointerDown={e => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
               >
                 {(() => {
                   const visibilityOptions = createListCollection({
                     items: [
                       { label: "公開", value: "public" },
                       { label: "限定公開", value: "unlisted" },
-                      { label: "非公開", value: "private" }
-                    ]
+                      { label: "非公開", value: "private" },
+                    ],
                   });
-                  
+
                   return (
-                    <Select.Root 
-                      collection={visibilityOptions} 
-                      size="sm" 
+                    <Select.Root
+                      collection={visibilityOptions}
+                      size="sm"
                       width="150px"
                       defaultValue={[report.visibility.toString()]}
                       onValueChange={async (value) => {
                         // valueは配列の可能性があるため、最初の要素を取得
-                        const selected = Array.isArray(value?.value) ? value?.value[0] : value?.value;
-                        if (!selected || selected === report.visibility.toString()) return;
+                        const selected = Array.isArray(value?.value)
+                          ? value?.value[0]
+                          : value?.value;
+                        if (
+                          !selected ||
+                          selected === report.visibility.toString()
+                        )
+                          return;
                         try {
                           const response = await fetch(
                             `${getApiBaseUrl()}/admin/reports/${report.slug}/visibility`,
                             {
                               method: "PATCH",
                               headers: {
-                                "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                                "x-api-key":
+                                  process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
                                 "Content-Type": "application/json",
                               },
                               body: JSON.stringify({ visibility: selected }),
@@ -540,11 +580,16 @@ function ReportCard({
                           );
                           if (!response.ok) {
                             const errorData = await response.json();
-                            throw new Error(errorData.detail || "公開状態の変更に失敗しました");
+                            throw new Error(
+                              errorData.detail ||
+                                "公開状態の変更に失敗しました",
+                            );
                           }
                           const data = await response.json();
                           const updatedReports = reports?.map((r) =>
-                            r.slug === report.slug ? { ...r, visibility: data.visibility } : r,
+                            r.slug === report.slug
+                              ? { ...r, visibility: data.visibility }
+                              : r,
                           );
                           if (setReports) {
                             setReports(updatedReports);
@@ -632,7 +677,9 @@ function ReportCard({
                           window.location.reload();
                         } else {
                           const errorData = await response.json();
-                          throw new Error(errorData.detail || "レポートの削除に失敗しました");
+                          throw new Error(
+                            errorData.detail || "レポートの削除に失敗しました",
+                          );
                         }
                       } catch (error) {
                         console.error(error);
@@ -647,7 +694,7 @@ function ReportCard({
           </HStack>
         </HStack>
       </Card.Body>
-      
+
       <Dialog.Root
         open={isEditDialogOpen}
         onOpenChange={({ open }) => setIsEditDialogOpen(open)}
@@ -669,7 +716,7 @@ function ReportCard({
               position="relative"
               zIndex={1001}
               boxShadow="md"
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
               <Dialog.CloseTrigger position="absolute" top={3} right={3} />
               <Dialog.Header>
@@ -678,7 +725,9 @@ function ReportCard({
               <Dialog.Body>
                 <VStack gap={4} align="stretch">
                   <Box>
-                    <Text mb={2} fontWeight="bold">タイトル</Text>
+                    <Text mb={2} fontWeight="bold">
+                      タイトル
+                    </Text>
                     <Input
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
@@ -686,7 +735,9 @@ function ReportCard({
                     />
                   </Box>
                   <Box>
-                    <Text mb={2} fontWeight="bold">調査概要</Text>
+                    <Text mb={2} fontWeight="bold">
+                      調査概要
+                    </Text>
                     <Textarea
                       value={editDescription}
                       onChange={(e) => setEditDescription(e.target.value)}
@@ -696,7 +747,10 @@ function ReportCard({
                 </VStack>
               </Dialog.Body>
               <Dialog.Footer>
-                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditDialogOpen(false)}
+                >
                   キャンセル
                 </Button>
                 <Button
@@ -708,27 +762,34 @@ function ReportCard({
                         {
                           method: "PATCH",
                           headers: {
-                            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                            "x-api-key":
+                              process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
                             "Content-Type": "application/json",
                           },
                           body: JSON.stringify({
                             title: editTitle,
                             description: editDescription,
                           }),
-                        }
+                        },
                       );
 
                       if (!response.ok) {
                         const errorData = await response.json();
-                        throw new Error(errorData.detail || "メタデータの更新に失敗しました");
+                        throw new Error(
+                          errorData.detail || "メタデータの更新に失敗しました",
+                        );
                       }
 
                       // レポート一覧を更新
                       if (setReports && reports) {
                         const updatedReports = reports.map((r) =>
                           r.slug === report.slug
-                            ? { ...r, title: editTitle, description: editDescription }
-                            : r
+                            ? {
+                                ...r,
+                                title: editTitle,
+                                description: editDescription,
+                              }
+                            : r,
                         );
                         setReports(updatedReports);
                       }
@@ -872,7 +933,9 @@ export default function Page() {
           </Link>
           <DownloadBuildButton />
           <Link href="/environment">
-            <Button size="xl" variant="outline">環境検証</Button>
+            <Button size="xl" variant="outline">
+              環境検証
+            </Button>
           </Link>
         </HStack>
       </Box>

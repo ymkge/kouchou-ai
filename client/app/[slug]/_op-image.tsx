@@ -17,7 +17,7 @@ async function fetchFont(weight: number) {
   if (fontCache[weight]) {
     return fontCache[weight];
   }
-  
+
   // キャッシュにない場合は取得してキャッシュに保存
   const fontPromise = (async () => {
     const fontData = await fetch(
@@ -27,42 +27,51 @@ async function fetchFont(weight: number) {
     if (!fontUrl) throw new Error("Failed to load font");
     return fetch(fontUrl).then((res) => res.arrayBuffer());
   })();
-  
+
   // キャッシュに保存
   fontCache[weight] = fontPromise;
-  
+
   return fontPromise;
 }
 
 // 多数のAPIリクエストをリトライする関数
-async function fetchApiWithRetry(url: string, options: RequestInit, retries = 5, delay = 1000): Promise<Response> {
-    for (let i = 0; i <= retries; i++) {
-        try {
-            const response = await fetch(url, options);
-            if (response.ok) {
-                return response;
-            } else {
-                console.warn(`API fetch failed with status ${response.status} for ${url}. Attempt ${i + 1}/${retries + 1}.`);
-                if (i < retries && (response.status >= 500 || response.status === 408)) { // Retry on 5xx or Request Timeout 408
-                     await new Promise(resolve => setTimeout(resolve, delay));
-                     continue; // Retry
-                }
-                 // 回復可能な状態でも最後の試行でもない場合は、エラーを投げる。
-                throw new Error(`API fetch failed with status ${response.status}`);
-            }
-        } catch (error: any) {
-             console.warn(`API fetch error for ${url}: ${error.message}. Attempt ${i + 1}/${retries + 1}.`);
-             // ネットワークエラー時のリトライ (TypeError from fetch)
-             if (i < retries) {
-                 await new Promise(resolve => setTimeout(resolve, delay));
-                 continue; // Retry
-             }
-             // If last attempt, re-throw the error
-             throw error;
-        }
+async function fetchApiWithRetry(
+  url: string,
+  options: RequestInit,
+  retries = 5,
+  delay = 1000,
+): Promise<Response> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok) {
+        return response;
+      }
+      console.warn(
+        `API fetch failed with status ${response.status} for ${url}. Attempt ${i + 1}/${retries + 1}.`,
+      );
+      if (i < retries && (response.status >= 500 || response.status === 408)) {
+        // Retry on 5xx or Request Timeout 408
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue; // Retry
+      }
+      // 回復可能な状態でも最後の試行でもない場合は、エラーを投げる。
+      throw new Error(`API fetch failed with status ${response.status}`);
+    } catch (error: unknown) {
+      console.warn(
+        `API fetch error for ${url}: ${error instanceof Error ? error.message : String(error)}. Attempt ${i + 1}/${retries + 1}.`,
+      );
+      // ネットワークエラー時のリトライ (TypeError from fetch)
+      if (i < retries) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue; // Retry
+      }
+      // If last attempt, re-throw the error
+      throw error;
     }
-     // Should not reach here if loop conditions are correct, but good practice
-     throw new Error(`API fetch failed after ${retries + 1} attempts for ${url}`);
+  }
+  // Should not reach here if loop conditions are correct, but good practice
+  throw new Error(`API fetch failed after ${retries + 1} attempts for ${url}`);
 }
 
 export const OpImage = async (slug: string) => {
