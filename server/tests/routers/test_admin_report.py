@@ -71,8 +71,8 @@ class TestUpdateReportVisibility:
 
     def test_update_report_visibility_success(self, client):
         """正常系：有効なスラッグと可視性で更新が成功するケース"""
-        # toggle_report_visibility_stateをモック化
-        with patch("src.routers.admin_report.toggle_report_visibility_state") as mock_toggle:
+        # update_report_visibility_stateをモック化
+        with patch("src.routers.admin_report.update_report_visibility_state") as mock_toggle:
             # モック関数の戻り値を設定
             mock_toggle.return_value = ReportVisibility.PUBLIC.value
 
@@ -92,8 +92,8 @@ class TestUpdateReportVisibility:
 
     def test_update_report_visibility_not_found(self, client):
         """異常系：存在しないスラッグで404エラーが発生するケース"""
-        # toggle_report_visibility_stateをモック化してValueErrorを発生させる
-        with patch("src.routers.admin_report.toggle_report_visibility_state") as mock_toggle:
+        # update_report_visibility_stateをモック化してValueErrorを発生させる
+        with patch("src.routers.admin_report.update_report_visibility_state") as mock_toggle:
             mock_toggle.side_effect = ValueError("slug non-existent-slug not found in report status")
             # 存在しないスラッグでリクエストを送信
             response = client.patch(

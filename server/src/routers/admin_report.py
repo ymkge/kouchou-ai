@@ -14,8 +14,8 @@ from src.services.report_launcher import launch_report_generation
 from src.services.report_status import (
     load_status_as_reports,
     set_status,
-    toggle_report_visibility_state,
     update_report_metadata,
+    update_report_visibility_state,
 )
 from src.utils.logger import setup_logger
 
@@ -120,7 +120,7 @@ async def update_report_visibility(
     slug: str, visibility_update: ReportVisibilityUpdate, api_key: str = Depends(verify_admin_api_key)
 ) -> dict:
     try:
-        visibility = toggle_report_visibility_state(slug, visibility_update.visibility)
+        visibility = update_report_visibility_state(slug, visibility_update.visibility)
 
         return {"success": True, "visibility": visibility}
     except ValueError as e:

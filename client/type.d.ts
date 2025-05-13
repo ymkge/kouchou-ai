@@ -19,9 +19,9 @@ export type Report = {
   status: string;
   title: string;
   description: string;
+  isPubcom: boolean;
   visibility: ReportVisibility;
   createdAt?: string; // 作成日時（ISO形式の文字列）
-  isPubcom: boolean;
 };
 
 export type Result = {

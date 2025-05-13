@@ -124,7 +124,7 @@ def invalidate_report_cache(slug: str) -> None:
         logger.error(f"Failed to call revalidate API for {slug}: {e}")
 
 
-def toggle_report_visibility_state(slug: str, new_visibility: ReportVisibility) -> str:
+def update_report_visibility_state(slug: str, new_visibility: ReportVisibility) -> str:
     with _lock:
         if slug not in _report_status:
             raise ValueError(f"slug {slug} not found in report status")
@@ -132,9 +132,8 @@ def toggle_report_visibility_state(slug: str, new_visibility: ReportVisibility) 
         _report_status[slug]["visibility"] = new_visibility.value
 
         save_status()
-        invalidate_report_cache(slug)
-
-        return _report_status[slug]["visibility"]
+    invalidate_report_cache(slug)
+    return _report_status[slug]["visibility"]
 
 
 def update_report_metadata(slug: str, title: str = None, description: str = None) -> dict:
@@ -188,5 +187,5 @@ def update_report_metadata(slug: str, title: str = None, description: str = None
                 # ただしログには残す
                 logger.error(f"Failed to update hierarchical_result.json for {slug}: {e}")
 
-        invalidate_report_cache(slug)
-        return _report_status[slug]
+    invalidate_report_cache(slug)
+    return _report_status[slug]
