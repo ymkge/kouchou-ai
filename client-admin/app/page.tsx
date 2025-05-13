@@ -502,10 +502,10 @@ function ReportCard({
             )}
             {report.status === "ready" && (
               <RadioCardRoot
-                value={report.isPublic ? "public" : "private"}
+                value={report.visibility}
                 onValueChange={async (value) => {
                   const selected = typeof value === "string" ? value : value?.value;
-                  if ((selected === "public" && report.isPublic) || (selected === "private" && !report.isPublic)) return;
+                  if (selected === report.visibility) return;
                   try {
                     const response = await fetch(
                       `${getApiBaseUrl()}/admin/reports/${report.slug}/visibility`,
@@ -523,7 +523,7 @@ function ReportCard({
                     }
                     const data = await response.json();
                     const updatedReports = reports?.map((r) =>
-                      r.slug === report.slug ? { ...r, isPublic: data.isPublic } : r,
+                      r.slug === report.slug ? { ...r, visibility: data.visibility } : r,
                     );
                     if (setReports) {
                       setReports(updatedReports);
@@ -543,6 +543,7 @@ function ReportCard({
                   onPointerDown={e => e.stopPropagation()}
                 >
                   <RadioCardItem value="public" label="公開" px={2} py={0.5} minW="40px" fontSize="sm" style={{whiteSpace: 'nowrap'}} />
+                  <RadioCardItem value="unlisted" label="限定公開" px={2} py={0.5} minW="60px" fontSize="sm" style={{whiteSpace: 'nowrap'}} />
                   <RadioCardItem value="private" label="非公開" px={2} py={0.5} minW="60px" fontSize="sm" style={{whiteSpace: 'nowrap'}} />
                 </Box>
               </RadioCardRoot>

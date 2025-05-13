@@ -7,7 +7,7 @@ import requests
 
 from src.config import settings
 from src.schemas.admin_report import ReportInput
-from src.schemas.report import Report, ReportStatus
+from src.schemas.report import Report, ReportStatus, ReportVisibility
 
 # ロガーの設定
 logger = logging.getLogger("uvicorn")
@@ -17,11 +17,26 @@ _lock = threading.RLock()
 _report_status = {}
 
 
+# NOTE: 広聴AIをver3.0にした段階で削除する
+def convert_old_format_status(status: dict) -> dict:
+    """旧形式のレポートのステータスを新形式に変換する
+    旧形式では公開/非公開をis_publicで管理していたが、新形式ではvisibilityで管理している
+    """
+    for slug, report_status in status.items():
+        if "is_public" in report_status:
+            report_status["visibility"] = (
+                ReportVisibility.PUBLIC if report_status["is_public"] else ReportVisibility.PRIVATE
+            )
+            report_status.pop("is_public")
+            status[slug] = report_status
+    return status
+
+
 def load_status() -> None:
     global _report_status
     try:
         with open(STATE_FILE) as f:
-            _report_status = json.load(f)
+            _report_status = convert_old_format_status(json.load(f))
     except FileNotFoundError:
         _report_status = {}
     except json.JSONDecodeError:
@@ -32,7 +47,7 @@ def load_status_as_reports(include_deleted: bool = False) -> list[Report]:
     global _report_status
     try:
         with open(STATE_FILE) as f:
-            _report_status = json.load(f)
+            _report_status = convert_old_format_status(json.load(f))
     except FileNotFoundError:
         _report_status = {}
     except json.JSONDecodeError:
@@ -64,7 +79,7 @@ def add_new_report_to_status(report_input: ReportInput) -> None:
             "title": report_input.question,
             "description": report_input.intro,
             "is_pubcom": report_input.is_pubcom,
-            "is_public": True,  # デフォルトは公開状態
+            "visibility": ReportVisibility.UNLISTED,
             "created_at": datetime.now(UTC).isoformat(),  # タイムゾーン付きISO形式で追加
         }
         save_status()
@@ -87,9 +102,10 @@ def toggle_report_public_state(slug: str) -> bool:
     with _lock:
         if slug not in _report_status:
             raise ValueError(f"slug {slug} not found in report status")
-        _report_status[slug]["is_public"] = not _report_status[slug].get("is_public", True)
+        # ReportVisibilityのenumにする
+        _report_status[slug]["visibility"] = ReportVisibility(_report_status[slug]["visibility"])
         save_status()
-        return _report_status[slug]["is_public"]
+        return _report_status[slug]["visibility"] == ReportVisibility.PUBLIC
 
 
 def update_report_metadata(slug: str, title: str = None, description: str = None) -> dict:

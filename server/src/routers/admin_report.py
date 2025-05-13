@@ -118,9 +118,9 @@ async def delete_report(slug: str, api_key: str = Depends(verify_admin_api_key))
 @router.patch("/admin/reports/{slug}/visibility")
 async def update_report_visibility(slug: str, api_key: str = Depends(verify_admin_api_key)) -> dict:
     try:
-        is_public = toggle_report_public_state(slug)
+        visibility = toggle_report_public_state(slug)
 
-        return {"success": True, "isPublic": is_public}
+        return {"success": True, "visibility": visibility}
     except ValueError as e:
         slogger.error(f"ValueError: {e}", exc_info=True)
         raise HTTPException(status_code=404, detail=str(e)) from e
