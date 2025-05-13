@@ -116,7 +116,9 @@ async def delete_report(slug: str, api_key: str = Depends(verify_admin_api_key))
 
 
 @router.patch("/admin/reports/{slug}/visibility")
-async def update_report_visibility(slug: str, visibility_update: ReportVisibilityUpdate, api_key: str = Depends(verify_admin_api_key)) -> dict:
+async def update_report_visibility(
+    slug: str, visibility_update: ReportVisibilityUpdate, api_key: str = Depends(verify_admin_api_key)
+) -> dict:
     try:
         visibility = toggle_report_visibility_state(slug, visibility_update.visibility)
 

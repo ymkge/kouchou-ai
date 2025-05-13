@@ -127,15 +127,14 @@ def invalidate_report_cache(slug: str) -> None:
 def toggle_report_visibility_state(slug: str, new_visibility: ReportVisibility) -> str:
     with _lock:
         if slug not in _report_status:
-            raise ValueError(f"slug {slug} not found in report status")        
+            raise ValueError(f"slug {slug} not found in report status")
         # enumの値を文字列に変換して保存
         _report_status[slug]["visibility"] = new_visibility.value
-        
+
         save_status()
         invalidate_report_cache(slug)
 
         return _report_status[slug]["visibility"]
-    
 
 
 def update_report_metadata(slug: str, title: str = None, description: str = None) -> dict:
