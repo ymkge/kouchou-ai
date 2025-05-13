@@ -112,7 +112,7 @@ class GithubHandler:
         )
         if response.status_code != 200:
             print(f"GraphQL APIからのエラー: {response.text}")
-            return None
+            return None, None
         
         resjson = response.json()
         project_items = resjson.get("data", {}).get("organization", {}).get("projectV2", {}).get("items", {}).get("nodes", [])
@@ -124,7 +124,7 @@ class GithubHandler:
                     field_value = item.get("fieldValueByName")
                     if field_value:
                         return field_value.get("name"), item["id"]
-                    return None, None
+                    return STATUS_NO_STATUS, item["id"]
         print("Projectにこのissueが見つかりません。アイテム数:", len(project_items))
         return None, None
     
@@ -221,8 +221,11 @@ class GithubHandler:
         if response.status_code != 200:
             print(f"GraphQL APIからのエラー: {response.text}")
             return False
-
-        # print(response.json())
+        
+        resjson = response.json()
+        if resjson.get("errors"):
+            print(f"GraphQL APIからのエラー: {resjson['errors']}")
+            return False
         
         print(f"ステータスを '{status}' に正常に更新しました")
         return True
