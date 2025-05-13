@@ -83,8 +83,14 @@ export function Chart({
   }
 
   return (
-    <Box mx={"auto"} w={"100%"} maxW={"1200px"} mb={10}>
-      <Box h={"500px"} mb={5}>
+    <Box
+      mx={"auto"}
+      w={"100%"}
+      maxW={"1200px"}
+      mb={10}
+      border={"1px solid #ccc"}
+    >
+      <Box h={"500px"} mb={0}>
         {selectedChart === "treemap" && (
           <TreemapChart
             key={treemapLevel}
