@@ -121,10 +121,8 @@ export function AISettingsSection({
             </Button>
           </HStack>
           <Field.HelperText>
-            OpenAI互換インターフェースで動作しているLLMサーバ（ollamaやLM
-            Studio）のアドレスを指定してください。
-            広聴AIのdockerでollamaサーバを起動している場合は ollama:11434
-            で接続できます。
+            OpenAI互換インターフェースで動作しているLLMサーバ（ollamaやLMStudio）のアドレスを指定してください。
+            広聴AIのdockerでollamaサーバを起動している場合は ollama:11434で接続できます。
           </Field.HelperText>
         </Field.Root>
       )}
@@ -147,8 +145,8 @@ export function AISettingsSection({
           </Button>
         </HStack>
         <Field.HelperText>
-          LLM
-          APIの並列実行数です。値を大きくすることでレポート出力が速くなりますが、APIプロバイダーのTierによってはレートリミットの上限に到達し、レポート出力が失敗する可能性があります。
+          LLM APIの並列実行数です。値を大きくすることでレポート出力が速くなりますが、
+          APIプロバイダーのTierによってはレートリミットの上限に到達し、レポート出力が失敗する可能性があります。
         </Field.HelperText>
       </Field.Root>
 

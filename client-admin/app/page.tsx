@@ -266,7 +266,6 @@ function ReportCard({
       borderLeftColor={isErrorState ? "red.600" : statusDisplay.borderColor}
       position="relative"
       transition="all 0.2s"
-      role="group"
       pointerEvents={isEditDialogOpen ? "none" : "auto"}
       _hover={
         report.status === "ready" && !isEditDialogOpen

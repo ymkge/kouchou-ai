@@ -65,7 +65,7 @@ export function useInputData(onDataLoaded: (commentCount: number) => void) {
         try {
           const parsed = await parseCsv(file);
           if (parsed.length > 0) {
-            selectBestColumn(parsed);
+            selectBestColumn(parsed as unknown as Record<string, unknown>[]);
           }
         } catch (error) {
           showErrorToast(toaster, error, "CSVファイルの読み込みに失敗しました");
@@ -102,7 +102,9 @@ export function useInputData(onDataLoaded: (commentCount: number) => void) {
         setSpreadsheetData(commentData.comments);
 
         if (commentData.comments.length > 0) {
-          selectBestColumn(commentData.comments);
+          selectBestColumn(
+            commentData.comments as unknown as Record<string, unknown>[],
+          );
         }
 
         toaster.create({
@@ -161,12 +163,14 @@ export function useInputData(onDataLoaded: (commentCount: number) => void) {
         // CSVのカラムを再構築
         parseCsv(csv).then((parsed) => {
           if (parsed.length > 0) {
-            selectBestColumn(parsed);
+            selectBestColumn(parsed as unknown as Record<string, unknown>[]);
           }
         });
       } else if (newType === "spreadsheet" && spreadsheetData.length > 0) {
         // スプレッドシートのカラムを再構築
-        selectBestColumn(spreadsheetData);
+        selectBestColumn(
+          spreadsheetData as unknown as Record<string, unknown>[],
+        );
       } else {
         // データがない場合はカラムリセット
         setCsvColumns([]);
