@@ -6,7 +6,7 @@ import {
   Input,
   NativeSelect,
   Textarea,
-  VStack
+  VStack,
 } from "@chakra-ui/react";
 
 /**
@@ -65,8 +65,7 @@ export function AISettingsSection({
   };
   isEmbeddedAtLocal: boolean;
   onEmbeddedAtLocalChange: (checked: boolean | "indeterminate") => void;
-}){
-
+}) {
   const modelOptions = getCurrentModels();
 
   return (
@@ -89,20 +88,17 @@ export function AISettingsSection({
       <Field.Root>
         <Field.Label>AIプロバイダー</Field.Label>
         <NativeSelect.Root w={"40%"}>
-          <NativeSelect.Field
-            value={provider}
-            onChange={onProviderChange}
-          >
+          <NativeSelect.Field value={provider} onChange={onProviderChange}>
             <option value={"openai"}>OpenAI</option>
             <option value={"azure"}>Azure</option>
-            <option value={"openrouter"} disabled>OpenRouter (将来対応予定)</option>
+            <option value={"openrouter"} disabled>
+              OpenRouter (将来対応予定)
+            </option>
             <option value={"local"}>LocalLLM</option>
           </NativeSelect.Field>
           <NativeSelect.Indicator />
         </NativeSelect.Root>
-        <Field.HelperText>
-          {getProviderDescription()}
-        </Field.HelperText>
+        <Field.HelperText>{getProviderDescription()}</Field.HelperText>
       </Field.Root>
 
       {requiresConnectionSettings() && (
@@ -112,7 +108,9 @@ export function AISettingsSection({
             <Input
               placeholder="ollama:11434"
               value={localLLMAddress}
-              onChange={(e) => setLocalLLMAddress && setLocalLLMAddress(e.target.value)}
+              onChange={(e) =>
+                setLocalLLMAddress && setLocalLLMAddress(e.target.value)
+              }
             />
             <Button
               onClick={async () => {
@@ -125,7 +123,10 @@ export function AISettingsSection({
             </Button>
           </HStack>
           <Field.HelperText>
-            OpenAI互換インターフェースで動作しているLLMサーバ（ollamaやLM Studio）のアドレスを指定してください。 広聴AIのdockerでollamaサーバを起動している場合は ollama:11434 で接続できます。
+            OpenAI互換インターフェースで動作しているLLMサーバ（ollamaやLM
+            Studio）のアドレスを指定してください。
+            広聴AIのdockerでollamaサーバを起動している場合は ollama:11434
+            で接続できます。
           </Field.HelperText>
         </Field.Root>
       )}
@@ -133,10 +134,7 @@ export function AISettingsSection({
       <Field.Root>
         <Field.Label>並列実行数</Field.Label>
         <HStack>
-          <Button
-            onClick={onDecreaseWorkers}
-            variant="outline"
-          >
+          <Button onClick={onDecreaseWorkers} variant="outline">
             -
           </Button>
           <Input
@@ -146,25 +144,20 @@ export function AISettingsSection({
             max={100}
             onChange={onWorkersChange}
           />
-          <Button
-            onClick={onIncreaseWorkers}
-            variant="outline"
-          >
+          <Button onClick={onIncreaseWorkers} variant="outline">
             +
           </Button>
         </HStack>
         <Field.HelperText>
-          LLM APIの並列実行数です。値を大きくすることでレポート出力が速くなりますが、APIプロバイダーのTierによってはレートリミットの上限に到達し、レポート出力が失敗する可能性があります。
+          LLM
+          APIの並列実行数です。値を大きくすることでレポート出力が速くなりますが、APIプロバイダーのTierによってはレートリミットの上限に到達し、レポート出力が失敗する可能性があります。
         </Field.HelperText>
       </Field.Root>
 
       <Field.Root>
         <Field.Label>AIモデル</Field.Label>
         <NativeSelect.Root w={"40%"}>
-          <NativeSelect.Field
-            value={model}
-            onChange={onModelChange}
-          >
+          <NativeSelect.Field value={model} onChange={onModelChange}>
             {modelOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -173,9 +166,7 @@ export function AISettingsSection({
           </NativeSelect.Field>
           <NativeSelect.Indicator />
         </NativeSelect.Root>
-        <Field.HelperText>
-          {getModelDescription()}
-        </Field.HelperText>
+        <Field.HelperText>{getModelDescription()}</Field.HelperText>
       </Field.Root>
 
       <Field.Root>
@@ -195,7 +186,8 @@ export function AISettingsSection({
           精度に関しては未検証であり、OpenAIを使った場合と大きく異なる結果になる可能性があります。
           {isEmbeddedAtLocalDisabled && isEmbeddedAtLocalDisabled() && (
             <span style={{ color: "red" }}>
-              ※ LocalLLMプロバイダーを選択している場合、この設定は強制的にONになります
+              ※
+              LocalLLMプロバイダーを選択している場合、この設定は強制的にONになります
             </span>
           )}
         </Field.HelperText>

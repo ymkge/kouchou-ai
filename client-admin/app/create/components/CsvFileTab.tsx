@@ -1,8 +1,12 @@
-import { FileUploadDropzone, FileUploadList, FileUploadRoot } from "@/components/ui/file-upload";
+import {
+  FileUploadDropzone,
+  FileUploadList,
+  FileUploadRoot,
+} from "@/components/ui/file-upload";
 import { Box, Tabs, VStack } from "@chakra-ui/react";
 import { DownloadIcon } from "lucide-react";
 import Link from "next/link";
-import { useClusterSettings } from "../hooks/useClusterSettings";
+import type { useClusterSettings } from "../hooks/useClusterSettings";
 import { parseCsv } from "../parseCsv";
 import { getBestCommentColumn } from "../utils/columnScorer";
 import { ClusterSettingsSection } from "./ClusterSettingsSection";
@@ -16,7 +20,7 @@ export function CsvFileTab({
   setCsvColumns,
   selectedCommentColumn,
   setSelectedCommentColumn,
-  clusterSettings
+  clusterSettings,
 }: {
   csv: File | null;
   setCsv: (file: File | null) => void;
@@ -62,16 +66,13 @@ export function CsvFileTab({
                 const bestColumn = getBestCommentColumn(parsed);
                 if (bestColumn) {
                   setSelectedCommentColumn(bestColumn);
-                }              
+                }
                 clusterSettings.setRecommended(parsed.length);
               }
             }
           }}
         >
-          <Box
-            opacity={csv ? 0.5 : 1}
-            pointerEvents={csv ? "none" : "auto"}
-          >
+          <Box opacity={csv ? 0.5 : 1} pointerEvents={csv ? "none" : "auto"}>
             <FileUploadDropzone
               label="分析するコメントファイルを選択してください"
               description=".csv"
@@ -87,13 +88,13 @@ export function CsvFileTab({
             }}
           />
         </FileUploadRoot>
-        
+
         <CommentColumnSelector
           columns={csvColumns}
           selectedColumn={selectedCommentColumn}
           onColumnChange={setSelectedCommentColumn}
         />
-        
+
         <ClusterSettingsSection
           clusterLv1={clusterSettings.clusterLv1}
           clusterLv2={clusterSettings.clusterLv2}

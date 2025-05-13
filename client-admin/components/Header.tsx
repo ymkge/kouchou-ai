@@ -9,8 +9,8 @@ export function Header() {
   // メタ情報の取得
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta`)
-      .then(response => response.json())
-      .then(data => setMeta(data))
+      .then((response) => response.json())
+      .then((data) => setMeta(data))
       .catch(() => setMeta(null));
   }, []);
 

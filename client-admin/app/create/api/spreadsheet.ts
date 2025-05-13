@@ -1,10 +1,13 @@
-import { SpreadsheetComment } from "../types";
+import type { SpreadsheetComment } from "../types";
 import { handleApiError } from "../utils/error-handler";
 
 /**
  * スプレッドシートをインポートする
  */
-export async function importSpreadsheet(url: string, fileName: string): Promise<void> {
+export async function importSpreadsheet(
+  url: string,
+  fileName: string,
+): Promise<void> {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/spreadsheet/import`,
@@ -18,7 +21,7 @@ export async function importSpreadsheet(url: string, fileName: string): Promise<
           url,
           file_name: fileName,
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -35,7 +38,9 @@ export async function importSpreadsheet(url: string, fileName: string): Promise<
 /**
  * スプレッドシートのデータを取得する
  */
-export async function getSpreadsheetData(id: string): Promise<{ comments: SpreadsheetComment[] }> {
+export async function getSpreadsheetData(
+  id: string,
+): Promise<{ comments: SpreadsheetComment[] }> {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/spreadsheet/data/${id}`,
@@ -43,7 +48,7 @@ export async function getSpreadsheetData(id: string): Promise<{ comments: Spread
         headers: {
           "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -68,7 +73,7 @@ export async function deleteSpreadsheetData(id: string): Promise<void> {
         headers: {
           "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
         },
-      }
+      },
     );
 
     if (!response.ok) {

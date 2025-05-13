@@ -18,7 +18,7 @@ function calculateMean(values: number[]): number {
 function calculateVariance(values: number[]): number {
   if (values.length <= 1) return 0;
   const mean = calculateMean(values);
-  const squaredDifferences = values.map(value => Math.pow(value - mean, 2));
+  const squaredDifferences = values.map((value) => Math.pow(value - mean, 2));
   return calculateMean(squaredDifferences);
 }
 
@@ -34,12 +34,12 @@ function calculateVariance(values: number[]): number {
  */
 export function getBestCommentColumn(
   data: Record<string, any>[],
-  k: number = 2.0
+  k = 2.0,
 ): string | null {
   if (data.length === 0) return null;
 
   const columns = Object.keys(data[0]);
-  
+
   // コメントだと認識されるデフォルトカラム
   const defaultCommentColumns = [
     "comment",
@@ -54,20 +54,20 @@ export function getBestCommentColumn(
     "post",
     "レビュー",
     "review",
-    "感想", 
+    "感想",
   ];
-  
+
   // デフォルトカラム名が部分一致するか確認
-  const foundDefaultColumns = columns.filter(col => 
-    defaultCommentColumns.some(defaultCol => 
-      col.toLowerCase().includes(defaultCol.toLowerCase())
-    )
+  const foundDefaultColumns = columns.filter((col) =>
+    defaultCommentColumns.some((defaultCol) =>
+      col.toLowerCase().includes(defaultCol.toLowerCase()),
+    ),
   );
   // デフォルトカラムが1つだけ見つかった場合はそれを返す
   if (foundDefaultColumns.length === 1) {
     return foundDefaultColumns[0];
   }
-  
+
   // デフォルトカラムがない or 候補が2つ以上の場合は、文字数と分散に基づいてスコア計算
   let bestColumn = null;
   let highestScore = -1;
@@ -75,19 +75,19 @@ export function getBestCommentColumn(
   for (const column of columns) {
     // 各行のこのカラムの値の文字数を取得
     const charLengths = data
-      .map(row => {
+      .map((row) => {
         const value = row[column];
-        if (typeof value !== 'string' || !value) return 0;
+        if (typeof value !== "string" || !value) return 0;
         return value.length;
       })
-      .filter(length => length > 0); // 空の値を除外
+      .filter((length) => length > 0); // 空の値を除外
 
     if (charLengths.length === 0) continue;
 
     // 平均と分散を計算
     const mean = calculateMean(charLengths);
     const variance = calculateVariance(charLengths);
-    
+
     // スコアを計算: 平均 + k * 分散
     const score = mean + k * variance;
 

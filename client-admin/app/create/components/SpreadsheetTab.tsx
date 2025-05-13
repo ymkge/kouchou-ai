@@ -1,6 +1,14 @@
-import { Button, Field, HStack, Input, Tabs, Text, VStack } from "@chakra-ui/react";
-import { useClusterSettings } from "../hooks/useClusterSettings";
-import { SpreadsheetComment } from "../types";
+import {
+  Button,
+  Field,
+  HStack,
+  Input,
+  Tabs,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
+import type { useClusterSettings } from "../hooks/useClusterSettings";
+import type { SpreadsheetComment } from "../types";
 import { ClusterSettingsSection } from "./ClusterSettingsSection";
 import { CommentColumnSelector } from "./CommentColumnSelector";
 
@@ -18,7 +26,7 @@ export function SpreadsheetTab({
   setSelectedCommentColumn,
   clusterSettings,
   onImport,
-  onClearData
+  onClearData,
 }: {
   spreadsheetUrl: string;
   setSpreadsheetUrl: (url: string) => void;
@@ -66,13 +74,13 @@ export function SpreadsheetTab({
             公開されているGoogleスプレッドシートのURLを入力してください
             <br />
           </Field.HelperText>
-          
+
           <CommentColumnSelector
             columns={csvColumns}
             selectedColumn={selectedCommentColumn}
             onColumnChange={setSelectedCommentColumn}
           />
-          
+
           <ClusterSettingsSection
             clusterLv1={clusterSettings.clusterLv1}
             clusterLv2={clusterSettings.clusterLv2}
@@ -82,11 +90,10 @@ export function SpreadsheetTab({
             onLv2Change={clusterSettings.handleLv2Change}
           />
         </Field.Root>
-        
+
         {spreadsheetImported && (
           <Text color="green.500" fontSize="sm">
-            スプレッドシートのデータ {spreadsheetData.length}{" "}
-            件を取得しました
+            スプレッドシートのデータ {spreadsheetData.length} 件を取得しました
           </Text>
         )}
 

@@ -55,9 +55,14 @@ export function ClientContainer({ result }: Props) {
   }
 
   // 表示するクラスタを選択
-  const clustersToDisplay = selectedChart === "scatterDensity"
-    ? filteredResult.clusters.filter(c => c.level === Math.max(...filteredResult.clusters.map(c => c.level)))
-    : result.clusters.filter(c => c.level === 1);
+  const clustersToDisplay =
+    selectedChart === "scatterDensity"
+      ? filteredResult.clusters.filter(
+          (c) =>
+            c.level ===
+            Math.max(...filteredResult.clusters.map((c) => c.level)),
+        )
+      : result.clusters.filter((c) => c.level === 1);
 
   return (
     <>
@@ -104,7 +109,7 @@ export function ClientContainer({ result }: Props) {
         treemapLevel={treemapLevel}
         onTreeZoom={setTreemapLevel}
       />
-      
+
       {/* クラスタの概要を表示 */}
       {clustersToDisplay.map((c) => (
         <ClusterOverview key={c.id} cluster={c} />

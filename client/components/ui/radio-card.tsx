@@ -1,17 +1,17 @@
-import { RadioCard } from '@chakra-ui/react'
-import * as React from 'react'
-import { Tooltip } from './tooltip'
+import { RadioCard } from "@chakra-ui/react";
+import * as React from "react";
+import { Tooltip } from "./tooltip";
 
 interface RadioCardItemProps extends RadioCard.ItemProps {
-  icon?: React.ReactElement
-  label?: React.ReactNode
-  description?: React.ReactNode
-  addon?: React.ReactNode
-  indicator?: React.ReactNode | null
-  indicatorPlacement?: 'start' | 'end' | 'inside'
-  inputProps?: React.InputHTMLAttributes<HTMLInputElement>
-  disabled?: boolean
-  disabledReason?: React.ReactNode
+  icon?: React.ReactElement;
+  label?: React.ReactNode;
+  description?: React.ReactNode;
+  addon?: React.ReactNode;
+  indicator?: React.ReactNode | null;
+  indicatorPlacement?: "start" | "end" | "inside";
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
+  disabled?: boolean;
+  disabledReason?: React.ReactNode;
 }
 
 export const RadioCardItem = React.forwardRef<
@@ -25,7 +25,7 @@ export const RadioCardItem = React.forwardRef<
     addon,
     icon,
     indicator = <RadioCard.ItemIndicator />,
-    indicatorPlacement = 'end',
+    indicatorPlacement = "end",
     disabled,
     disabledReason,
     ...rest
@@ -38,19 +38,19 @@ export const RadioCardItem = React.forwardRef<
     <RadioCard.Item
       {...rest}
       data-disabled={disabled}
-      cursor={disabled ? 'not-allowed' : rest.cursor}
+      cursor={disabled ? "not-allowed" : rest.cursor}
       css={
         disabled
           ? {
-            opacity: 0.3,
-            // pointerEvents: 'none',
-          }
+              opacity: 0.3,
+              // pointerEvents: 'none',
+            }
           : undefined
       }
     >
       <RadioCard.ItemHiddenInput ref={ref} {...inputProps} />
       <RadioCard.ItemControl>
-        {indicatorPlacement === 'start' && indicator}
+        {indicatorPlacement === "start" && indicator}
         {hasContent && (
           <ContentWrapper>
             {icon}
@@ -60,10 +60,10 @@ export const RadioCardItem = React.forwardRef<
                 {description}
               </RadioCard.ItemDescription>
             )}
-            {indicatorPlacement === 'inside' && indicator}
+            {indicatorPlacement === "inside" && indicator}
           </ContentWrapper>
         )}
-        {indicatorPlacement === 'end' && indicator}
+        {indicatorPlacement === "end" && indicator}
       </RadioCard.ItemControl>
       {addon && <RadioCard.ItemAddon>{addon}</RadioCard.ItemAddon>}
     </RadioCard.Item>
@@ -75,11 +75,11 @@ export const RadioCardItem = React.forwardRef<
       <Tooltip content={disabledReason} showArrow>
         {cardItem}
       </Tooltip>
-    )
+    );
   }
 
-  return cardItem
-})
+  return cardItem;
+});
 
 export const RadioCardRoot = RadioCard.Root;
 export const RadioCardLabel = RadioCard.Label;
