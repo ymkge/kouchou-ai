@@ -1,11 +1,14 @@
-name: Sync Project Status with Assignees
+name: Update Issue Status
 
 on:
-  issues:
-    types: [assigned, unassigned]
-
-permissions:
-  issues: read
+  workflow_call:
+    inputs:
+      issue_number:
+        required: true
+        type: string
+      action:
+        required: true
+        type: string
 
 jobs:
   update_status:
@@ -42,7 +45,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         PROJECT_TOKEN: ${{ steps.generate-token.outputs.token }}
-        GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-        GITHUB_EVENT_ACTION: ${{ github.event.action }}
+        GITHUB_EVENT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+        GITHUB_EVENT_ACTION: ${{ inputs.action }}
       run: |
         python .github/scripts/assignee_status_sync.py
