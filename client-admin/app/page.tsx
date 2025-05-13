@@ -8,7 +8,6 @@ import {
   MenuRoot,
   MenuTrigger,
 } from "@/components/ui/menu";
-import { RadioCardItem, RadioCardRoot } from "@/components/ui/radio-card";
 import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { Report } from "@/type";
@@ -26,11 +25,13 @@ import {
   LinkOverlay,
   Popover,
   Portal,
+  Select,
   Spinner,
   Steps,
   Text,
   Textarea,
-  VStack
+  VStack,
+  createListCollection
 } from "@chakra-ui/react";
 import {
   CircleAlertIcon,
@@ -501,52 +502,83 @@ function ReportCard({
               </Popover.Root>
             )}
             {report.status === "ready" && (
-              <RadioCardRoot
-                value={report.visibility}
-                onValueChange={async (value) => {
-                  const selected = typeof value === "string" ? value : value?.value;
-                  if (selected === report.visibility) return;
-                  try {
-                    const response = await fetch(
-                      `${getApiBaseUrl()}/admin/reports/${report.slug}/visibility`,
-                      {
-                        method: "PATCH",
-                        headers: {
-                          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                          "Content-Type": "application/json",
-                        },
-                      },
-                    );
-                    if (!response.ok) {
-                      const errorData = await response.json();
-                      throw new Error(errorData.detail || "公開状態の変更に失敗しました");
-                    }
-                    const data = await response.json();
-                    const updatedReports = reports?.map((r) =>
-                      r.slug === report.slug ? { ...r, visibility: data.visibility } : r,
-                    );
-                    if (setReports) {
-                      setReports(updatedReports);
-                    }
-                  } catch (error) {
-                    console.error(error);
-                  }
-                }}
+              <Box
+                onClick={e => e.stopPropagation()}
+                onMouseDown={e => e.stopPropagation()}
+                onPointerDown={e => e.stopPropagation()}
               >
-                <Box
-                  display="flex"
-                  flexDirection="row"
-                  gap={1}
-                  minW="auto"
-                  onClick={e => e.stopPropagation()}
-                  onMouseDown={e => e.stopPropagation()}
-                  onPointerDown={e => e.stopPropagation()}
-                >
-                  <RadioCardItem value="public" label="公開" px={2} py={0.5} minW="40px" fontSize="sm" style={{whiteSpace: 'nowrap'}} />
-                  <RadioCardItem value="unlisted" label="限定公開" px={2} py={0.5} minW="60px" fontSize="sm" style={{whiteSpace: 'nowrap'}} />
-                  <RadioCardItem value="private" label="非公開" px={2} py={0.5} minW="60px" fontSize="sm" style={{whiteSpace: 'nowrap'}} />
-                </Box>
-              </RadioCardRoot>
+                {(() => {
+                  const visibilityOptions = createListCollection({
+                    items: [
+                      { label: "公開", value: "public" },
+                      { label: "限定公開", value: "unlisted" },
+                      { label: "非公開", value: "private" }
+                    ]
+                  });
+                  
+                  return (
+                    <Select.Root 
+                      collection={visibilityOptions} 
+                      size="sm" 
+                      width="150px"
+                      defaultValue={[report.visibility.toString()]}
+                      onValueChange={async (value) => {
+                        // valueは配列の可能性があるため、最初の要素を取得
+                        const selected = Array.isArray(value?.value) ? value?.value[0] : value?.value;
+                        if (!selected || selected === report.visibility.toString()) return;
+                        try {
+                          const response = await fetch(
+                            `${getApiBaseUrl()}/admin/reports/${report.slug}/visibility`,
+                            {
+                              method: "PATCH",
+                              headers: {
+                                "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                                "Content-Type": "application/json",
+                              },
+                              body: JSON.stringify({ visibility: selected }),
+                            },
+                          );
+                          if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || "公開状態の変更に失敗しました");
+                          }
+                          const data = await response.json();
+                          const updatedReports = reports?.map((r) =>
+                            r.slug === report.slug ? { ...r, visibility: data.visibility } : r,
+                          );
+                          if (setReports) {
+                            setReports(updatedReports);
+                          }
+                        } catch (error) {
+                          console.error(error);
+                        }
+                      }}
+                    >
+                      <Select.HiddenSelect />
+                      <Select.Control>
+                        <Select.Trigger>
+                          <Select.ValueText placeholder="公開状態" />
+                        </Select.Trigger>
+                        <Select.IndicatorGroup>
+                          <Select.Indicator />
+                        </Select.IndicatorGroup>
+                      </Select.Control>
+                      <Portal>
+                        <Select.Positioner>
+                          <Select.Content>
+                            {visibilityOptions.items.map((option) => (
+                              <Select.Item item={option} key={option.value}>
+                                {option.label}
+                                <Select.ItemIndicator />
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select.Positioner>
+                      </Portal>
+                    </Select.Root>
+                  );
+                })()}
+              </Box>
             )}
             <MenuRoot>
               <MenuTrigger asChild>

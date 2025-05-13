@@ -25,7 +25,7 @@ def convert_old_format_status(status: dict) -> dict:
     for slug, report_status in status.items():
         if "is_public" in report_status:
             report_status["visibility"] = (
-                ReportVisibility.PUBLIC if report_status["is_public"] else ReportVisibility.PRIVATE
+                ReportVisibility.PUBLIC.value if report_status["is_public"] else ReportVisibility.PRIVATE.value
             )
             report_status.pop("is_public")
             status[slug] = report_status
@@ -79,7 +79,7 @@ def add_new_report_to_status(report_input: ReportInput) -> None:
             "title": report_input.question,
             "description": report_input.intro,
             "is_pubcom": report_input.is_pubcom,
-            "visibility": ReportVisibility.UNLISTED,
+            "visibility": ReportVisibility.UNLISTED.value,
             "created_at": datetime.now(UTC).isoformat(),  # タイムゾーン付きISO形式で追加
         }
         save_status()
@@ -98,14 +98,44 @@ def get_status(slug: str) -> str:
         return _report_status.get(slug, {}).get("status", "undefined")
 
 
-def toggle_report_public_state(slug: str) -> bool:
+def invalidate_report_cache(slug: str) -> None:
+    # Next.jsのキャッシュを破棄するAPIを呼び出す
+    try:
+        logger.info(f"Attempting to revalidate Next.js cache for path: /{slug}")
+
+        # 環境変数からrevalidate URLを取得
+        revalidate_url = settings.REVALIDATE_URL
+
+        logger.info(f"Using revalidate API at: {revalidate_url}")
+
+        response = requests.post(
+            revalidate_url,
+            json={"path": f"/{slug}", "secret": settings.REVALIDATE_SECRET},
+            timeout=3,  # タイムアウトを短く設定
+            headers={"Content-Type": "application/json"},
+        )
+
+        if response.status_code == 200:
+            logger.info("Successfully revalidated Next.js cache")
+        else:
+            logger.error(f"Failed to revalidate: {response.status_code} {response.text}")
+    except Exception as e:
+        # revalidateに失敗しても、メタデータの更新は成功しているので例外は投げない
+        logger.error(f"Failed to call revalidate API for {slug}: {e}")
+
+
+def toggle_report_visibility_state(slug: str, new_visibility: ReportVisibility) -> str:
     with _lock:
         if slug not in _report_status:
-            raise ValueError(f"slug {slug} not found in report status")
-        # ReportVisibilityのenumにする
-        _report_status[slug]["visibility"] = ReportVisibility(_report_status[slug]["visibility"])
+            raise ValueError(f"slug {slug} not found in report status")        
+        # enumの値を文字列に変換して保存
+        _report_status[slug]["visibility"] = new_visibility.value
+        
         save_status()
-        return _report_status[slug]["visibility"] == ReportVisibility.PUBLIC
+        invalidate_report_cache(slug)
+
+        return _report_status[slug]["visibility"]
+    
 
 
 def update_report_metadata(slug: str, title: str = None, description: str = None) -> dict:
@@ -159,28 +189,5 @@ def update_report_metadata(slug: str, title: str = None, description: str = None
                 # ただしログには残す
                 logger.error(f"Failed to update hierarchical_result.json for {slug}: {e}")
 
-        # Next.jsのキャッシュを破棄するAPIを呼び出す
-        try:
-            logger.info(f"Attempting to revalidate Next.js cache for path: /{slug}")
-
-            # 環境変数からrevalidate URLを取得
-            revalidate_url = settings.REVALIDATE_URL
-
-            logger.info(f"Using revalidate API at: {revalidate_url}")
-
-            response = requests.post(
-                revalidate_url,
-                json={"path": f"/{slug}", "secret": settings.REVALIDATE_SECRET},
-                timeout=3,  # タイムアウトを短く設定
-                headers={"Content-Type": "application/json"},
-            )
-
-            if response.status_code == 200:
-                logger.info("Successfully revalidated Next.js cache")
-            else:
-                logger.error(f"Failed to revalidate: {response.status_code} {response.text}")
-        except Exception as e:
-            # revalidateに失敗しても、メタデータの更新は成功しているので例外は投げない
-            logger.error(f"Failed to call revalidate API for {slug}: {e}")
-
+        invalidate_report_cache(slug)
         return _report_status[slug]
