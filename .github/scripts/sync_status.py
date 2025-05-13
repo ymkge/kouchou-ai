@@ -1,4 +1,7 @@
+# Projects status 更新の共通処理
+
 import os
+import json
 import requests
 from github import Github
 
@@ -6,7 +9,13 @@ if not os.getenv('GITHUB_ACTIONS'):
     from dotenv import load_dotenv
     load_dotenv()
 
-STATUS_NO_STATUS = "No Status"
+# 以下、digitaldemocracy2030/kouchou-ai の設定
+REPO_OWNER = "digitaldemocracy2030"
+REPO_NAME = "kouchou-ai"
+PROJECT_ID = "PVT_kwDODCKp5M4A00DQ"
+PROJECT_NO = 3
+STATUS_FIELD_ID = "PVTSSF_lADODCKp5M4A00DQzgqYqoE"
+STATUS_NO_STATUS = None
 STATUS_COLD_LIST = "Cold List"
 STATUS_NEED_REFINEMENT = "Need Refinement"
 STATUS_READY = "Ready"
@@ -23,79 +32,66 @@ class Config:
             return
         else:
             print("GITHUB_TOKENからトークンを正常に取得しました。")
+        
+        self.github_repo = os.getenv("GITHUB_REPOSITORY")
+        if self.github_repo is None:
+            print("GITHUB_REPOSITORYが見つかりません ...")
+            return
+        else:
+            print("GITHUB_REPOSITORYからトークンを正常に取得しました。")
 
         self.project_token = os.getenv("PROJECT_TOKEN")
         if self.project_token is None:
-            print("PROJECT_TOKENが見つかりません ...")
+            print("PROJECT_TOKENが見つかりません...")
             return
         else:
-            print("PROJECT_TOKENからトークンを正常に取得しました。")
-
-        self.github_repo = os.getenv("GITHUB_REPOSITORY")
-        print("GITHUB_REPOSITORYの状態:", "GITHUB_REPOSITORYを取得済み" if self.github_repo else "GITHUB_REPOSITORYが見つかりません")
-
+            print("PROJECT_TOKENを正常に取得しました")
+            
         self.issue_number = os.getenv("GITHUB_EVENT_ISSUE_NUMBER")
-        if self.issue_number:
-            self.issue_number = int(self.issue_number)
-            print(f"GITHUB_EVENT_ISSUE_NUMBER: {self.issue_number}")
+        if self.issue_number is None:
+            print("GITHUB_EVENT_ISSUE_NUMBERが見つかりません...")
+            return
         else:
-            print("GITHUB_EVENT_ISSUE_NUMBERが見つかりません")
-
-
-        self.project_id = os.getenv("PROJECT_ID")
-        if self.project_id is None:
-            print("PROJECT_IDが見つかりません ...")
-            return
-
-        self.status_field_id = os.getenv("STATUS_FIELD")
-        if self.status_field_id is None:
-            print("STATUS_FIELDが見つかりません ...")
-            return
-
-        print("設定の初期化が完了しました。")
+            self.issue_number = int(self.issue_number)
+            print("GITHUB_EVENT_ISSUE_NUMBERを正常に取得しました")
+        
+        print("設定の初期化が完了しました")
 
 class GithubHandler:
     def __init__(self, config: Config):
         self.github = Github(config.github_token)
         self.repo = self.github.get_repo(config.github_repo)
+        self.issue_number = config.issue_number
         self.issue = self.repo.get_issue(config.issue_number)
         self.config = config
-
-    def get_issue_status(self):
+    
+    def get_issue_status_and_id(self):
         """GraphQL APIを使用してIssueの現在のステータスを取得する"""
+        
         headers = {
             "Authorization": f"Bearer {self.config.project_token}",
             "Content-Type": "application/json"
         }
-
-        issue_node_id = self.issue.raw_data['node_id']
-        issue_number = self.issue.number
-
-        print(f"Issueノード ID: {issue_node_id}")
-        print(f"Issue番号: {issue_number}")
-        print(f"プロジェクトID: {self.config.project_id}")
-
         query = """
-        query($projectId: ID!, $issueNumber: Int!, $repoOwner: String!, $repoName: String!) {
-          node(id: $projectId) {
-            ... on ProjectV2 {
-              items(first: 100) {
-                nodes {
-                  id
-                  content {
-                    ... on Issue {
-                      number
-                      repository {
-                        name
-                        owner {
-                          login
+        query($repoOwner: String!, $projectNo: Int!) {
+          organization(login: $repoOwner) {
+            projectV2(number: $projectNo) {
+              ... on ProjectV2 {
+                items(first: 100) {
+                  nodes {
+                    id
+                    content {
+                      ... on Issue {
+                        number
+                        repository {
+                          name
                         }
                       }
                     }
-                  }
-                  fieldValueByName(name: "Status") {
-                    ... on ProjectV2ItemFieldSingleSelectValue {
-                      name
+                    fieldValueByName(name: "Status") {
+                      ... on ProjectV2ItemFieldSingleSelectValue {
+                        name
+                      }
                     }
                   }
                 }
@@ -104,58 +100,43 @@ class GithubHandler:
           }
         }
         """
-
-        repo_parts = self.config.github_repo.split('/')
-        repo_owner = repo_parts[0]
-        repo_name = repo_parts[1]
-
         variables = {
-            "projectId": self.config.project_id,
-            "issueNumber": issue_number,
-            "repoOwner": repo_owner,
-            "repoName": repo_name
+            "repoOwner": REPO_OWNER,
+            "projectNo": PROJECT_NO
         }
-
-        print(f"リポジトリ所有者: {repo_owner}")
-        print(f"リポジトリ名: {repo_name}")
-
+        
         response = requests.post(
             "https://api.github.com/graphql",
             headers=headers,
             json={"query": query, "variables": variables}
         )
-
         if response.status_code != 200:
             print(f"GraphQL APIからのエラー: {response.text}")
             return None
-
-        data = response.json()
-        project_items = data.get("data", {}).get("node", {}).get("items", {}).get("nodes", [])
-
+        
+        resjson = response.json()
+        project_items = resjson.get("data", {}).get("organization", {}).get("projectV2", {}).get("items", {}).get("nodes", [])
+        
         for item in project_items:
             content = item.get("content")
-            if content and content.get("__typename") == "Issue":
-                if (content.get("number") == issue_number and 
-                    content.get("repository", {}).get("name") == repo_name and 
-                    content.get("repository", {}).get("owner", {}).get("login") == repo_owner):
-
+            if content:
+                if (content.get("number") == self.issue_number and content.get("repository", {}).get("name") == REPO_NAME):
                     field_value = item.get("fieldValueByName")
                     if field_value:
-                        return field_value.get("name")
-                    return None
-
+                        return field_value.get("name"), item["id"]
+                    return None, None
         print("Projectにこのissueが見つかりません。アイテム数:", len(project_items))
-
-
-        return None
-
-    def update_issue_status(self, status: str):
+        return None, None
+    
+    def update_issue_status(self, status: str, item_id: str):
         """GraphQL APIを使用してIssueのステータスを更新する"""
+        
+        # まず更新後のstatus（名称）に対応するIDを調べる
+        
         headers = {
             "Authorization": f"Bearer {self.config.project_token}",
             "Content-Type": "application/json"
         }
-
         query = """
         query($fieldId: ID!) {
           node(id: $fieldId) {
@@ -168,97 +149,36 @@ class GithubHandler:
           }
         }
         """
-
         variables = {
-            "fieldId": self.config.status_field_id
+            "fieldId": STATUS_FIELD_ID
         }
-
+        
         response = requests.post(
             "https://api.github.com/graphql",
             headers=headers,
             json={"query": query, "variables": variables}
         )
-
         if response.status_code != 200:
             print(f"GraphQL APIからのエラー: {response.text}")
             return False
-
+        
         data = response.json()
         options = data.get("data", {}).get("node", {}).get("options", [])
-
+        
         option_id = None
         for option in options:
             if option["name"] == status:
                 option_id = option["id"]
                 break
-
+        
         if not option_id:
             print(f"ステータス '{status}' のオプションが見つかりません")
             return False
 
-        issue_number = self.issue.number
-
-        repo_parts = self.config.github_repo.split('/')
-        repo_owner = repo_parts[0]
-        repo_name = repo_parts[1]
-
-        query = """
-        query($projectId: ID!, $issueNumber: Int!, $repoOwner: String!, $repoName: String!) {
-          node(id: $projectId) {
-            ... on ProjectV2 {
-              items(first: 300) {
-                nodes {
-                  id
-                  content {
-                    ... on Issue {
-                      number
-                      repository {
-                        name
-                        owner {
-                          login
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        """
-
-        variables = {
-            "projectId": self.config.project_id,
-            "issueNumber": issue_number,
-            "repoOwner": repo_owner,
-            "repoName": repo_name
-        }
-
-        response = requests.post(
-            "https://api.github.com/graphql",
-            headers=headers,
-            json={"query": query, "variables": variables}
-        )
-
-        if response.status_code != 200:
-            print(f"GraphQL APIからのエラー: {response.text}")
-            return False
-
-        data = response.json()
-        project_items = data.get("data", {}).get("node", {}).get("items", {}).get("nodes", [])
-
-        item_id = None
-        for item in project_items:
-            content = item.get("content")
-            if content and content.get("__typename") == "Issue":
-                if (content.get("number") == issue_number and 
-                    content.get("repository", {}).get("name") == repo_name and 
-                    content.get("repository", {}).get("owner", {}).get("login") == repo_owner):
-                    item_id = item["id"]
-                    break
-
+        # 更新後のstatus（名称）に対応するIDが見つかったので、更新する
+        
         mutation = """
-        mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: ID!) {
+        mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
           updateProjectV2ItemFieldValue(input: {
             projectId: $projectId,
             itemId: $itemId,
@@ -267,27 +187,42 @@ class GithubHandler:
               singleSelectOptionId: $optionId
             }
           }) {
-            clientMutationId
+            projectV2Item {
+              id
+              content {
+                ... on Issue {
+                  number
+                  repository {
+                    name
+                  }
+                }
+              }
+              fieldValueByName(name: "Status") {
+                ... on ProjectV2ItemFieldSingleSelectValue {
+                  name
+                }
+              }
+            }
           }
         }
         """
-
         variables = {
-            "projectId": self.config.project_id,
+            "projectId": PROJECT_ID,
             "itemId": item_id,
-            "fieldId": self.config.status_field_id,
+            "fieldId": STATUS_FIELD_ID,
             "optionId": option_id
         }
-
+        
         response = requests.post(
             "https://api.github.com/graphql",
             headers=headers,
             json={"query": mutation, "variables": variables}
         )
-
         if response.status_code != 200:
             print(f"GraphQL APIからのエラー: {response.text}")
             return False
 
+        # print(response.json())
+        
         print(f"ステータスを '{status}' に正常に更新しました")
         return True
