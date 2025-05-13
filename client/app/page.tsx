@@ -56,8 +56,8 @@ export default async function Page() {
         <div className={"container"}>
           {meta && <Header meta={meta} />}
           <Box mx={"auto"} maxW={"900px"} mb={10}>
-            <Heading textAlign={"center"} fontSize={"xl"} mb={5}>
-              Reports
+            <Heading textAlign={"left"} fontSize={"xl"} mb={8}>
+              レポート一覧
             </Heading>
             {!reports && (
               <VStack my={10}>

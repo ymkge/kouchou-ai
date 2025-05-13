@@ -58,7 +58,7 @@ export function Analysis({ result }: ReportProps) {
     <Box mx={"auto"} maxW={"750px"} mb={12} cursor={"default"}>
       <Separator mt={20} mb={12} />
       <Heading textAlign={"center"} fontSize={"xl"} mb={5}>
-        Analysis
+        分析の概要
       </Heading>
       <HStack mb={5} justify={"center"}>
         <Tooltip
