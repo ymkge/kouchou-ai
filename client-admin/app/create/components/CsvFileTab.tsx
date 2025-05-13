@@ -1,8 +1,4 @@
-import {
-  FileUploadDropzone,
-  FileUploadList,
-  FileUploadRoot,
-} from "@/components/ui/file-upload";
+import { FileUploadDropzone, FileUploadList, FileUploadRoot } from "@/components/ui/file-upload";
 import { Box, Tabs, VStack } from "@chakra-ui/react";
 import { DownloadIcon } from "lucide-react";
 import Link from "next/link";
@@ -63,9 +59,7 @@ export function CsvFileTab({
                 setCsvColumns(columns);
 
                 // 最適なカラムを自動選択
-                const bestColumn = getBestCommentColumn(
-                  parsed as unknown as Record<string, unknown>[],
-                );
+                const bestColumn = getBestCommentColumn(parsed as unknown as Record<string, unknown>[]);
                 if (bestColumn) {
                   setSelectedCommentColumn(bestColumn);
                 }
@@ -75,10 +69,7 @@ export function CsvFileTab({
           }}
         >
           <Box opacity={csv ? 0.5 : 1} pointerEvents={csv ? "none" : "auto"}>
-            <FileUploadDropzone
-              label="分析するコメントファイルを選択してください"
-              description=".csv"
-            />
+            <FileUploadDropzone label="分析するコメントファイルを選択してください" description=".csv" />
           </Box>
           <FileUploadList
             clearable={true}

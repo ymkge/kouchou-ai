@@ -72,13 +72,7 @@ export function Analysis({ result }: ReportProps) {
             <Icon mb={2}>
               <MessageCircleWarningIcon size={"30px"} />
             </Icon>
-            <Text
-              className={"headingColor"}
-              fontSize={"3xl"}
-              fontWeight={"bold"}
-              lineHeight={1}
-              mb={1}
-            >
+            <Text className={"headingColor"} fontSize={"3xl"} fontWeight={"bold"} lineHeight={1} mb={1}>
               {result.comment_num.toLocaleString()}
             </Text>
             <Text fontSize={"xs"}>コメント数</Text>
@@ -96,13 +90,7 @@ export function Analysis({ result }: ReportProps) {
             <Icon mb={2}>
               <MessagesSquareIcon size={"30px"} />
             </Icon>
-            <Text
-              className={"headingColor"}
-              fontSize={"3xl"}
-              fontWeight={"bold"}
-              lineHeight={1}
-              mb={1}
-            >
+            <Text className={"headingColor"} fontSize={"3xl"} fontWeight={"bold"} lineHeight={1} mb={1}>
               {result.arguments.length.toLocaleString()}
             </Text>
             <Text fontSize={"xs"}>抽出した意見数</Text>
@@ -121,23 +109,11 @@ export function Analysis({ result }: ReportProps) {
               <ClipboardCheckIcon size={"30px"} />
             </Icon>
             <HStack gap={1} alignItems={"center"}>
-              <Text
-                className={"headingColor"}
-                fontSize={"3xl"}
-                fontWeight={"bold"}
-                lineHeight={1}
-                mb={1}
-              >
+              <Text className={"headingColor"} fontSize={"3xl"} fontWeight={"bold"} lineHeight={1} mb={1}>
                 {clusterNum["1"].toLocaleString()}
               </Text>
               <Text fontSize={"md"}>→</Text>
-              <Text
-                className={"headingColor"}
-                fontSize={"3xl"}
-                fontWeight={"bold"}
-                lineHeight={1}
-                mb={1}
-              >
+              <Text className={"headingColor"} fontSize={"3xl"} fontWeight={"bold"} lineHeight={1} mb={1}>
                 {clusterNum["2"].toLocaleString()}
               </Text>
             </HStack>
@@ -162,9 +138,7 @@ export function Analysis({ result }: ReportProps) {
                 </TimelineConnector>
                 {p.step === "extraction" && (
                   <TimelineContent>
-                    <TimelineTitle fontWeight={"bold"}>
-                      抽出 ({result.config.extraction.model})
-                    </TimelineTitle>
+                    <TimelineTitle fontWeight={"bold"}>抽出 ({result.config.extraction.model})</TimelineTitle>
                     <TimelineDescription>
                       コメントデータから意見を抽出するステップです。
                       <br />
@@ -229,9 +203,7 @@ export function Analysis({ result }: ReportProps) {
                 )}
                 {p.step === "hierarchical_clustering" && (
                   <TimelineContent>
-                    <TimelineTitle fontWeight={"bold"}>
-                      意見グループ化
-                    </TimelineTitle>
+                    <TimelineTitle fontWeight={"bold"}>意見グループ化</TimelineTitle>
                     <TimelineDescription>
                       埋め込みベクトルの値に基づいて意見の意見グループ化を行うステップです。
                       <br />
@@ -243,8 +215,7 @@ export function Analysis({ result }: ReportProps) {
                         onClick={() =>
                           setSelectedData({
                             title: `意見グループ化 - ${p.step}`,
-                            body: result.config.hierarchical_clustering
-                              .source_code,
+                            body: result.config.hierarchical_clustering.source_code,
                           })
                         }
                       >
@@ -256,8 +227,7 @@ export function Analysis({ result }: ReportProps) {
                 {p.step === "hierarchical_initial_labelling" && (
                   <TimelineContent>
                     <TimelineTitle fontWeight={"bold"}>
-                      初期ラベリング (
-                      {result.config.hierarchical_initial_labelling.model})
+                      初期ラベリング ({result.config.hierarchical_initial_labelling.model})
                     </TimelineTitle>
                     <TimelineDescription>
                       意見グループ化の結果に対して、各意見グループに適切なタイトル・説明文を生成（ラベリング）するステップです。
@@ -271,8 +241,7 @@ export function Analysis({ result }: ReportProps) {
                         onClick={() =>
                           setSelectedData({
                             title: `初期ラベリング - ${p.step}`,
-                            body: result.config.hierarchical_initial_labelling
-                              .source_code,
+                            body: result.config.hierarchical_initial_labelling.source_code,
                           })
                         }
                       >
@@ -284,8 +253,7 @@ export function Analysis({ result }: ReportProps) {
                         onClick={() =>
                           setSelectedData({
                             title: `初期ラベリング - ${p.step}`,
-                            body: result.config.hierarchical_initial_labelling
-                              .prompt,
+                            body: result.config.hierarchical_initial_labelling.prompt,
                           })
                         }
                       >
@@ -297,8 +265,7 @@ export function Analysis({ result }: ReportProps) {
                 {p.step === "hierarchical_merge_labelling" && (
                   <TimelineContent>
                     <TimelineTitle fontWeight={"bold"}>
-                      統合ラベリング (
-                      {result.config.hierarchical_merge_labelling.model})
+                      統合ラベリング ({result.config.hierarchical_merge_labelling.model})
                     </TimelineTitle>
                     <TimelineDescription>
                       意見グループを統合し、統合されたグループのタイトルと説明文を生成（ラベリング）するステップです。
@@ -312,8 +279,7 @@ export function Analysis({ result }: ReportProps) {
                         onClick={() =>
                           setSelectedData({
                             title: `統合ラベリング - ${p.step}`,
-                            body: result.config.hierarchical_merge_labelling
-                              .source_code,
+                            body: result.config.hierarchical_merge_labelling.source_code,
                           })
                         }
                       >
@@ -325,8 +291,7 @@ export function Analysis({ result }: ReportProps) {
                         onClick={() =>
                           setSelectedData({
                             title: `統合ラベリング - ${p.step}`,
-                            body: result.config.hierarchical_merge_labelling
-                              .prompt,
+                            body: result.config.hierarchical_merge_labelling.prompt,
                           })
                         }
                       >
@@ -352,8 +317,7 @@ export function Analysis({ result }: ReportProps) {
                         onClick={() =>
                           setSelectedData({
                             title: `要約 - ${p.step}`,
-                            body: result.config.hierarchical_overview
-                              .source_code,
+                            body: result.config.hierarchical_overview.source_code,
                           })
                         }
                       >
@@ -389,8 +353,7 @@ export function Analysis({ result }: ReportProps) {
                         onClick={() =>
                           setSelectedData({
                             title: `出力 - ${p.step}`,
-                            body: result.config.hierarchical_aggregation
-                              .source_code,
+                            body: result.config.hierarchical_aggregation.source_code,
                           })
                         }
                       >
@@ -414,8 +377,7 @@ export function Analysis({ result }: ReportProps) {
                         onClick={() =>
                           setSelectedData({
                             title: `表示 - ${p.step}`,
-                            body: result.config.hierarchical_visualization
-                              .source_code,
+                            body: result.config.hierarchical_visualization.source_code,
                           })
                         }
                       >
@@ -430,25 +392,14 @@ export function Analysis({ result }: ReportProps) {
         </Presence>
       </Box>
 
-      <DrawerRoot
-        open={!!selectedData}
-        size={"xl"}
-        onOpenChange={() => setSelectedData(null)}
-      >
+      <DrawerRoot open={!!selectedData} size={"xl"} onOpenChange={() => setSelectedData(null)}>
         <DrawerBackdrop />
         <DrawerContent>
           <DrawerHeader>
             <DrawerTitle>{selectedData?.title}</DrawerTitle>
           </DrawerHeader>
           <DrawerBody fontSize={"xs"}>
-            <Box
-              p={5}
-              borderRadius={5}
-              bgColor={"#111"}
-              color={"#fff"}
-              whiteSpace={"pre-wrap"}
-              className={"code"}
-            >
+            <Box p={5} borderRadius={5} bgColor={"#111"} color={"#fff"} whiteSpace={"pre-wrap"} className={"code"}>
               {selectedData?.body}
             </Box>
           </DrawerBody>

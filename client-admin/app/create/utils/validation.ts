@@ -63,9 +63,7 @@ export function validateFormValues({
   }
 
   // 入力ソースのチェック
-  const sourceCheck =
-    (inputType === "file" && !!csv) ||
-    (inputType === "spreadsheet" && spreadsheetImported);
+  const sourceCheck = (inputType === "file" && !!csv) || (inputType === "spreadsheet" && spreadsheetImported);
 
   if (!sourceCheck) {
     return {
@@ -85,8 +83,7 @@ export function validateFormValues({
   if (provider === "local" && modelOptions && modelOptions.length === 0) {
     return {
       isValid: false,
-      errorMessage:
-        "LocalLLMのモデルリストが空です。モデル取得ボタンを押してモデルリストを取得してください。",
+      errorMessage: "LocalLLMのモデルリストが空です。モデル取得ボタンを押してモデルリストを取得してください。",
     };
   }
 

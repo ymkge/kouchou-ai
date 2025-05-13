@@ -14,10 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!path) {
-      return NextResponse.json(
-        { message: "Path is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "Path is required" }, { status: 400 });
     }
 
     // 指定されたパスのキャッシュを破棄
@@ -31,9 +28,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Revalidation error:", error);
-    return NextResponse.json(
-      { message: "Error revalidating", error: String(error) },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "Error revalidating", error: String(error) }, { status: 500 });
   }
 }

@@ -1,10 +1,6 @@
 import { toaster } from "@/components/ui/toaster";
 import { useCallback, useState } from "react";
-import {
-  deleteSpreadsheetData,
-  getSpreadsheetData,
-  importSpreadsheet,
-} from "../api/spreadsheet";
+import { deleteSpreadsheetData, getSpreadsheetData, importSpreadsheet } from "../api/spreadsheet";
 import { parseCsv } from "../parseCsv";
 import type { InputType, SpreadsheetComment } from "../types";
 import { getBestCommentColumn } from "../utils/columnScorer";
@@ -22,18 +18,14 @@ export function useInputData(onDataLoaded: (commentCount: number) => void) {
 
   // スプレッドシート関連の状態
   const [spreadsheetUrl, setSpreadsheetUrl] = useState<string>("");
-  const [spreadsheetImported, setSpreadsheetImported] =
-    useState<boolean>(false);
+  const [spreadsheetImported, setSpreadsheetImported] = useState<boolean>(false);
   const [spreadsheetLoading, setSpreadsheetLoading] = useState<boolean>(false);
-  const [spreadsheetData, setSpreadsheetData] = useState<SpreadsheetComment[]>(
-    [],
-  );
+  const [spreadsheetData, setSpreadsheetData] = useState<SpreadsheetComment[]>([]);
   const [importedId, setImportedId] = useState<string>("");
 
   // カラム関連の状態
   const [csvColumns, setCsvColumns] = useState<string[]>([]);
-  const [selectedCommentColumn, setSelectedCommentColumn] =
-    useState<string>("");
+  const [selectedCommentColumn, setSelectedCommentColumn] = useState<string>("");
 
   /**
    * 最適なカラムを選択する関数
@@ -102,9 +94,7 @@ export function useInputData(onDataLoaded: (commentCount: number) => void) {
         setSpreadsheetData(commentData.comments);
 
         if (commentData.comments.length > 0) {
-          selectBestColumn(
-            commentData.comments as unknown as Record<string, unknown>[],
-          );
+          selectBestColumn(commentData.comments as unknown as Record<string, unknown>[]);
         }
 
         toaster.create({
@@ -168,9 +158,7 @@ export function useInputData(onDataLoaded: (commentCount: number) => void) {
         });
       } else if (newType === "spreadsheet" && spreadsheetData.length > 0) {
         // スプレッドシートのカラムを再構築
-        selectBestColumn(
-          spreadsheetData as unknown as Record<string, unknown>[],
-        );
+        selectBestColumn(spreadsheetData as unknown as Record<string, unknown>[]);
       } else {
         // データがない場合はカラムリセット
         setCsvColumns([]);

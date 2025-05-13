@@ -2,17 +2,7 @@
 
 import { Header } from "@/components/Header";
 import { toaster } from "@/components/ui/toaster";
-import {
-  Box,
-  Button,
-  Field,
-  HStack,
-  Heading,
-  Presence,
-  Tabs,
-  VStack,
-  useDisclosure,
-} from "@chakra-ui/react";
+import { Box, Button, Field, HStack, Heading, Presence, Tabs, VStack, useDisclosure } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createReport } from "./api/report";
@@ -92,9 +82,7 @@ export default function Page() {
         const parsed = await parseCsv(inputData.csv);
         comments = parsed.map((row, index) => ({
           id: `csv-${index + 1}`,
-          comment: (row as unknown as Record<string, unknown>)[
-            inputData.selectedCommentColumn
-          ] as string,
+          comment: (row as unknown as Record<string, unknown>)[inputData.selectedCommentColumn] as string,
           source: null,
           url: null,
         }));
@@ -110,15 +98,10 @@ export default function Page() {
             return;
           }
         }
-      } else if (
-        inputData.inputType === "spreadsheet" &&
-        inputData.spreadsheetImported
-      ) {
+      } else if (inputData.inputType === "spreadsheet" && inputData.spreadsheetImported) {
         comments = inputData.spreadsheetData.map((row, index) => ({
           id: row.id || `spreadsheet-${index + 1}`,
-          comment: (row as unknown as Record<string, unknown>)[
-            inputData.selectedCommentColumn
-          ] as string,
+          comment: (row as unknown as Record<string, unknown>)[inputData.selectedCommentColumn] as string,
           source: row.source || null,
           url: row.url || null,
         }));
@@ -149,10 +132,7 @@ export default function Page() {
         is_pubcom: aiSettings.isPubcomMode,
         inputType: inputData.inputType,
         is_embedded_at_local: aiSettings.isEmbeddedAtLocal,
-        local_llm_address:
-          aiSettings.provider === "local"
-            ? aiSettings.localLLMAddress
-            : undefined,
+        local_llm_address: aiSettings.provider === "local" ? aiSettings.localLLMAddress : undefined,
       });
 
       toaster.create({
@@ -201,9 +181,7 @@ export default function Page() {
             >
               <Tabs.List>
                 <Tabs.Trigger value="file">CSVファイル</Tabs.Trigger>
-                <Tabs.Trigger value="spreadsheet">
-                  Googleスプレッドシート
-                </Tabs.Trigger>
+                <Tabs.Trigger value="spreadsheet">Googleスプレッドシート</Tabs.Trigger>
                 <Tabs.Indicator />
               </Tabs.List>
 
@@ -285,14 +263,7 @@ export default function Page() {
           <WarningSection />
 
           {/* 送信ボタン */}
-          <Button
-            mt={10}
-            className={"gradientBg shadow"}
-            size={"2xl"}
-            w={"300px"}
-            onClick={onSubmit}
-            loading={loading}
-          >
+          <Button mt={10} className={"gradientBg shadow"} size={"2xl"} w={"300px"} onClick={onSubmit} loading={loading}>
             レポート作成を開始
           </Button>
         </VStack>
