@@ -14,8 +14,7 @@ export const ChartCore = dynamic(
     // ズームとパン機能のために必要なモジュール
     const ScatterGL = await import("plotly.js/lib/scattergl");
 
-    const createPlotlyComponent = (await import("react-plotly.js/factory"))
-      .default;
+    const createPlotlyComponent = (await import("react-plotly.js/factory")).default;
 
     Plotly.register([Scatter, Sunburst, Treemap, ScatterGL]);
     Plotly.register(jaLocale);

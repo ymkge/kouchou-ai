@@ -30,21 +30,9 @@ export function About({ meta }: AboutProps) {
       <VStack>
         {/* カスタム環境でかつリンクが存在する場合のみ表示 */}
         {!meta.isDefault && meta.webLink && (
-          <Link
-            href={meta.webLink}
-            target={"_blank"}
-            rel={"noopener noreferrer"}
-          >
-            <Button
-              size={"2xl"}
-              minW={"300px"}
-              bgColor={meta.brandColor || "#2577B1"}
-            >
-              <Image
-                src={getImageFromServerSrc("/meta/icon.png")}
-                w={30}
-                alt={meta.reporter}
-              />
+          <Link href={meta.webLink} target={"_blank"} rel={"noopener noreferrer"}>
+            <Button size={"2xl"} minW={"300px"} bgColor={meta.brandColor || "#2577B1"}>
+              <Image src={getImageFromServerSrc("/meta/icon.png")} w={30} alt={meta.reporter} />
               {meta.reporter}のページへ
               <ExternalLinkIcon />
             </Button>
