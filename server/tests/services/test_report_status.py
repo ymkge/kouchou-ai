@@ -6,6 +6,8 @@ from src.schemas.report import ReportVisibility
 from src.services.report_status import convert_old_format_status
 
 
+# FIXME: report_status.jsonのフォーマット変更に対応するための関数のテストコード。広聴AIをver3.0にした段階で削除する。
+# https://github.com/digitaldemocracy2030/kouchou-ai/issues/507
 class TestReportStatus:
     """レポートステータス関連のテスト"""
 

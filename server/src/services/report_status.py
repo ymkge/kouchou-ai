@@ -17,7 +17,8 @@ _lock = threading.RLock()
 _report_status = {}
 
 
-# NOTE: 広聴AIをver3.0にした段階で削除する
+# FIXME: report_status.jsonのフォーマット変更に対応するためのコード。広聴AIをver3.0にした段階で削除する。
+# https://github.com/digitaldemocracy2030/kouchou-ai/issues/507
 def convert_old_format_status(status: dict) -> dict:
     """旧形式のレポートのステータスを新形式に変換する
     旧形式では公開/非公開をis_publicで管理していたが、新形式ではvisibilityで管理している
