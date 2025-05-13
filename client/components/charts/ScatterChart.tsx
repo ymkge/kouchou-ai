@@ -19,7 +19,7 @@ export function ScatterChart({
 }: Props) {
   const targetClusters = clusterList.filter(
     (cluster) => cluster.level === targetLevel,
-  );  
+  );
   const softColors = [
     "#7ac943",
     "#3fa9f5",
@@ -74,7 +74,11 @@ export function ScatterChart({
   const clusterColorMapA = targetClusters.reduce(
     (acc, cluster, index) => {
       const alpha = 0.8; // アルファ値を指定
-      acc[cluster.id] = softColors[index % softColors.length] + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+      acc[cluster.id] =
+        softColors[index % softColors.length] +
+        Math.floor(alpha * 255)
+          .toString(16)
+          .padStart(2, "0");
       return acc;
     },
     {} as Record<string, string>,
@@ -90,10 +94,10 @@ export function ScatterChart({
 
     const alphabetWidth = 0.6; // 英字の幅
 
-    let result = '';
-    let currentLine = '';
+    let result = "";
+    let currentLine = "";
     let currentLineLength = 0;
-    
+
     // 文字ごとに処理
     for (let i = 0; i < text.length; i++) {
       const char = text[i];
@@ -113,32 +117,35 @@ export function ScatterChart({
         currentLine += char; // 現在の行に文字を追加
       }
     }
-    
+
     // 最後の行を追加
     if (currentLine) {
       result += `${currentLine}`;
     }
-    
+
     return result;
   };
 
   const onUpdate = (_event: unknown) => {
-    // Plotly単体で設定できないデザインを、onUpdateのタイミングでSVGをオーバーライドして解決する
+    // Plotly単体で設定できないデザインを、onUpdateのタイミングでHTMLをオーバーライドして解決する
 
     // アノテーションの角を丸にする
-    const bgRound = 4
+    const bgRound = 4;
     try {
-      document.querySelectorAll('g.annotation').forEach((g) => {
-        const bg = g.querySelector('rect.bg');
+      for (const g of document.querySelectorAll("g.annotation")) {
+        const bg = g.querySelector("rect.bg");
         if (bg) {
-          bg.setAttribute('rx', `${bgRound}px`);
-          bg.setAttribute('ry', `${bgRound}px`);
+          bg.setAttribute("rx", `${bgRound}px`);
+          bg.setAttribute("ry", `${bgRound}px`);
         }
-      });
+      }
     } catch (error) {
-      console.error('アノテーション要素の角丸化に失敗しました:', error);
+      console.error("アノテーション要素の角丸化に失敗しました:", error);
     }
-  }
+
+    // プロット操作用アイコンのエリアを「全画面終了」ボタンの下に移動する
+    avoidModBarCoveringShrinkButton();
+  };
 
   const clusterData = targetClusters.map((cluster) => {
     const clusterArguments = argumentList.filter((arg) =>
@@ -168,70 +175,94 @@ export function ScatterChart({
     <Box width="100%" height="100%" display="flex" flexDirection="column">
       <Box position="relative" flex="1">
         <ChartCore
-        data={clusterData.map((data) => ({
-        x: data.xValues,
-        y: data.yValues,
-        mode: "markers",
-        marker: {
-          size: 7,
-          color: clusterColorMap[data.cluster.id],
-        },
-        type: "scatter",
-        text: data.texts,
-        hoverinfo: "text",
-        hoverlabel: {
-          align: "left",
-          bgcolor: "white",
-          bordercolor: clusterColorMap[data.cluster.id],
-          font: {
-            size: 12,
-            color: "#333",
-          },
-        },
-      }))}
-      layout={{
-        margin: { l: 0, r: 0, b: 0, t: 0 },
-        xaxis: {
-          zeroline: false,
-          showticklabels: false,
-          showgrid: false,
-        },
-        yaxis: {
-          zeroline: false,
-          showticklabels: false,
-          showgrid: false,
-        },
-        hovermode: "closest",
-        dragmode: "pan", // ドラッグによる移動（パン）を有効化
-        annotations: showClusterLabels ? clusterData.map((data) => ({
-          x: data.centerX,
-          y: data.centerY,
-          text: wrapLabelText(data.cluster.label), // ラベルを折り返し処理
-          showarrow: false,
-          font: {
-            color: "white",
-            size: annotationFontsize,
-            weight: 700,
-          },
-          bgcolor: clusterColorMapA[data.cluster.id], // 背景はアルファ付き
-          borderpad: 10,
-          width: annotationLabelWidth,
-          align: 'left',
-        })) : [],
-        showlegend: false,
-      }}
-      useResizeHandler={true}
-      style={{ width: "100%", height: "100%" }}
-      config={{
-        responsive: true,
-        displayModeBar: "hover", // 操作時にツールバーを表示
-        scrollZoom: true, // マウスホイールによるズームを有効化
-        locale: "ja",
-      }}
-      onHover={onHover}
-      onUpdate={onUpdate}
+          data={clusterData.map((data) => ({
+            x: data.xValues,
+            y: data.yValues,
+            mode: "markers",
+            marker: {
+              size: 7,
+              color: clusterColorMap[data.cluster.id],
+            },
+            type: "scatter",
+            text: data.texts,
+            hoverinfo: "text",
+            hoverlabel: {
+              align: "left",
+              bgcolor: "white",
+              bordercolor: clusterColorMap[data.cluster.id],
+              font: {
+                size: 12,
+                color: "#333",
+              },
+            },
+          }))}
+          layout={{
+            margin: { l: 0, r: 0, b: 0, t: 0 },
+            xaxis: {
+              zeroline: false,
+              showticklabels: false,
+              showgrid: false,
+            },
+            yaxis: {
+              zeroline: false,
+              showticklabels: false,
+              showgrid: false,
+            },
+            hovermode: "closest",
+            dragmode: "pan", // ドラッグによる移動（パン）を有効化
+            annotations: showClusterLabels
+              ? clusterData.map((data) => ({
+                  x: data.centerX,
+                  y: data.centerY,
+                  text: wrapLabelText(data.cluster.label), // ラベルを折り返し処理
+                  showarrow: false,
+                  font: {
+                    color: "white",
+                    size: annotationFontsize,
+                    weight: 700,
+                  },
+                  bgcolor: clusterColorMapA[data.cluster.id], // 背景はアルファ付き
+                  borderpad: 10,
+                  width: annotationLabelWidth,
+                  align: "left",
+                }))
+              : [],
+            showlegend: false,
+          }}
+          useResizeHandler={true}
+          style={{ width: "100%", height: "100%" }}
+          config={{
+            responsive: true,
+            displayModeBar: "hover", // 操作時にツールバーを表示
+            scrollZoom: true, // マウスホイールによるズームを有効化
+            locale: "ja",
+          }}
+          onHover={onHover}
+          onUpdate={onUpdate}
         />
       </Box>
     </Box>
   );
+}
+
+function avoidModBarCoveringShrinkButton(): void {
+  const modeBarContainer = document.querySelector(
+    ".modebar-container",
+  ) as HTMLElement;
+  if (!modeBarContainer) return;
+  const modeBar = modeBarContainer.children[0] as HTMLElement;
+  const shrinkButton = document.getElementById("fullScreenButtons");
+  if (!modeBar || !shrinkButton) return;
+  const modeBarPos = modeBar.getBoundingClientRect();
+  const btnPos = shrinkButton.getBoundingClientRect();
+  const isCovered = !(
+    btnPos.top > modeBarPos.bottom ||
+    btnPos.bottom < modeBarPos.top ||
+    btnPos.left > modeBarPos.right ||
+    btnPos.right < modeBarPos.left
+  );
+  if (!isCovered) return;
+
+  const diff = btnPos.bottom - modeBarPos.top;
+  modeBarContainer.style.top = `${Number.parseInt(modeBarContainer.style.top.slice(0, -2)) + diff + 10}px`;
 }
