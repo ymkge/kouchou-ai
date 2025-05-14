@@ -27,7 +27,7 @@ export function SelectChartButton({
       value: "scatterAll",
       label: isVertical ? (
         <Stack direction="column" gap={1} alignItems="center" px={4} py={2}>
-          <Icon as={AllViewIcon} w="2" h="2" />
+          <Icon as={AllViewIcon} w="1.5" h="1.5" />
           <Box
             color="gray.500"
             fontWeight={selected === "scatterAll" ? "bold" : "normal"}
@@ -51,7 +51,7 @@ export function SelectChartButton({
       value: "scatterDensity",
       label: isVertical ? (
         <Stack direction="column" gap={1} alignItems="center" px={4} py={2}>
-          <Icon as={DenseViewIcon} w="2" h="2" />
+          <Icon as={DenseViewIcon} w="1.5" h="1.5" />
           <Box
             color="gray.500"
             fontWeight={selected === "scatterDensity" ? "bold" : "normal"}
@@ -76,7 +76,7 @@ export function SelectChartButton({
       value: "treemap",
       label: isVertical ? (
         <Stack direction="column" gap={1} alignItems="center" px={4} py={2}>
-          <Icon as={HierarchyViewIcon} w="2" h="2" />
+          <Icon as={HierarchyViewIcon} w="1.5" h="1.5" />
           <Box color="gray.500" fontWeight={selected === "treemap" ? "bold" : "normal"} fontSize="2xs" lineHeight="1">
             階層
           </Box>
@@ -103,7 +103,7 @@ export function SelectChartButton({
       w={"100%"}
       maxW={"1200px"}
       mx={"auto"}
-      mb={isMobile ? 10 : 2} // モバイル表示時は下部にボタンを配置するためのスペースを確保
+      mb={isMobile ? 16 : 2} // モバイル表示時は下部にボタンを配置するためのスペースを確保
       position="relative"
     >
       {/* セグメントグループを中央に配置 */}
@@ -122,7 +122,7 @@ export function SelectChartButton({
 
       {/* ボタンを配置（モバイル表示時は下部中央に配置） */}
       {isMobile ? (
-        <Box position="absolute" bottom="-40px" left="0" right="0" display="flex" justifyContent="center" mt={4}>
+        <Box position="absolute" bottom="-60px" left="0" right="0" display="flex" justifyContent="center" mt={4}>
           <HStack gap={2}>
             <Tooltip content={"表示設定"} openDelay={0} closeDelay={0}>
               <Button onClick={onClickDensitySetting} variant={"outline"} h={"40px"} w={"40px"} p={0}>
