@@ -10,12 +10,11 @@ export const ChartCore = dynamic(
     const Scatter = await import("plotly.js/lib/scatter");
     const Sunburst = await import("plotly.js/lib/sunburst");
     const Treemap = await import("plotly.js/lib/treemap");
-    
-    // ズームとパン機能のために必要なモジュール
-    const ScatterGL = await import("plotly.js/lib/scattergl");  
 
-    const createPlotlyComponent = (await import("react-plotly.js/factory"))
-      .default;
+    // ズームとパン機能のために必要なモジュール
+    const ScatterGL = await import("plotly.js/lib/scattergl");
+
+    const createPlotlyComponent = (await import("react-plotly.js/factory")).default;
 
     Plotly.register([Scatter, Sunburst, Treemap, ScatterGL]);
     Plotly.register(jaLocale);

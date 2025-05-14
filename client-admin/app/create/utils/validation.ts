@@ -63,9 +63,7 @@ export function validateFormValues({
   }
 
   // 入力ソースのチェック
-  const sourceCheck =
-    (inputType === "file" && !!csv) ||
-    (inputType === "spreadsheet" && spreadsheetImported);
+  const sourceCheck = (inputType === "file" && !!csv) || (inputType === "spreadsheet" && spreadsheetImported);
 
   if (!sourceCheck) {
     return {

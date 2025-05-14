@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import type { Locator, Page } from "@playwright/test";
 
 /**
  * レポート作成ページのPage Object
@@ -18,18 +18,24 @@ export class CreateReportPage {
   constructor(page: Page) {
     this.page = page;
     this.pageTitle = page.locator('h1:has-text("新しいレポートを作成する")');
-    this.inputField = page.getByLabel('レポートID');
-    this.questionField = page.getByLabel('質問');
-    this.introField = page.getByLabel('イントロダクション');
-    this.csvTab = page.getByRole('tab', { name: 'CSVファイル' });
-    this.spreadsheetTab = page.getByRole('tab', { name: 'Googleスプレッドシート' });
+    this.inputField = page.getByLabel("レポートID");
+    this.questionField = page.getByLabel("質問");
+    this.introField = page.getByLabel("イントロダクション");
+    this.csvTab = page.getByRole("tab", { name: "CSVファイル" });
+    this.spreadsheetTab = page.getByRole("tab", {
+      name: "Googleスプレッドシート",
+    });
     this.csvFileUpload = page.locator('input[type="file"]');
-    this.spreadsheetUrlInput = page.getByPlaceholder('https://docs.google.com/spreadsheets/d/xxxxxxxxxxxx/edit');
-    this.submitButton = page.getByRole('button', { name: 'レポート作成を開始' });
+    this.spreadsheetUrlInput = page.getByPlaceholder(
+      "https://docs.google.com/spreadsheets/d/xxxxxxxxxxxx/edit",
+    );
+    this.submitButton = page.getByRole("button", {
+      name: "レポート作成を開始",
+    });
   }
 
   async goto() {
-    await this.page.goto('/create');
+    await this.page.goto("/create");
   }
 
   async fillBasicInfo(input: string, question: string, intro: string) {

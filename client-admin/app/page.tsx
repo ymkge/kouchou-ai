@@ -2,13 +2,7 @@
 
 import { getApiBaseUrl } from "@/app/utils/api";
 import { Header } from "@/components/Header";
-import {
-  MenuContent,
-  MenuItem,
-  MenuRoot,
-  MenuTrigger,
-} from "@/components/ui/menu";
-import { RadioCardItem, RadioCardRoot } from "@/components/ui/radio-card";
+import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { Report } from "@/type";
@@ -26,11 +20,13 @@ import {
   LinkOverlay,
   Popover,
   Portal,
+  Select,
   Spinner,
   Steps,
   Text,
   Textarea,
-  VStack
+  VStack,
+  createListCollection,
 } from "@chakra-ui/react";
 import {
   CircleAlertIcon,
@@ -114,18 +110,15 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
       if (cancelled) return;
 
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports/${slug}/status/step-json`,
-          {
-            headers: {
-              "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-              "Content-Type": "application/json",
-              // キャッシュを防止するためのヘッダーを追加
-              "Cache-Control": "no-cache, no-store, must-revalidate",
-              "Pragma": "no-cache"
-            },
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports/${slug}/status/step-json`, {
+          headers: {
+            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+            "Content-Type": "application/json",
+            // キャッシュを防止するためのヘッダーを追加
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
           },
-        );
+        });
 
         if (response.ok) {
           const data = await response.json();
@@ -187,7 +180,6 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
   useEffect(() => {
     // 完了またはエラーでかつリロード済みでない場合
     if ((progress === "completed" || progress === "error") && !hasReloaded) {
-
       setHasReloaded(true);
 
       const reloadTimeout = setTimeout(() => {
@@ -212,20 +204,13 @@ function ReportCard({
   setReports?: (reports: Report[] | undefined) => void;
 }) {
   const statusDisplay = getStatusDisplay(report.status);
-  const { progress, errorStep } = useReportProgressPoll(
-    report.slug,
-    report.status !== "ready",
-  );
+  const { progress, errorStep } = useReportProgressPoll(report.slug, report.status !== "ready");
 
   const currentStepIndex =
-    progress === "completed"
-      ? steps.length
-      : stepKeys.indexOf(progress) === -1
-        ? 0
-        : stepKeys.indexOf(progress);
+    progress === "completed" ? steps.length : stepKeys.indexOf(progress) === -1 ? 0 : stepKeys.indexOf(progress);
 
   const [lastProgress, setLastProgress] = useState<string | null>(null);
-  
+
   // 編集ダイアログの状態管理
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editTitle, setEditTitle] = useState(report.title);
@@ -240,32 +225,32 @@ function ReportCard({
       setLastProgress(progress);
 
       if (progress === "completed" && setReports) {
-        const updatedReports = reports?.map((r) =>
-          r.slug === report.slug ? { ...r, status: "ready" } : r
-        );
+        const updatedReports = reports?.map((r) => (r.slug === report.slug ? { ...r, status: "ready" } : r));
         setReports(updatedReports);
       } else if (progress === "error" && setReports) {
-        const updatedReports = reports?.map((r) =>
-          r.slug === report.slug ? { ...r, status: "error" } : r
-        );
+        const updatedReports = reports?.map((r) => (r.slug === report.slug ? { ...r, status: "error" } : r));
         setReports(updatedReports);
       }
     }
   }, [progress, lastProgress, reports, setReports, report.slug]);
   return (
-    <LinkBox as={Card.Root}
+    <LinkBox
+      as={Card.Root}
       key={report.slug}
       mb={4}
       borderLeftWidth={10}
       borderLeftColor={isErrorState ? "red.600" : statusDisplay.borderColor}
       position="relative"
       transition="all 0.2s"
-      role="group"
       pointerEvents={isEditDialogOpen ? "none" : "auto"}
-      _hover={report.status === "ready" && !isEditDialogOpen ? {
-        backgroundColor: "gray.50",
-        cursor: "pointer",
-      } : {}}
+      _hover={
+        report.status === "ready" && !isEditDialogOpen
+          ? {
+              backgroundColor: "gray.50",
+              cursor: "pointer",
+            }
+          : {}
+      }
       onClick={(e) => {
         if (report.status === "ready") {
           window.open(`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`, "_blank");
@@ -277,40 +262,26 @@ function ReportCard({
         <HStack justify="space-between">
           <HStack>
             <Box mr={3} color={isErrorState ? "red.600" : statusDisplay.iconColor}>
-              {isErrorState ? (
-                <CircleAlertIcon size={30} />
-              ) : (
-                statusDisplay.icon
-              )}
+              {isErrorState ? <CircleAlertIcon size={30} /> : statusDisplay.icon}
             </Box>
             <Box>
-              <LinkOverlay
-                href={`/${report.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <LinkOverlay href={`/${report.slug}`} target="_blank" rel="noopener noreferrer">
                 <Text fontSize="md" fontWeight="bold" color={isErrorState ? "red.600" : statusDisplay.textColor}>
                   {report.title}
                 </Text>
               </LinkOverlay>
-              <Card.Description>
-                {`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`}
-              </Card.Description>
+              <Card.Description>{`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`}</Card.Description>
               {report.createdAt && (
                 <Text fontSize="xs" color="gray.500" mb={1}>
                   作成日時:{" "}
-                  {new Date(report.createdAt).toLocaleString(
-                    "ja-JP",
-                    { timeZone: "Asia/Tokyo" },
-                  )}
+                  {new Date(report.createdAt).toLocaleString("ja-JP", {
+                    timeZone: "Asia/Tokyo",
+                  })}
                 </Text>
               )}
               {report.status !== "ready" && (
                 <Box mt={2}>
-                  <Steps.Root
-                    defaultStep={currentStepIndex}
-                    count={steps.length}
-                  >
+                  <Steps.Root defaultStep={currentStepIndex} count={steps.length}>
                     <Steps.List>
                       {steps.map((step, index) => {
                         const isCompleted = index < currentStepIndex;
@@ -324,17 +295,9 @@ function ReportCard({
                         })();
 
                         return (
-                          <Steps.Item
-                            key={step.id}
-                            index={index}
-                            title={step.title}
-                          >
+                          <Steps.Item key={step.id} index={index} title={step.title}>
                             <Flex direction="column" align="center">
-                              <Steps.Indicator
-                                boxSize="24px"
-                                bg={stepColor}
-                                position="relative"
-                              />
+                              <Steps.Indicator boxSize="24px" bg={stepColor} position="relative" />
                               <Steps.Title
                                 mt={1}
                                 fontSize="sm"
@@ -346,9 +309,7 @@ function ReportCard({
                                 {step.title}
                               </Steps.Title>
                             </Flex>
-                            <Steps.Separator
-                              borderColor={stepColor}
-                            />
+                            <Steps.Separator borderColor={stepColor} />
                           </Steps.Item>
                         );
                       })}
@@ -375,14 +336,7 @@ function ReportCard({
               pointerEvents="auto"
               zIndex="10"
             >
-              <Button
-                variant="solid"
-                size="sm"
-                bg="white"
-                color="black"
-                zIndex="50"
-                pointerEvents="auto"
-              >
+              <Button variant="solid" size="sm" bg="white" color="black" zIndex="50" pointerEvents="auto">
                 <Flex align="center" gap={2}>
                   <ExternalLinkIcon size={16} />
                   <Text>レポートを見る</Text>
@@ -393,24 +347,20 @@ function ReportCard({
           <HStack position="relative" zIndex="20">
             {report.status === "ready" && report.isPubcom && (
               <Popover.Root>
-                  <Popover.Trigger asChild>
-                    <Button
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                    >
-                      <Tooltip
-                        content="CSVファイルをダウンロード"
-                        openDelay={0}
-                        closeDelay={0}
-                      >
-                        <Icon>
-                          <DownloadIcon />
-                        </Icon>
-                      </Tooltip>
-                    </Button>
-                  </Popover.Trigger>
+                <Popover.Trigger asChild>
+                  <Button
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <Tooltip content="CSVファイルをダウンロード" openDelay={0} closeDelay={0}>
+                      <Icon>
+                        <DownloadIcon />
+                      </Icon>
+                    </Tooltip>
+                  </Button>
+                </Popover.Trigger>
                 <Portal>
                   <Popover.Positioner>
                     <Popover.Content>
@@ -425,16 +375,12 @@ function ReportCard({
                             onClick={async (e) => {
                               e.stopPropagation();
                               try {
-                                const response = await fetch(
-                                  `${getApiBaseUrl()}/admin/comments/${report.slug}/csv`,
-                                  {
-                                    headers: {
-                                      "x-api-key":
-                                        process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                                      "Content-Type": "application/json",
-                                    },
+                                const response = await fetch(`${getApiBaseUrl()}/admin/comments/${report.slug}/csv`, {
+                                  headers: {
+                                    "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                                    "Content-Type": "application/json",
                                   },
-                                );
+                                });
                                 if (!response.ok) {
                                   const errorData = await response.json();
                                   throw new Error(errorData.detail || "CSV ダウンロードに失敗しました");
@@ -461,16 +407,12 @@ function ReportCard({
                             onClick={async (e) => {
                               e.stopPropagation();
                               try {
-                                const response = await fetch(
-                                  `${getApiBaseUrl()}/admin/comments/${report.slug}/csv`,
-                                  {
-                                    headers: {
-                                      "x-api-key":
-                                        process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                                      "Content-Type": "application/json",
-                                    },
+                                const response = await fetch(`${getApiBaseUrl()}/admin/comments/${report.slug}/csv`, {
+                                  headers: {
+                                    "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                                    "Content-Type": "application/json",
                                   },
-                                );
+                                });
                                 if (!response.ok) {
                                   const errorData = await response.json();
                                   throw new Error(errorData.detail || "CSV ダウンロードに失敗しました");
@@ -479,7 +421,9 @@ function ReportCard({
                                 const text = await blob.text();
                                 // UTF-8 BOMを追加
                                 const bom = "\uFEFF";
-                                const bomBlob = new Blob([bom + text], { type: "text/csv;charset=utf-8" });
+                                const bomBlob = new Blob([bom + text], {
+                                  type: "text/csv;charset=utf-8",
+                                });
                                 const url = window.URL.createObjectURL(bomBlob);
                                 const link = document.createElement("a");
                                 link.href = url;
@@ -501,66 +445,89 @@ function ReportCard({
               </Popover.Root>
             )}
             {report.status === "ready" && (
-              <RadioCardRoot
-                value={report.isPublic ? "public" : "private"}
-                onValueChange={async (value) => {
-                  const selected = typeof value === "string" ? value : value?.value;
-                  if ((selected === "public" && report.isPublic) || (selected === "private" && !report.isPublic)) return;
-                  try {
-                    const response = await fetch(
-                      `${getApiBaseUrl()}/admin/reports/${report.slug}/visibility`,
-                      {
-                        method: "PATCH",
-                        headers: {
-                          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                          "Content-Type": "application/json",
-                        },
-                      },
-                    );
-                    if (!response.ok) {
-                      const errorData = await response.json();
-                      throw new Error(errorData.detail || "公開状態の変更に失敗しました");
-                    }
-                    const data = await response.json();
-                    const updatedReports = reports?.map((r) =>
-                      r.slug === report.slug ? { ...r, isPublic: data.isPublic } : r,
-                    );
-                    if (setReports) {
-                      setReports(updatedReports);
-                    }
-                  } catch (error) {
-                    console.error(error);
-                  }
-                }}
+              <Box
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
               >
-                <Box
-                  display="flex"
-                  flexDirection="row"
-                  gap={1}
-                  minW="auto"
-                  onClick={e => e.stopPropagation()}
-                  onMouseDown={e => e.stopPropagation()}
-                  onPointerDown={e => e.stopPropagation()}
-                >
-                  <RadioCardItem value="public" label="公開" px={2} py={0.5} minW="40px" fontSize="sm" style={{whiteSpace: 'nowrap'}} />
-                  <RadioCardItem value="private" label="非公開" px={2} py={0.5} minW="60px" fontSize="sm" style={{whiteSpace: 'nowrap'}} />
-                </Box>
-              </RadioCardRoot>
+                {(() => {
+                  const visibilityOptions = createListCollection({
+                    items: [
+                      { label: "公開", value: "public" },
+                      { label: "限定公開", value: "unlisted" },
+                      { label: "非公開", value: "private" },
+                    ],
+                  });
+
+                  return (
+                    <Select.Root
+                      collection={visibilityOptions}
+                      size="sm"
+                      width="150px"
+                      defaultValue={[report.visibility.toString()]}
+                      onValueChange={async (value) => {
+                        // valueは配列の可能性があるため、最初の要素を取得
+                        const selected = Array.isArray(value?.value) ? value?.value[0] : value?.value;
+                        if (!selected || selected === report.visibility.toString()) return;
+                        try {
+                          const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/visibility`, {
+                            method: "PATCH",
+                            headers: {
+                              "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ visibility: selected }),
+                          });
+                          if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || "公開状態の変更に失敗しました");
+                          }
+                          const data = await response.json();
+                          const updatedReports = reports?.map((r) =>
+                            r.slug === report.slug ? { ...r, visibility: data.visibility } : r,
+                          );
+                          if (setReports) {
+                            setReports(updatedReports);
+                          }
+                        } catch (error) {
+                          console.error(error);
+                        }
+                      }}
+                    >
+                      <Select.HiddenSelect />
+                      <Select.Control>
+                        <Select.Trigger>
+                          <Select.ValueText placeholder="公開状態" />
+                        </Select.Trigger>
+                        <Select.IndicatorGroup>
+                          <Select.Indicator />
+                        </Select.IndicatorGroup>
+                      </Select.Control>
+                      <Portal>
+                        <Select.Positioner>
+                          <Select.Content>
+                            {visibilityOptions.items.map((option) => (
+                              <Select.Item item={option} key={option.value}>
+                                {option.label}
+                                <Select.ItemIndicator />
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select.Positioner>
+                      </Portal>
+                    </Select.Root>
+                  );
+                })()}
+              </Box>
             )}
             <MenuRoot>
               <MenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <Button variant="ghost" size="lg" onClick={(e) => e.stopPropagation()}>
                   <EllipsisIcon />
                 </Button>
               </MenuTrigger>
               <MenuContent>
-                <MenuItem value="duplicate">
-                  レポートを複製して新規作成(開発中)
-                </MenuItem>
+                <MenuItem value="duplicate">レポートを複製して新規作成(開発中)</MenuItem>
                 <MenuItem
                   value="edit"
                   onClick={(e) => {
@@ -577,19 +544,14 @@ function ReportCard({
                   color="fg.error"
                   onClick={async (e) => {
                     e.stopPropagation();
-                    if (
-                      confirm(
-                        `レポート「${report.title}」を削除してもよろしいですか？`,
-                      )
-                    ) {
+                    if (confirm(`レポート「${report.title}」を削除してもよろしいですか？`)) {
                       try {
                         const response = await fetch(
                           `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports/${report.slug}`,
                           {
                             method: "DELETE",
                             headers: {
-                              "x-api-key":
-                                process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                              "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
                               "Content-Type": "application/json",
                             },
                           },
@@ -614,7 +576,7 @@ function ReportCard({
           </HStack>
         </HStack>
       </Card.Body>
-      
+
       <Dialog.Root
         open={isEditDialogOpen}
         onOpenChange={({ open }) => setIsEditDialogOpen(open)}
@@ -636,7 +598,7 @@ function ReportCard({
               position="relative"
               zIndex={1001}
               boxShadow="md"
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
               <Dialog.CloseTrigger position="absolute" top={3} right={3} />
               <Dialog.Header>
@@ -645,7 +607,9 @@ function ReportCard({
               <Dialog.Body>
                 <VStack gap={4} align="stretch">
                   <Box>
-                    <Text mb={2} fontWeight="bold">タイトル</Text>
+                    <Text mb={2} fontWeight="bold">
+                      タイトル
+                    </Text>
                     <Input
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
@@ -653,7 +617,9 @@ function ReportCard({
                     />
                   </Box>
                   <Box>
-                    <Text mb={2} fontWeight="bold">調査概要</Text>
+                    <Text mb={2} fontWeight="bold">
+                      調査概要
+                    </Text>
                     <Textarea
                       value={editDescription}
                       onChange={(e) => setEditDescription(e.target.value)}
@@ -670,20 +636,17 @@ function ReportCard({
                   ml={3}
                   onClick={async () => {
                     try {
-                      const response = await fetch(
-                        `${getApiBaseUrl()}/admin/reports/${report.slug}/metadata`,
-                        {
-                          method: "PATCH",
-                          headers: {
-                            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                            "Content-Type": "application/json",
-                          },
-                          body: JSON.stringify({
-                            title: editTitle,
-                            description: editDescription,
-                          }),
-                        }
-                      );
+                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/metadata`, {
+                        method: "PATCH",
+                        headers: {
+                          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          title: editTitle,
+                          description: editDescription,
+                        }),
+                      });
 
                       if (!response.ok) {
                         const errorData = await response.json();
@@ -694,8 +657,12 @@ function ReportCard({
                       if (setReports && reports) {
                         const updatedReports = reports.map((r) =>
                           r.slug === report.slug
-                            ? { ...r, title: editTitle, description: editDescription }
-                            : r
+                            ? {
+                                ...r,
+                                title: editTitle,
+                                description: editDescription,
+                              }
+                            : r,
                         );
                         setReports(updatedReports);
                       }
@@ -775,12 +742,7 @@ function DownloadBuildButton() {
   };
 
   return (
-    <Button
-      size="xl"
-      onClick={handleDownload}
-      loading={isLoading}
-      loadingText="エクスポート中"
-    >
+    <Button size="xl" onClick={handleDownload} loading={isLoading} loadingText="エクスポート中">
       全レポートをエクスポート
     </Button>
   );
@@ -791,16 +753,13 @@ export default function Page() {
 
   useEffect(() => {
     (async () => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports`,
-        {
-          method: "GET",
-          headers: {
-            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-            "Content-Type": "application/json",
-          },
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports`, {
+        method: "GET",
+        headers: {
+          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+          "Content-Type": "application/json",
         },
-      );
+      });
       if (!response.ok) return;
       setReports(await response.json());
     })();
@@ -810,11 +769,8 @@ export default function Page() {
     <div className="container">
       <Header />
       <Box mx="auto" maxW="1000px" mb={5}>
-        <Heading textAlign="center" fontSize="xl" mb={5}>
-          Admin Dashboard
-        </Heading>
-        <Heading textAlign="center" fontSize="xl" mb={5}>
-          Reports
+        <Heading textAlign="left" fontSize="xl" mb={8}>
+          レポート管理
         </Heading>
         {!reports && (
           <VStack>
@@ -829,12 +785,7 @@ export default function Page() {
         {reports &&
           reports.length > 0 &&
           reports.map((report) => (
-            <ReportCard
-              key={report.slug}
-              report={report}
-              reports={reports}
-              setReports={setReports}
-            />
+            <ReportCard key={report.slug} report={report} reports={reports} setReports={setReports} />
           ))}
         <HStack justify="center" mt={10}>
           <Link href="/create">
@@ -842,7 +793,9 @@ export default function Page() {
           </Link>
           <DownloadBuildButton />
           <Link href="/environment">
-            <Button size="xl" variant="outline">環境検証</Button>
+            <Button size="xl" variant="outline">
+              環境検証
+            </Button>
           </Link>
         </HStack>
       </Box>

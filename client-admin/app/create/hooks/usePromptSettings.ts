@@ -24,7 +24,7 @@ export function usePromptSettings() {
       extraction,
       initialLabelling,
       mergeLabelling,
-      overview
-    })
+      overview,
+    }),
   };
 }

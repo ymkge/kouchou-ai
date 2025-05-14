@@ -39,13 +39,7 @@ export function Chart({
         bgColor={"#fff"}
         zIndex={1000}
       >
-        <HStack
-          id={"fullScreenButtons"}
-          position={"fixed"}
-          top={5}
-          right={5}
-          zIndex={1}
-        >
+        <HStack id={"fullScreenButtons"} position={"fixed"} top={5} right={5} zIndex={1}>
           <Tooltip content={"全画面終了"} openDelay={0} closeDelay={0}>
             <Button onClick={onExitFullscreen} h={"50px"} borderWidth={2}>
               <Icon>
@@ -54,16 +48,11 @@ export function Chart({
             </Button>
           </Tooltip>
         </HStack>
-        {(selectedChart === "scatterAll" ||
-          selectedChart === "scatterDensity") && (
+        {(selectedChart === "scatterAll" || selectedChart === "scatterDensity") && (
           <ScatterChart
             clusterList={result.clusters}
             argumentList={result.arguments}
-            targetLevel={
-              selectedChart === "scatterAll"
-                ? 1
-                : Math.max(...result.clusters.map((c) => c.level))
-            }
+            targetLevel={selectedChart === "scatterAll" ? 1 : Math.max(...result.clusters.map((c) => c.level))}
             onHover={() => setTimeout(avoidHoverTextCoveringShrinkButton, 500)}
             showClusterLabels={showClusterLabels}
           />
@@ -83,8 +72,8 @@ export function Chart({
   }
 
   return (
-    <Box mx={"auto"} w={"100%"} maxW={"1200px"} mb={10}>
-      <Box h={"500px"} mb={5}>
+    <Box mx={"auto"} w={"100%"} maxW={"1200px"} mb={10} border={"1px solid #ccc"}>
+      <Box h={"500px"} mb={0}>
         {selectedChart === "treemap" && (
           <TreemapChart
             key={treemapLevel}
@@ -94,16 +83,11 @@ export function Chart({
             onTreeZoom={onTreeZoom}
           />
         )}
-        {(selectedChart === "scatterAll" ||
-          selectedChart === "scatterDensity") && (
+        {(selectedChart === "scatterAll" || selectedChart === "scatterDensity") && (
           <ScatterChart
             clusterList={result.clusters}
             argumentList={result.arguments}
-            targetLevel={
-              selectedChart === "scatterAll"
-                ? 1
-                : Math.max(...result.clusters.map((c) => c.level))
-            }
+            targetLevel={selectedChart === "scatterAll" ? 1 : Math.max(...result.clusters.map((c) => c.level))}
             showClusterLabels={showClusterLabels}
           />
         )}

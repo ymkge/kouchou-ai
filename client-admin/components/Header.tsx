@@ -9,19 +9,13 @@ export function Header() {
   // メタ情報の取得
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/meta`)
-      .then(response => response.json())
-      .then(data => setMeta(data))
+      .then((response) => response.json())
+      .then((data) => setMeta(data))
       .catch(() => setMeta(null));
   }, []);
 
   return (
-    <HStack
-      justify="space-between"
-      alignItems={"center"}
-      mb={8}
-      mx={"auto"}
-      maxW={"1200px"}
-    >
+    <HStack justify="space-between" alignItems={"center"} mb={8} mx={"auto"} maxW={"1200px"}>
       <HStack>
         {meta && !meta.isDefault && (
           <Image
@@ -41,9 +35,7 @@ export function Header() {
           <Alert.Indicator />
           <Alert.Content>
             <Alert.Title fontSize={"md"}>管理者画面</Alert.Title>
-            <Alert.Description>
-              このページはレポート作成者向けの管理画面です
-            </Alert.Description>
+            <Alert.Description>このページはレポート作成者向けの管理画面です</Alert.Description>
           </Alert.Content>
         </Alert.Root>
       </HStack>
