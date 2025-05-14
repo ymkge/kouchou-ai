@@ -1,4 +1,4 @@
-from sync_status import Config, GithubHandler, STATUS_NO_STATUS, STATUS_COLD_LIST, STATUS_NEED_REFINEMENT, STATUS_READY, STATUS_IN_PROGRESS
+from status_update_common import Config, GithubHandler, STATUS_NO_STATUS, STATUS_COLD_LIST, STATUS_NEED_REFINEMENT, STATUS_READY, STATUS_IN_PROGRESS
 import os
 
 def main():

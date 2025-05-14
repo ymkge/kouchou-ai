@@ -58,7 +58,7 @@ jobs:
   assign-status-sync:
     needs: manage-assignment
     if: needs.manage-assignment.outputs.should_update == 'true'
-    uses: ./.github/workflows/assign-status-sync.yml
+    uses: ./.github/workflows/status-update-call.yml
     with:
       issue_number: ${{ needs.manage-assignment.outputs.issue_number }}
       action: ${{ needs.manage-assignment.outputs.action }}

@@ -52,4 +52,4 @@ jobs:
         GITHUB_EVENT_ISSUE_NUMBER: ${{ inputs.issue_number }}
         GITHUB_EVENT_ACTION: ${{ inputs.action }}
       run: |
-        python .github/scripts/assignee_status_sync.py
+        python .github/scripts/status_update.py
