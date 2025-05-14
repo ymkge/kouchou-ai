@@ -7,7 +7,9 @@ from fastapi.responses import FileResponse, ORJSONResponse
 from fastapi.security.api_key import APIKeyHeader
 
 from src.config import settings
+from src.repositories.cluster_repository import ClusterRepository
 from src.schemas.admin_report import ReportInput, ReportMetadataUpdate, ReportVisibilityUpdate
+from src.schemas.cluster import ClusterResponse, ClusterUpdate
 from src.schemas.report import Report, ReportStatus
 from src.services.llm_models import get_models_by_provider
 from src.services.report_launcher import launch_report_generation
@@ -161,6 +163,23 @@ async def update_report_metadata_endpoint(
     except Exception as e:
         slogger.error(f"Exception: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error") from e
+
+
+@router.get("/admin/reports/{slug}/cluster-labels")
+async def get_clusters(slug: str, api_key: str = Depends(verify_admin_api_key)) -> dict[str, list[ClusterResponse]]:
+    if not ClusterRepository(slug).labels_path.exists():
+        return {"clusters": []}
+    repo = ClusterRepository(slug)
+    return {
+        "clusters": repo.read_from_csv(),
+    }
+
+
+@router.patch("/admin/reports/{slug}/cluster-label")
+async def update_cluster_label(slug: str, updated_cluster: ClusterUpdate, api_key: str = Depends(verify_admin_api_key)) -> dict[str, bool]:
+    repo = ClusterRepository(slug)
+    result = repo.update_csv(updated_cluster)
+    return {"success": result}
 
 
 @router.get("/admin/models")
