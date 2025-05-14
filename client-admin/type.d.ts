@@ -138,3 +138,22 @@ type Config = {
         current_job_started: string; // 現在のジョブの開始時刻
       };
 };
+
+// APIレスポンス用のクラスタ型
+export type ClusterResponse = {
+  level: number;
+  id: string;
+  label: string;
+  description: string;
+  parent: string | null;
+  density: number | null;
+  density_rank: number | null;
+  density_rank_percentile: number | null;
+};
+
+// クラスタ更新用の型
+export type ClusterUpdate = {
+  id: string;
+  label: string;
+  description: string;
+};
