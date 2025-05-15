@@ -2,7 +2,7 @@ name: Auto Assign and Unassign on /assign or /unassign
 
 permissions:
   issues: write
-  content: read
+  contents: read
 
 on:
   issue_comment:
