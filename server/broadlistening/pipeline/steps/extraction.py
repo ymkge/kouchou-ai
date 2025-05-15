@@ -32,7 +32,10 @@ def extraction(config):
     workers = config["extraction"]["workers"]
     limit = config["extraction"]["limit"]
     property_columns = config["extraction"]["properties"]
-    provider = config.get("provider", "openai")  # デフォルトはopenai
+
+    if "provider" not in config:
+        raise RuntimeError("provider is not set")
+    provider = config["provider"]
 
     # カラム名だけを読み込み、必要なカラムが含まれているか確認する
     comments = pd.read_csv(f"inputs/{config['input']}.csv", nrows=0)
