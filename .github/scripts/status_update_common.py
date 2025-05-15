@@ -101,7 +101,7 @@ class GithubHandler:
           organization(login: $repoOwner) {
             projectV2(number: $projectNo) {
               ... on ProjectV2 {
-                items(first: 100) {
+                items(first: 100, after: $cursor) {
                   nodes {
                     id
                     content {
@@ -118,27 +118,39 @@ class GithubHandler:
                       }
                     }
                   }
+                  pageInfo {
+                    hasNextPage
+                    endCursor
+                  }
                 }
               }
             }
           }
         }
         """
-        variables = {
+        has_next_page = True
+        cursor = None
+        while has_next_page:
+          variables = {
             "repoOwner": REPO_OWNER,
-            "projectNo": PROJECT_NO
-        }
-        data = self.send_graphql_request(query, variables)
-        project_items = data.get("organization", {}).get("projectV2", {}).get("items", {}).get("nodes", [])
-        
-        for item in project_items:
-            content = item.get("content")
-            if content and content.get("number") == self.issue_number and content.get("repository", {}).get("name") == REPO_NAME:
-              field_value = item.get("fieldValueByName")
-              if field_value:
-                return field_value.get("name"), item["id"]
-              return STATUS_NO_STATUS, item["id"]
-        print("Projectにこのissueが見つかりません。アイテム数:", len(project_items))
+            "projectNo": PROJECT_NO,
+            "cursor": cursor
+          }
+          data = self.send_graphql_request(query, variables)
+          items = data.get("organization", {}).get("projectV2", {}).get("items", {})
+          item_nodes = items.get("nodes", [])
+          has_next_page = items.get("pageInfo", {}).get("hasNextPage", False)
+          cursor = items.get("pageInfo", {}).get("endCursor", None)
+
+          for item in item_nodes:
+              content = item.get("content")
+              if content and content.get("number") == self.issue_number and content.get("repository", {}).get("name") == REPO_NAME:
+                field_value = item.get("fieldValueByName")
+                if field_value:
+                  return field_value.get("name"), item["id"]
+                return STATUS_NO_STATUS, item["id"]
+              
+        print("Projectにこのissueが見つかりません。アイテム数:", len(item_nodes))
         raise ValueError("Projectにこのissueが見つかりません")
     
     def update_issue_status(self, status: str, item_id: str):
