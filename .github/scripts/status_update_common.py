@@ -1,5 +1,6 @@
 # Projects status 更新の共通処理
 
+from math import e
 import os
 import json
 import requests
@@ -29,49 +30,72 @@ class Config:
         self.github_token = os.getenv("GITHUB_TOKEN")
         if self.github_token is None:
             print("GITHUB_TOKENが見つかりません ...")
-            return
-        else:
-            print("GITHUB_TOKENからトークンを正常に取得しました。")
+            raise ValueError("GITHUB_TOKENが見つかりません")
         
         self.github_repo = os.getenv("GITHUB_REPOSITORY")
         if self.github_repo is None:
             print("GITHUB_REPOSITORYが見つかりません ...")
-            return
-        else:
-            print("GITHUB_REPOSITORYからトークンを正常に取得しました。")
-
+            raise ValueError("GITHUB_REPOSITORYが見つかりません")
+        
         self.project_token = os.getenv("PROJECT_TOKEN")
         if self.project_token is None:
             print("PROJECT_TOKENが見つかりません...")
-            return
-        else:
-            print("PROJECT_TOKENを正常に取得しました")
-            
+            raise ValueError("PROJECT_TOKENが見つかりません")
+        
         self.issue_number = os.getenv("GITHUB_EVENT_ISSUE_NUMBER")
         if self.issue_number is None:
             print("GITHUB_EVENT_ISSUE_NUMBERが見つかりません...")
-            return
+            raise ValueError("GITHUB_EVENT_ISSUE_NUMBERが見つかりません")
         else:
             self.issue_number = int(self.issue_number)
-            print("GITHUB_EVENT_ISSUE_NUMBERを正常に取得しました")
+
+        self.action = os.getenv("GITHUB_EVENT_ACTION")
+        if self.action is None:
+            print("GITHUB_EVENT_ACTIONが見つかりません...")
+            raise ValueError("GITHUB_EVENT_ACTIONが見つかりません")
         
         print("設定の初期化が完了しました")
 
 class GithubHandler:
     def __init__(self, config: Config):
-        self.github = Github(config.github_token)
-        self.repo = self.github.get_repo(config.github_repo)
-        self.issue_number = config.issue_number
-        self.issue = self.repo.get_issue(config.issue_number)
         self.config = config
-    
-    def get_issue_status_and_id(self):
-        """GraphQL APIを使用してIssueの現在のステータスを取得する"""
-        
+        try:
+          self.github = Github(config.github_token)
+          self.repo = self.github.get_repo(config.github_repo)
+          self.issue_number = config.issue_number
+          self.issue = self.repo.get_issue(config.issue_number)
+        except Exception as e:
+          print(f"GitHub APIの初期化に失敗しました: {e}")
+          raise ValueError("GitHub APIの初期化に失敗しました")
+
+    def send_graphql_request(self, query: str, variables: dict):
+        """GraphQL APIを使用してリクエストを送信する"""
+
         headers = {
             "Authorization": f"Bearer {self.config.project_token}",
             "Content-Type": "application/json"
         }
+        response = requests.post(
+            "https://api.github.com/graphql",
+            headers=headers,
+            json={"query": query, "variables": variables}
+        )
+        if response.status_code != 200:
+            print(f"GraphQL APIからのエラー: {response.text}")
+            raise ValueError("GraphQL APIからのエラーによりリクエストを送信できません")
+        resjson = response.json()
+        if resjson.get("errors"):
+            print(f"GraphQL APIからのエラー: {resjson['errors']}")
+            raise ValueError("GraphQL APIからエラーが返されました")
+        if resjson.get("data") is None:
+            print("GraphQL APIからのレスポンスにデータがありません")
+            raise ValueError("GraphQL APIからのレスポンスにデータがありません")
+        
+        return resjson.get("data")
+    
+    def get_issue_status_and_id(self):
+        """GraphQL APIを使用してIssueの現在のステータスを取得する"""
+        
         query = """
         query($repoOwner: String!, $projectNo: Int!) {
           organization(login: $repoOwner) {
@@ -104,18 +128,8 @@ class GithubHandler:
             "repoOwner": REPO_OWNER,
             "projectNo": PROJECT_NO
         }
-        
-        response = requests.post(
-            "https://api.github.com/graphql",
-            headers=headers,
-            json={"query": query, "variables": variables}
-        )
-        if response.status_code != 200:
-            print(f"GraphQL APIからのエラー: {response.text}")
-            return None, None
-        
-        resjson = response.json()
-        project_items = resjson.get("data", {}).get("organization", {}).get("projectV2", {}).get("items", {}).get("nodes", [])
+        data = self.send_graphql_request(query, variables)
+        project_items = data.get("organization", {}).get("projectV2", {}).get("items", {}).get("nodes", [])
         
         for item in project_items:
             content = item.get("content")
@@ -125,17 +139,13 @@ class GithubHandler:
                 return field_value.get("name"), item["id"]
               return STATUS_NO_STATUS, item["id"]
         print("Projectにこのissueが見つかりません。アイテム数:", len(project_items))
-        return None, None
+        raise ValueError("Projectにこのissueが見つかりません")
     
     def update_issue_status(self, status: str, item_id: str):
         """GraphQL APIを使用してIssueのステータスを更新する"""
         
         # まず更新後のstatus（名称）に対応するIDを調べる
         
-        headers = {
-            "Authorization": f"Bearer {self.config.project_token}",
-            "Content-Type": "application/json"
-        }
         query = """
         query($fieldId: ID!) {
           node(id: $fieldId) {
@@ -151,18 +161,8 @@ class GithubHandler:
         variables = {
             "fieldId": STATUS_FIELD_ID
         }
-        
-        response = requests.post(
-            "https://api.github.com/graphql",
-            headers=headers,
-            json={"query": query, "variables": variables}
-        )
-        if response.status_code != 200:
-            print(f"GraphQL APIからのエラー: {response.text}")
-            return False
-        
-        data = response.json()
-        options = data.get("data", {}).get("node", {}).get("options", [])
+        data = self.send_graphql_request(query, variables)
+        options = data.get("node", {}).get("options", [])
         
         option_id = None
         for option in options:
@@ -172,7 +172,7 @@ class GithubHandler:
         
         if not option_id:
             print(f"ステータス '{status}' のオプションが見つかりません")
-            return False
+            raise ValueError(f"ステータス '{status}' のオプションが見つかりません")
 
         # 更新後のstatus（名称）に対応するIDが見つかったので、更新する
         
@@ -211,20 +211,5 @@ class GithubHandler:
             "fieldId": STATUS_FIELD_ID,
             "optionId": option_id
         }
-        
-        response = requests.post(
-            "https://api.github.com/graphql",
-            headers=headers,
-            json={"query": mutation, "variables": variables}
-        )
-        if response.status_code != 200:
-            print(f"GraphQL APIからのエラー: {response.text}")
-            return False
-        
-        resjson = response.json()
-        if resjson.get("errors"):
-            print(f"GraphQL APIからのエラー: {resjson['errors']}")
-            return False
-        
+        self.send_graphql_request(mutation, variables)
         print(f"ステータスを '{status}' に正常に更新しました")
-        return True

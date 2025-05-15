@@ -55,7 +55,7 @@ jobs:
             core.setOutput('action', action);
             core.setOutput('should_update', shouldUpdate.toString());
 
-  assign-status-sync:
+  status-update-call:
     needs: manage-assignment
     if: needs.manage-assignment.outputs.should_update == 'true'
     uses: ./.github/workflows/status-update-call.yml
