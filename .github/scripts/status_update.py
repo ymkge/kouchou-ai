@@ -1,4 +1,5 @@
-from status_update_common import Config, GithubHandler, STATUS_NO_STATUS, STATUS_COLD_LIST, STATUS_NEED_REFINEMENT, STATUS_READY, STATUS_IN_PROGRESS
+from status_update_common import Config, GithubHandler
+from repo_config import REPO_CONFIG
 
 def update_issue_status(github_handler, status, item_id):
     try:
@@ -19,15 +20,20 @@ def main():
         raise ValueError("ステータスの取得に失敗しました") from e
     
     if github_handler.action == "assigned":
-        if current_status in [STATUS_NO_STATUS, STATUS_COLD_LIST, STATUS_NEED_REFINEMENT, STATUS_READY]:
-            print(f"担当者が割り当てられ、ステータスが '{current_status}' のため、'{STATUS_IN_PROGRESS}' に更新します。")
-            update_issue_status(github_handler, STATUS_IN_PROGRESS, item_id)
+        if current_status in [
+            REPO_CONFIG["status"]["no_status"],
+            REPO_CONFIG["status"]["cold_list"],
+            REPO_CONFIG["status"]["need_refinement"],
+            REPO_CONFIG["status"]["ready"]
+            ]:
+            print(f"担当者が割り当てられ、ステータスが '{current_status}' のため、'{REPO_CONFIG["status"]["in_progress"]}' に更新します。")
+            update_issue_status(github_handler, REPO_CONFIG["status"]["in_progress"], item_id)
         else:
             print(f"ステータスは '{current_status}' です。更新は不要です。")
     elif github_handler.action == "unassigned":
-        if current_status == STATUS_IN_PROGRESS:
-            print(f"担当者が外れ、ステータスが '{current_status}' のため、'{STATUS_READY}' に更新します。")
-            update_issue_status(github_handler, STATUS_READY, item_id)
+        if current_status == REPO_CONFIG["status"]["in_progress"]:
+            print(f"担当者が外れ、ステータスが '{current_status}' のため、'{REPO_CONFIG["status"]["ready"]}' に更新します。")
+            update_issue_status(github_handler, REPO_CONFIG["status"]["ready"]}, item_id)
         else:
             print(f"ステータスは '{current_status}' です。更新は不要です。")
     else :

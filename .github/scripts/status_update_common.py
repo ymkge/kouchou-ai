@@ -3,24 +3,11 @@
 import os
 import requests
 from github import Github
+from repo_config import REPO_CONFIG
 
 if not os.getenv('GITHUB_ACTIONS'):
     from dotenv import load_dotenv
     load_dotenv()
-
-# 以下、digitaldemocracy2030/kouchou-ai の設定
-REPO_OWNER = "digitaldemocracy2030"
-REPO_NAME = "kouchou-ai"
-PROJECT_ID = "PVT_kwDODCKp5M4A00DQ"
-PROJECT_NO = 3
-STATUS_FIELD_ID = "PVTSSF_lADODCKp5M4A00DQzgqYqoE"
-STATUS_NO_STATUS = None
-STATUS_COLD_LIST = "Cold List"
-STATUS_NEED_REFINEMENT = "Need Refinement"
-STATUS_READY = "Ready"
-STATUS_IN_PROGRESS = "In Progress"
-STATUS_DONE = "Done"
-STATUS_ARCHIVED = "Archived"
 
 class Config:
     def __init__(self):
@@ -130,8 +117,8 @@ class GithubHandler:
         cursor = None
         while has_next_page:
           variables = {
-            "repoOwner": REPO_OWNER,
-            "projectNo": PROJECT_NO,
+            "repoOwner": REPO_CONFIG["repo_owner"],
+            "projectNo": REPO_CONFIG["project_no"],
             "cursor": cursor
           }
           data = self.send_graphql_request(query, variables)
@@ -146,7 +133,7 @@ class GithubHandler:
                 field_value = item.get("fieldValueByName")
                 if field_value:
                   return field_value.get("name"), item["id"]
-                return STATUS_NO_STATUS, item["id"]
+                return REPO_CONFIG["status"]["no_status"], item["id"]
               
         print("Projectにこのissueが見つかりません。アイテム数:", len(item_nodes))
         raise ValueError("Projectにこのissueが見つかりません")
