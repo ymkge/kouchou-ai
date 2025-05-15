@@ -32,7 +32,7 @@ jobs:
         app-id: ${{ secrets.PJ_APP_ID }}
         private-key: ${{ secrets.PJ_APP_PEM }}
         owner: ${{ github.repository_owner }}
-        repositories: ${{ github.repository }}
+        repository: ${{ github.repository }}
 
     - name: Checkout repository
       uses: actions/checkout@v4
