@@ -274,7 +274,7 @@ def process_merge_labelling(
             messages=messages,
             model=config["hierarchical_merge_labelling"]["model"],
             json_schema=LabellingFromat,
-            provider=config.get("provider", "openai"),
+            provider=config["provider"],
             local_llm_address=config.get("local_llm_address"),
         )
         response_json = json.loads(response) if isinstance(response, str) else response
