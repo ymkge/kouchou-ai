@@ -15,6 +15,10 @@ on:
       PJ_APP_PEM:
         required: true
 
+permissions:
+  issues: write
+  content: read
+
 jobs:
   update_status:
     runs-on: ubuntu-latest

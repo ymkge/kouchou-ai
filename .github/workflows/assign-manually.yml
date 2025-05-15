@@ -5,7 +5,8 @@ on:
     types: [assigned, unassigned]
 
 permissions:
-  issues: read
+  issues: write
+  content: read
 
 jobs:
   status-update-call:
