@@ -156,7 +156,7 @@ class GithubHandler:
         }
         """
         variables = {
-            "fieldId": STATUS_FIELD_ID
+            "fieldId": REPO_CONFIG["status_field_id"]
         }
         data = self.send_graphql_request(query, variables)
         options = data.get("node", {}).get("options", [])
@@ -203,9 +203,9 @@ class GithubHandler:
         }
         """
         variables = {
-            "projectId": PROJECT_ID,
+            "projectId": REPO_CONFIG["project_id"],
             "itemId": item_id,
-            "fieldId": STATUS_FIELD_ID,
+            "fieldId": REPO_CONFIG["status_field_id"],
             "optionId": option_id
         }
         self.send_graphql_request(mutation, variables)
