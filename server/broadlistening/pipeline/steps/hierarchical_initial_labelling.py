@@ -47,7 +47,7 @@ def hierarchical_initial_labelling(config: dict) -> None:
         sampling_num,
         model,
         workers,
-        config["provider"]
+        config["provider"],
         config.get("local_llm_address"),
     )
     print("start initial labelling")
