@@ -33,7 +33,7 @@ def main():
     elif github_handler.action == "unassigned":
         if current_status == REPO_CONFIG["status"]["in_progress"]:
             print(f"担当者が外れ、ステータスが '{current_status}' のため、'{REPO_CONFIG["status"]["ready"]}' に更新します。")
-            update_issue_status(github_handler, REPO_CONFIG["status"]["ready"]}, item_id)
+            update_issue_status(github_handler, REPO_CONFIG["status"]["ready"], item_id)
         else:
             print(f"ステータスは '{current_status}' です。更新は不要です。")
     else :
