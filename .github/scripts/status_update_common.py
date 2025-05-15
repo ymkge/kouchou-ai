@@ -82,7 +82,7 @@ class GithubHandler:
         """GraphQL APIを使用してIssueの現在のステータスを取得する"""
         
         query = """
-        query($repoOwner: String!, $projectNo: Int!) {
+        query($repoOwner: String!, $projectNo: Int!, $cursor: String) {
           organization(login: $repoOwner) {
             projectV2(number: $projectNo) {
               ... on ProjectV2 {
