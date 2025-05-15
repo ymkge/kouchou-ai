@@ -51,7 +51,7 @@ jobs:
             } else {
               console.log("Comment does not exactly match '/assign' or '/unassign'");
             }
-            
+
             core.setOutput('issue_number', issueNumber.toString());
             core.setOutput('action', action);
             core.setOutput('should_update', shouldUpdate.toString());

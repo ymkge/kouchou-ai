@@ -2,7 +2,6 @@
 
 from math import e
 import os
-import json
 import requests
 from github import Github
 
