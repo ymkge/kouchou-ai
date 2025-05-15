@@ -1,6 +1,5 @@
-# Projects status 更新の共通処理
+"""Projects status 更新の共通処理"""
 
-from math import e
 import os
 import requests
 from github import Github
@@ -65,7 +64,7 @@ class GithubHandler:
           self.issue = self.repo.get_issue(config.issue_number)
         except Exception as e:
           print(f"GitHub APIの初期化に失敗しました: {e}")
-          raise ValueError("GitHub APIの初期化に失敗しました")
+          raise ValueError("GitHub APIの初期化に失敗しました") from e
 
     def send_graphql_request(self, query: str, variables: dict):
         """GraphQL APIを使用してリクエストを送信する"""
