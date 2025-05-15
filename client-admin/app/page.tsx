@@ -37,7 +37,7 @@ import {
   ExternalLinkIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // ステップの定義
 const stepKeys = [
@@ -95,7 +95,6 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
   const [errorStep, setErrorStep] = useState<string | null>(null);
   const [lastValidStep, setLastValidStep] = useState<string>("loading");
   const [isPolling, setIsPolling] = useState<boolean>(true);
-
   // hasReloaded のデフォルト値を false に設定
   const [hasReloaded, setHasReloaded] = useState<boolean>(false);
 
@@ -210,6 +209,7 @@ function ReportCard({
     progress === "completed" ? steps.length : stepKeys.indexOf(progress) === -1 ? 0 : stepKeys.indexOf(progress);
 
   const [lastProgress, setLastProgress] = useState<string | null>(null);
+  const clusterDialogContentRef = useRef<HTMLDivElement>(null);
 
   // 編集ダイアログの状態管理
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -759,6 +759,7 @@ function ReportCard({
           />
           <Dialog.Positioner>
             <Dialog.Content
+              ref={clusterDialogContentRef}
               pointerEvents="auto"
               position="relative"
               zIndex={1001}
@@ -799,8 +800,8 @@ function ReportCard({
                           <Select.Indicator />
                         </Select.IndicatorGroup>
                       </Select.Control>
-                      <Portal>
-                        <Select.Positioner zIndex={2500}> {/* zIndexを調整 */}
+                      <Portal container={clusterDialogContentRef}>
+                        <Select.Positioner zIndex={2500}>
                           <Select.Content>
                             {clusters.map((c) => (
                               <Select.Item item={{ label: c.label, value: c.id }} key={c.id}>
