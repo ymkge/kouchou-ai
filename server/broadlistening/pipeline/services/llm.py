@@ -254,7 +254,6 @@ def request_to_chat_ai(
     provider: str = "openai",
     local_llm_address: str | None = None,
 ) -> str:
-
     if provider == "azure":
         return request_to_azure_chatcompletion(messages, is_json, json_schema)
     elif provider == "openai":
@@ -270,7 +269,7 @@ def request_to_chat_ai(
         else:
             raise ValueError(f"Unsupported model for OpenRouter: {model}")
     else:
-        raise ValueError(f"Unsupported provider: {provider}")
+        raise ValueError(f"Unknown provider: {provider}")
 
 
 EMBDDING_MODELS = [
