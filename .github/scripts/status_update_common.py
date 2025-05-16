@@ -129,7 +129,7 @@ class GithubHandler:
 
           for item in item_nodes:
               content = item.get("content")
-              if content and content.get("number") == self.issue_number and content.get("repository", {}).get("name") == REPO_NAME:
+              if content and content.get("number") == self.issue_number and content.get("repository", {}).get("name") == REPO_CONFIG["repo_name"]:
                 field_value = item.get("fieldValueByName")
                 if field_value:
                   return field_value.get("name"), item["id"]
