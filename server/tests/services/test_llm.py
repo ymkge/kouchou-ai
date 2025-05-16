@@ -7,7 +7,7 @@ from broadlistening.pipeline.services.llm import (
     _validate_model,
     request_to_azure_chatcompletion,
     request_to_azure_embed,  # noqa: F401
-    request_to_chat_openai,
+    request_to_chat_ai,
     request_to_embed,  # noqa: F401
     request_to_openai,
 )
@@ -461,7 +461,7 @@ class TestLLMService:
         with patch(
             "broadlistening.pipeline.services.llm.request_to_openai", return_value="OpenAI response"
         ) as mock_request_to_openai:
-            response = request_to_chat_openai(messages, model="gpt-4o", provider="openai")
+            response = request_to_chat_ai(messages, model="gpt-4o", provider="openai")
 
         assert response == "OpenAI response"
         mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, None)
@@ -477,7 +477,7 @@ class TestLLMService:
         with patch(
             "broadlistening.pipeline.services.llm.request_to_azure_chatcompletion", return_value="Azure response"
         ) as mock_request_to_azure:
-            response = request_to_chat_openai(messages, model="gpt-4o", is_json=True, provider="azure")
+            response = request_to_chat_ai(messages, model="gpt-4o", is_json=True, provider="azure")
 
         assert response == "Azure response"
         mock_request_to_azure.assert_called_once_with(messages, True, None)
@@ -508,7 +508,7 @@ class TestLLMService:
         with patch(
             "broadlistening.pipeline.services.llm.request_to_openai", return_value="OpenAI response"
         ) as mock_request_to_openai:
-            response = request_to_chat_openai(messages, model="gpt-4o", json_schema=json_schema, provider="openai")
+            response = request_to_chat_ai(messages, model="gpt-4o", json_schema=json_schema, provider="openai")
 
         assert response == "OpenAI response"
         mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, json_schema)
@@ -528,7 +528,7 @@ class TestLLMService:
         with patch(
             "broadlistening.pipeline.services.llm.request_to_openai", return_value="OpenAI response"
         ) as mock_request_to_openai:
-            response = request_to_chat_openai(messages, model="gpt-4o", json_schema=TestModel, provider="openai")
+            response = request_to_chat_ai(messages, model="gpt-4o", json_schema=TestModel, provider="openai")
 
         assert response == "OpenAI response"
         mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, TestModel)
