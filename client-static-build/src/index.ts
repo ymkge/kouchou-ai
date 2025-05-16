@@ -36,10 +36,7 @@ app.post("/build", async (req, res) => {
     const zipStream = new PassThrough();
 
     res.setHeader("Content-Type", "application/zip");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=${ZIP_FILE_NAME}`,
-    );
+    res.setHeader("Content-Disposition", `attachment; filename=${ZIP_FILE_NAME}`);
 
     archive.pipe(zipStream).pipe(res);
 
