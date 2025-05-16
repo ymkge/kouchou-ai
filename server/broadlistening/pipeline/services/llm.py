@@ -250,26 +250,27 @@ def request_to_chat_ai(
     messages: list[dict],
     model: str = "gpt-4o",
     is_json: bool = False,
-    json_schema: dict | type[BaseModel] = None,
+    json_schema: dict | type[BaseModel] | None = None,
     provider: str = "openai",
     local_llm_address: str | None = None,
-) -> dict:
-    use_azure = os.getenv("USE_AZURE", "false").lower()
-    
-    if use_azure == "true":
+) -> str:
+
+    if provider == "azure":
         return request_to_azure_chatcompletion(messages, is_json, json_schema)
+    elif provider == "openai":
+        return request_to_openai(messages, model, is_json, json_schema)
     elif provider == "local":
         address = local_llm_address or "localhost:11434"
         return request_to_local_llm(messages, model, is_json, json_schema, address)
-    else:
+    elif provider == "openrouter":
         # OpenRouterのモデル名に変換
         openrouter_model = OPENROUTER_MODELS.get(model)
         if openrouter_model:
-            # OpenRouterのモデルの場合
             return request_to_openrouter_chatcompletion(messages, openrouter_model, is_json, json_schema)
         else:
-            # OpenAIのモデルの場合
-            return request_to_openai(messages, model, is_json, json_schema)
+            raise ValueError(f"Unsupported model for OpenRouter: {model}")
+    else:
+        raise ValueError(f"Unsupported provider: {provider}")
 
 
 EMBDDING_MODELS = [
@@ -506,9 +507,8 @@ def request_to_openrouter_chatcompletion(
 
     try:
         if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
-            # Use beta.chat.completions.create for Pydantic BaseModel
             response = client.beta.chat.completions.parse(
-                model=model,  # すでに変換済みのモデル名を使用
+                model=model,
                 messages=messages,
                 temperature=0,
                 n=1,
@@ -521,11 +521,11 @@ def request_to_openrouter_chatcompletion(
             response_format = None
             if is_json:
                 response_format = {"type": "json_object"}
-            if json_schema:  # 両方有効化されていたら、json_schemaを優先
+            if json_schema:
                 response_format = json_schema
 
             response = client.chat.completions.create(
-                model=model,  # すでに変換済みのモデル名を使用
+                model=model,
                 messages=messages,
                 temperature=0,
                 n=1,
