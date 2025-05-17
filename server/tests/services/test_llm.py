@@ -553,7 +553,7 @@ class TestLLMService:
             {"role": "user", "content": "Hello!"},
         ]
         model = "openai/gpt-4o-2024-08-06"
-        
+
         # OpenRouterのクライアントをモック化
         mock_client = MagicMock()
         mock_response = MagicMock()
