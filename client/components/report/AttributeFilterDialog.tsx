@@ -45,6 +45,8 @@ export function AttributeFilterDialog({
 
   // Initialize filters state
   const [filters, setFilters] = useState<AttributeFilters>(currentFilters);
+  // カテゴラルの一時状態
+  const [pendingCategoricalFilters, setPendingCategoricalFilters] = useState<AttributeFilters>(currentFilters);
 
   // Memoize numeric ranges calculations to avoid expensive recalculation
   const calculatedNumericRanges = useMemo(() => {
@@ -106,7 +108,7 @@ export function AttributeFilterDialog({
 
   // Memoize checkbox change handler
   const handleCheckboxChange = useCallback((attribute: string, value: string) => {
-    setFilters((prev) => {
+    setPendingCategoricalFilters((prev) => {
       const newFilters = { ...prev };
       if (!newFilters[attribute]) {
         newFilters[attribute] = [];
@@ -158,39 +160,41 @@ export function AttributeFilterDialog({
         ...prev,
         [attribute]: range,
       }));
-
-      // フィルターが有効な場合のみ更新
-      if (enabledRanges[attribute]) {
-        // Update filters based on the range
-        const availableValues = availableAttributes[attribute] || [];
-        const inRangeValues = availableValues.filter((value) => {
-          const trimmedValue = value.trim();
-          // 空の値は別途処理
-          if (trimmedValue === "") {
-            return includeEmptyValues[attribute] || false;
-          }
-          // 数値の場合は範囲フィルターを適用
-          const numValue = Number(trimmedValue);
-          return numValue >= range[0] && numValue <= range[1];
-        });
-
-        setFilters((prev) => ({
-          ...prev,
-          [attribute]: inRangeValues,
-        }));
-      }
+      // setFiltersは呼ばない（即時反映しない）
     },
-    [availableAttributes, enabledRanges, includeEmptyValues],
+    [],
   );
 
   // Memoize apply handler
   const onApply = useCallback(() => {
-    onApplyFilters(filters);
+    // 新しいfiltersを計算
+    const newFilters: AttributeFilters = {};
+    for (const [attribute, values] of Object.entries(availableAttributes)) {
+      if (attributeTypes[attribute] === "numeric" && enabledRanges[attribute]) {
+        const range = numericRanges[attribute];
+        if (range) {
+          const inRangeValues = values.filter((value) => {
+            const trimmedValue = value.trim();
+            if (trimmedValue === "") {
+              return includeEmptyValues[attribute] || false;
+            }
+            const numValue = Number(trimmedValue);
+            return numValue >= range[0] && numValue <= range[1];
+          });
+          newFilters[attribute] = inRangeValues;
+        }
+      } else if (attributeTypes[attribute] === "categorical" && pendingCategoricalFilters[attribute]) {
+        newFilters[attribute] = pendingCategoricalFilters[attribute];
+      }
+    }
+    setFilters(newFilters); // 状態も更新
+    onApplyFilters(newFilters);
     onClose();
-  }, [filters, onApplyFilters, onClose]);
+  }, [availableAttributes, attributeTypes, enabledRanges, numericRanges, includeEmptyValues, pendingCategoricalFilters, onApplyFilters, onClose]);
   // Memoize clear filters handler
   const handleClearFilters = useCallback(() => {
     setFilters({});
+    setPendingCategoricalFilters({});
     // Reset numeric ranges to their original min/max
     setNumericRanges(calculatedNumericRanges);
     // すべてのレンジフィルターを無効化
@@ -206,41 +210,9 @@ export function AttributeFilterDialog({
         ...prev,
         [attribute]: isEnabled,
       }));
-
-      if (isEnabled) {
-        // 有効にする場合、現在のレンジでフィルターを適用
-        const availableValues = availableAttributes[attribute] || [];
-
-        // 空文字を除外して数値の最小・最大を計算
-        const numericValuesOnly = availableValues.filter((v) => v.trim() !== "").map((v) => Number(v));
-
-        const range = numericRanges[attribute] || [Math.min(...numericValuesOnly), Math.max(...numericValuesOnly)];
-
-        const inRangeValues = availableValues.filter((value) => {
-          const trimmedValue = value.trim();
-          // 空の値は別途処理
-          if (trimmedValue === "") {
-            return includeEmptyValues[attribute] || false;
-          }
-          // 数値の場合は範囲フィルターを適用
-          const numValue = Number(trimmedValue);
-          return numValue >= range[0] && numValue <= range[1];
-        });
-
-        setFilters((prev) => ({
-          ...prev,
-          [attribute]: inRangeValues,
-        }));
-      } else {
-        // 無効にする場合、このフィルターを削除
-        setFilters((prev) => {
-          const newFilters = { ...prev };
-          delete newFilters[attribute];
-          return newFilters;
-        });
-      }
+      // setFiltersは呼ばない（即時反映しない）
     },
-    [availableAttributes, numericRanges, includeEmptyValues],
+    []
   );
   // Memoize the list of attributes
   const attributeEntries = useMemo(() => Object.entries(availableAttributes), [availableAttributes]);
@@ -287,6 +259,24 @@ export function AttributeFilterDialog({
                       // Numeric range input
                       <Box pl={2} pr={4} borderWidth={1} borderRadius="md" p={2}>
                         <Flex align="center">
+                          {/* 空の値を含めるチェックボックスを左側に配置 */}
+                          <Checkbox
+                            checked={includeEmptyValues[attribute] || false}
+                            onChange={() => {
+                              setIncludeEmptyValues((prev) => {
+                                const newState = {
+                                  ...prev,
+                                  [attribute]: !prev[attribute],
+                                };
+                                // setFiltersやhandleRangeChangeは呼ばない
+                                return newState;
+                              });
+                            }}
+                            disabled={!enabledRanges[attribute]}
+                            mr={4}
+                          >
+                            空の値を含める
+                          </Checkbox>
                           <Text fontSize="xs" width="60px" textAlign="right" mr={2}>
                             最小: {Math.min(...values.filter((v) => v.trim() !== "").map((v) => Number(v)))}
                           </Text>
@@ -311,29 +301,6 @@ export function AttributeFilterDialog({
                             最大: {Math.max(...values.filter((v) => v.trim() !== "").map((v) => Number(v)))}
                           </Text>
                         </Flex>
-                        <Flex align="center" mt={2}>
-                          <Checkbox
-                            checked={includeEmptyValues[attribute] || false}
-                            onChange={() => {
-                              setIncludeEmptyValues((prev) => {
-                                const newState = {
-                                  ...prev,
-                                  [attribute]: !prev[attribute],
-                                };
-
-                                // すぐにフィルターを適用
-                                if (enabledRanges[attribute]) {
-                                  handleRangeChange(attribute, numericRanges[attribute] || [0, 0]);
-                                }
-
-                                return newState;
-                              });
-                            }}
-                            disabled={!enabledRanges[attribute]}
-                          >
-                            空の値を含める
-                          </Checkbox>
-                        </Flex>
                       </Box>
                     ) : (
                       // Categorical checkboxes in horizontal layout
@@ -346,10 +313,10 @@ export function AttributeFilterDialog({
                                 px={2}
                                 borderWidth={1}
                                 borderRadius="md"
-                                bg={filters[attribute]?.includes(value) ? "blue.50" : "transparent"}
+                                bg={pendingCategoricalFilters[attribute]?.includes(value) ? "blue.50" : "transparent"}
                               >
                                 <Checkbox
-                                  checked={filters[attribute]?.includes(value) || false}
+                                  checked={pendingCategoricalFilters[attribute]?.includes(value) || false}
                                   onChange={() => handleCheckboxChange(attribute, value)}
                                 >
                                   {value || "(空)"}
