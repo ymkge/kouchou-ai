@@ -1,14 +1,14 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { DialogBody, DialogContent, DialogFooter, DialogRoot } from "@/components/ui/dialog";
 import {
-    Box,
-    Button,
-    Flex,
-    Heading,
-    Input,
-    Text,
-    Wrap,
-    WrapItem
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Input,
+  Text,
+  Wrap,
+  WrapItem
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -244,46 +244,45 @@ export function AttributeFilterDialog({
               attributeEntries.map(([attribute, values]) => {
                 const isNumeric = attributeTypes[attribute] === 'numeric';
 
-                return (
-                  <Box key={attribute} mb={6}>
-                    <Heading size="sm" mb={2}>
-                      {attribute}
-                    </Heading>                      {isNumeric && values.length > 0 ? (
+                return (                  <Box key={attribute} mb={4}>
+                    <Flex align="center" mb={2}>
+                      <Heading size="sm" mb={0} mr={3}>
+                        {attribute}
+                      </Heading>
+                      {isNumeric && values.length > 0 && (
+                        <Checkbox 
+                          checked={!!enabledRanges[attribute]} 
+                          onChange={() => toggleRangeFilter(attribute, !enabledRanges[attribute])}
+                        >
+                          フィルター有効化
+                        </Checkbox>
+                      )}
+                    </Flex>
+                    {isNumeric && values.length > 0 ? (
                       // Numeric range input
-                      <Box pl={2} pr={4} pt={2} borderWidth={1} borderRadius="md" p={3}>
-                        <Flex mb={3} align="center">
-                          <Checkbox 
-                            checked={!!enabledRanges[attribute]} 
-                            onChange={() => toggleRangeFilter(attribute, !enabledRanges[attribute])}
-                            mr={3}
-                          >
-                            レンジフィルターを有効にする
-                          </Checkbox>
-                        </Flex>
-                        <Flex gap={2} align="center" mb={3}>
+                      <Box pl={2} pr={4} borderWidth={1} borderRadius="md" p={2}>
+                        <Flex align="center">
+                          <Text fontSize="xs" width="60px" textAlign="right" mr={2}>
+                            最小: {Math.min(...values.map(v => v.trim() === '' ? 0 : Number(v)))}
+                          </Text>
                           <Input 
                             type="number"
                             value={numericRanges[attribute]?.[0] || ''}
                             onChange={(e) => handleMinRangeChange(attribute, Number(e.target.value))}
                             size="sm"
-                            width="120px"
+                            width="100px"
                             disabled={!enabledRanges[attribute]}
                           />
-                          <Text>～</Text>
+                          <Text mx={2}>～</Text>
                           <Input 
                             type="number"
                             value={numericRanges[attribute]?.[1] || ''}
                             onChange={(e) => handleMaxRangeChange(attribute, Number(e.target.value))}
                             size="sm"
-                            width="120px"
+                            width="100px"
                             disabled={!enabledRanges[attribute]}
                           />
-                        </Flex>
-                        <Flex justify="space-between">
-                          <Text fontSize="xs" colorScheme="gray">
-                            最小: {Math.min(...values.map(v => v.trim() === '' ? 0 : Number(v)))}
-                          </Text>
-                          <Text fontSize="xs" colorScheme="gray">
+                          <Text fontSize="xs" width="60px" textAlign="left" ml={2}>
                             最大: {Math.max(...values.map(v => v.trim() === '' ? 0 : Number(v)))}
                           </Text>
                         </Flex>
