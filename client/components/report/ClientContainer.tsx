@@ -1,21 +1,19 @@
 "use client";
 
 import { SelectChartButton } from "@/components/charts/SelectChartButton";
-import { AttributeFilterDialog } from "@/components/report/AttributeFilterDialog";
+import { AttributeFilterDialog, type AttributeFilters } from "@/components/report/AttributeFilterDialog";
 import { Chart } from "@/components/report/Chart";
 import { ClusterOverview } from "@/components/report/ClusterOverview";
 import { DisplaySettingDialog } from "@/components/report/DisplaySettingDialog";
+import { Tooltip } from "@/components/ui/tooltip";
 import type { Cluster, Result } from "@/type";
-import { Box, Button } from "@chakra-ui/react";
+import { Box, Button, Icon } from "@chakra-ui/react";
 import { Filter } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type Props = {
   result: Result;
 };
-
-// 属性フィルタの型定義
-type AttributeFilters = Record<string, string[]>;
 
 // コメントオブジェクトの型定義を拡張
 type CommentWithAttributes = {
@@ -44,23 +42,33 @@ export function ClientContainer({ result }: Props) {
     
     // 全ての意見から属性を抽出
     result.arguments.forEach((arg) => {
-      const argId = arg.arg_id;
-      // Safely handle potentially undefined comment_id
-      if (arg.comment_id === undefined) return;
-      
-      const commentId = arg.comment_id.toString();
-      const comment = result.comments[commentId] as CommentWithAttributes | undefined;
-      
-      if (comment) {
-        // commentオブジェクトから属性を抽出（commentとid以外のプロパティ）
-        Object.entries(comment).forEach(([key, value]) => {
-          if (key !== 'comment' && value !== undefined && value !== null) {
+      // 1. まず attributes フィールドからデータを抽出
+      if (arg.attributes) {
+        Object.entries(arg.attributes).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
             if (!attributes[key]) {
               attributes[key] = new Set<string>();
             }
             attributes[key].add(String(value));
           }
         });
+      } 
+      // 2. 後方互換性のため、commentオブジェクトからも属性を抽出
+      else if (arg.comment_id !== undefined) {
+        const commentId = arg.comment_id.toString();
+        const comment = result.comments[commentId] as CommentWithAttributes | undefined;
+        
+        if (comment) {
+          // commentオブジェクトから属性を抽出（commentとid以外のプロパティ）
+          Object.entries(comment).forEach(([key, value]) => {
+            if (key !== 'comment' && value !== undefined && value !== null) {
+              if (!attributes[key]) {
+                attributes[key] = new Set<string>();
+              }
+              attributes[key].add(String(value));
+            }
+          });
+        }
       }
     });
     
@@ -85,23 +93,62 @@ export function ClientContainer({ result }: Props) {
 
     // 1. 属性フィルタに基づいて引数をフィルタリング
     let filteredArgs = result.arguments;
+    let filteredArgIds: string[] = [];
     
     if (Object.keys(attrFilters).length > 0) {
+      // フィルター条件を満たす引数を抽出
       filteredArgs = result.arguments.filter((arg) => {
-        // Safely handle potentially undefined comment_id
-        if (arg.comment_id === undefined) return false;
+        // 1. まず attributes フィールドを確認
+        if (arg.attributes) {
+          // すべてのフィルタ条件を満たすか確認
+          return Object.entries(attrFilters).every(([attrName, selectedValues]) => {
+            const attrValue = arg.attributes?.[attrName];
+            
+            // 数値範囲フィルターの処理
+            if (selectedValues.length === 1 && selectedValues[0].startsWith('range:')) {
+              const [_, minStr, maxStr] = selectedValues[0].split(':');
+              const min = Number(minStr);
+              const max = Number(maxStr);
+              const numValue = Number(attrValue);
+              
+              return !isNaN(numValue) && numValue >= min && numValue <= max;
+            }
+            
+            // 通常のチェックボックスフィルターの処理
+            return selectedValues.includes(String(attrValue));
+          });
+        }
+        // 2. 後方互換性のため、commentオブジェクトからも確認
+        else if (arg.comment_id !== undefined) {
+          const commentId = arg.comment_id.toString();
+          const comment = result.comments[commentId] as CommentWithAttributes | undefined;
+          
+          if (!comment) return false;
+          
+          // すべてのフィルタ条件を満たすか確認
+          return Object.entries(attrFilters).every(([attrName, selectedValues]) => {
+            const commentValue = comment[attrName];
+            
+            // 数値範囲フィルターの処理
+            if (selectedValues.length === 1 && selectedValues[0].startsWith('range:')) {
+              const [_, minStr, maxStr] = selectedValues[0].split(':');
+              const min = Number(minStr);
+              const max = Number(maxStr);
+              const numValue = Number(commentValue);
+              
+              return !isNaN(numValue) && numValue >= min && numValue <= max;
+            }
+            
+            // 通常のチェックボックスフィルターの処理
+            return selectedValues.includes(String(commentValue));
+          });
+        }
         
-        const commentId = arg.comment_id.toString();
-        const comment = result.comments[commentId] as CommentWithAttributes | undefined;
-        
-        if (!comment) return false;
-        
-        // すべてのフィルタ条件を満たすか確認
-        return Object.entries(attrFilters).every(([attrName, selectedValues]) => {
-          const commentValue = comment[attrName];
-          return selectedValues.includes(String(commentValue));
-        });
+        return false;
       });
+      
+      // フィルター条件を満たす引数のIDリストを作成
+      filteredArgIds = filteredArgs.map(arg => arg.arg_id);
     }
     
     // 2. フィルタされた引数を含むクラスタIDを集める
@@ -123,7 +170,9 @@ export function ClientContainer({ result }: Props) {
     setFilteredResult({
       ...result,
       clusters: combinedFilteredClusters,
-      arguments: Object.keys(attrFilters).length === 0 ? result.arguments : filteredArgs,
+      arguments: result.arguments, // 全ての引数を含め、グレーアウト表示のために使用
+      // 新しいプロパティとしてフィルター条件に合致する引数IDのリストを追加
+      filteredArgumentIds: Object.keys(attrFilters).length > 0 ? filteredArgIds : undefined,
     });
   }
 
@@ -217,22 +266,29 @@ export function ClientContainer({ result }: Props) {
           onClickDensitySetting={handleClickDensitySetting}
           onClickFullscreen={handleClickFullscreen}
           isDenseGroupEnabled={isDenseGroupEnabled}
+          attributeFilterButton={
+            Object.keys(availableAttributes).length > 0 ? (
+              <Tooltip content={"属性フィルタ"} openDelay={0} closeDelay={0}>
+                <Button 
+                  onClick={handleOpenAttributeFilter}
+                  variant="outline"
+                  h={"50px"}
+                >
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Icon>
+                      <Filter size={16} />
+                    </Icon>
+                    {Object.keys(attributeFilters).length > 0 && 
+                      <Box as="span" fontSize="xs" bg="cyan.500" color="white" p="1" borderRadius="md" minW="5">
+                        {Object.keys(attributeFilters).length}
+                      </Box>
+                    }
+                  </Box>
+                </Button>
+              </Tooltip>
+            ) : null
+          }
         />
-        
-        {Object.keys(availableAttributes).length > 0 && 
-          <Button 
-            onClick={handleOpenAttributeFilter}
-            size="sm"
-            variant="outline"
-          >
-            <Box display="flex" alignItems="center" gap={1}>
-              <Filter size={16} />
-              <span>
-                属性フィルタ {Object.keys(attributeFilters).length > 0 ? `(${Object.keys(attributeFilters).length})` : ''}
-              </span>
-            </Box>
-          </Button>
-        }
       </Box>
       
       <Chart

@@ -15,8 +15,8 @@ export function AttributeColumnsSelector({
   selectedAttributes: string[]; // 選択された属性カラム
   onAttributeChange: (attributes: string[]) => void; // 属性選択変更時のコールバック
 }) {
-  // 選択可能な属性カラム (コメントカラムは除外)
-  const availableAttributes = columns.filter(col => col !== selectedColumn);
+  // 選択可能な属性カラム (コメントカラム、IDは除外)
+  const availableAttributes = columns.filter(col => col !== selectedColumn && col !== "id")
 
   // チェックボックスの変更ハンドラー
   const handleCheckboxChange = (attribute: string, isChecked: boolean) => {

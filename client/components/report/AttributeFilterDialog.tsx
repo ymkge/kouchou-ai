@@ -78,7 +78,7 @@ export function AttributeFilterDialog({
                     {values.map((value) => (
                       <Box key={`${attribute}-${value}`} display="flex" alignItems="center" mb={1}>
                         <Checkbox 
-                          isChecked={filters[attribute]?.includes(value) || false}
+                          checked={filters[attribute]?.includes(value) || false}
                           onChange={() => handleCheckboxChange(attribute, value)}
                         >
                           {value || '(空)'}
