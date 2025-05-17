@@ -33,13 +33,13 @@ export function AttributeFilterDialog({
 
     // Otherwise calculate them
     const typeMap: Record<string, "numeric" | "categorical"> = {};
-    Object.entries(availableAttributes).forEach(([attribute, values]) => {
+    for (const [attribute, values] of Object.entries(availableAttributes)) {
       const isNumeric = values.every((value) => {
         const trimmedValue = value.trim();
         return trimmedValue === "" || !Number.isNaN(Number(trimmedValue));
       });
       typeMap[attribute] = isNumeric && values.length > 0 ? "numeric" : "categorical";
-    });
+    }
     return typeMap;
   }, [availableAttributes, initialAttributeTypes]);
 
@@ -55,12 +55,18 @@ export function AttributeFilterDialog({
 
     // Otherwise calculate them
     const ranges: NumericRangeFilters = {};
-    Object.entries(availableAttributes).forEach(([attribute, values]) => {
+    for (const [attribute, values] of Object.entries(availableAttributes)) {
       if (attributeTypes[attribute] === "numeric") {
-        const numericValues = values.map((v) => (v.trim() === "" ? 0 : Number(v)));
-        ranges[attribute] = [Math.min(...numericValues), Math.max(...numericValues)];
+        // 空文字を除外して数値の最小・最大を計算
+        const numericValuesOnly = values.filter((v) => v.trim() !== "").map((v) => Number(v));
+
+        if (numericValuesOnly.length > 0) {
+          ranges[attribute] = [Math.min(...numericValuesOnly), Math.max(...numericValuesOnly)];
+        } else {
+          ranges[attribute] = [0, 0]; // フォールバック値
+        }
       }
-    });
+    }
     return ranges;
   }, [availableAttributes, attributeTypes, externalNumericRanges]);
   // Initialize numeric ranges state with calculated values
@@ -69,11 +75,14 @@ export function AttributeFilterDialog({
   // 各数値フィルターの有効/無効状態を管理
   const [enabledRanges, setEnabledRanges] = useState<Record<string, boolean>>({});
 
+  // 空の値を含めるかどうかの状態を管理
+  const [includeEmptyValues, setIncludeEmptyValues] = useState<Record<string, boolean>>({});
+
   // Apply existing filters to numeric ranges if they exist
   useEffect(() => {
     const newEnabledRanges: Record<string, boolean> = {};
 
-    Object.entries(filters).forEach(([attribute, selectedValues]) => {
+    for (const [attribute, selectedValues] of Object.entries(filters)) {
       if (attributeTypes[attribute] === "numeric" && selectedValues.length > 0) {
         const numValues = selectedValues.map((v) => Number(v));
         const minVal = Math.min(...numValues);
@@ -90,10 +99,10 @@ export function AttributeFilterDialog({
         // このフィルターは有効
         newEnabledRanges[attribute] = true;
       }
-    });
+    }
 
     setEnabledRanges(newEnabledRanges);
-  }, []); // Only run once on mount
+  }, [filters, attributeTypes, numericRanges]); // Adding missing dependencies
 
   // Memoize checkbox change handler
   const handleCheckboxChange = useCallback((attribute: string, value: string) => {
@@ -155,7 +164,13 @@ export function AttributeFilterDialog({
         // Update filters based on the range
         const availableValues = availableAttributes[attribute] || [];
         const inRangeValues = availableValues.filter((value) => {
-          const numValue = value.trim() === "" ? 0 : Number(value);
+          const trimmedValue = value.trim();
+          // 空の値は別途処理
+          if (trimmedValue === "") {
+            return includeEmptyValues[attribute] || false;
+          }
+          // 数値の場合は範囲フィルターを適用
+          const numValue = Number(trimmedValue);
           return numValue >= range[0] && numValue <= range[1];
         });
 
@@ -165,7 +180,7 @@ export function AttributeFilterDialog({
         }));
       }
     },
-    [availableAttributes, enabledRanges],
+    [availableAttributes, enabledRanges, includeEmptyValues],
   );
 
   // Memoize apply handler
@@ -180,6 +195,8 @@ export function AttributeFilterDialog({
     setNumericRanges(calculatedNumericRanges);
     // すべてのレンジフィルターを無効化
     setEnabledRanges({});
+    // 空の値を含めるフラグもリセット
+    setIncludeEmptyValues({});
   }, [calculatedNumericRanges]);
 
   // レンジフィルターの有効/無効を切り替える
@@ -193,13 +210,20 @@ export function AttributeFilterDialog({
       if (isEnabled) {
         // 有効にする場合、現在のレンジでフィルターを適用
         const availableValues = availableAttributes[attribute] || [];
-        const range = numericRanges[attribute] || [
-          Math.min(...availableValues.map((v) => (v.trim() === "" ? 0 : Number(v)))),
-          Math.max(...availableValues.map((v) => (v.trim() === "" ? 0 : Number(v)))),
-        ];
+
+        // 空文字を除外して数値の最小・最大を計算
+        const numericValuesOnly = availableValues.filter((v) => v.trim() !== "").map((v) => Number(v));
+
+        const range = numericRanges[attribute] || [Math.min(...numericValuesOnly), Math.max(...numericValuesOnly)];
 
         const inRangeValues = availableValues.filter((value) => {
-          const numValue = value.trim() === "" ? 0 : Number(value);
+          const trimmedValue = value.trim();
+          // 空の値は別途処理
+          if (trimmedValue === "") {
+            return includeEmptyValues[attribute] || false;
+          }
+          // 数値の場合は範囲フィルターを適用
+          const numValue = Number(trimmedValue);
           return numValue >= range[0] && numValue <= range[1];
         });
 
@@ -216,7 +240,7 @@ export function AttributeFilterDialog({
         });
       }
     },
-    [availableAttributes, numericRanges],
+    [availableAttributes, numericRanges, includeEmptyValues],
   );
   // Memoize the list of attributes
   const attributeEntries = useMemo(() => Object.entries(availableAttributes), [availableAttributes]);
@@ -264,7 +288,7 @@ export function AttributeFilterDialog({
                       <Box pl={2} pr={4} borderWidth={1} borderRadius="md" p={2}>
                         <Flex align="center">
                           <Text fontSize="xs" width="60px" textAlign="right" mr={2}>
-                            最小: {Math.min(...values.map((v) => (v.trim() === "" ? 0 : Number(v))))}
+                            最小: {Math.min(...values.filter((v) => v.trim() !== "").map((v) => Number(v)))}
                           </Text>
                           <Input
                             type="number"
@@ -284,8 +308,31 @@ export function AttributeFilterDialog({
                             disabled={!enabledRanges[attribute]}
                           />
                           <Text fontSize="xs" width="60px" textAlign="left" ml={2}>
-                            最大: {Math.max(...values.map((v) => (v.trim() === "" ? 0 : Number(v))))}
+                            最大: {Math.max(...values.filter((v) => v.trim() !== "").map((v) => Number(v)))}
                           </Text>
+                        </Flex>
+                        <Flex align="center" mt={2}>
+                          <Checkbox
+                            checked={includeEmptyValues[attribute] || false}
+                            onChange={() => {
+                              setIncludeEmptyValues((prev) => {
+                                const newState = {
+                                  ...prev,
+                                  [attribute]: !prev[attribute],
+                                };
+
+                                // すぐにフィルターを適用
+                                if (enabledRanges[attribute]) {
+                                  handleRangeChange(attribute, numericRanges[attribute] || [0, 0]);
+                                }
+
+                                return newState;
+                              });
+                            }}
+                            disabled={!enabledRanges[attribute]}
+                          >
+                            空の値を含める
+                          </Checkbox>
                         </Flex>
                       </Box>
                     ) : (
