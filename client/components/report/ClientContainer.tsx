@@ -31,7 +31,7 @@ export function ClientContainer({ result }: Props) {
   const [isDenseGroupEnabled, setIsDenseGroupEnabled] = useState(true);
   const [showClusterLabels, setShowClusterLabels] = useState(true);
   const [treemapLevel, setTreemapLevel] = useState("0");
-  
+
   // 属性フィルタの状態を管理
   const [attributeFilters, setAttributeFilters] = useState<AttributeFilters>({});
   const [openAttributeFilter, setOpenAttributeFilter] = useState(false);
@@ -39,7 +39,7 @@ export function ClientContainer({ result }: Props) {
   // 利用可能な属性と値のセットを抽出
   const availableAttributes = useMemo(() => {
     const attributes: Record<string, Set<string>> = {};
-    
+
     // 全ての意見から属性を抽出
     result.arguments.forEach((arg) => {
       // 1. まず attributes フィールドからデータを抽出
@@ -52,16 +52,16 @@ export function ClientContainer({ result }: Props) {
             attributes[key].add(String(value));
           }
         });
-      } 
+      }
       // 2. 後方互換性のため、commentオブジェクトからも属性を抽出
       else if (arg.comment_id !== undefined) {
         const commentId = arg.comment_id.toString();
         const comment = result.comments[commentId] as CommentWithAttributes | undefined;
-        
+
         if (comment) {
           // commentオブジェクトから属性を抽出（commentとid以外のプロパティ）
           Object.entries(comment).forEach(([key, value]) => {
-            if (key !== 'comment' && value !== undefined && value !== null) {
+            if (key !== "comment" && value !== undefined && value !== null) {
               if (!attributes[key]) {
                 attributes[key] = new Set<string>();
               }
@@ -71,51 +71,48 @@ export function ClientContainer({ result }: Props) {
         }
       }
     });
-    
+
     // Set を配列に変換して返す
     const attributesArray: Record<string, string[]> = {};
     Object.entries(attributes).forEach(([key, valueSet]) => {
       attributesArray[key] = Array.from(valueSet).sort();
     });
-    
+
     return attributesArray;
   }, [result]);
 
   // 属性タイプの検出と数値範囲の計算をキャッシュ
   const attributeTypes = useMemo(() => {
     // 数値のみの属性と通常の属性を判別
-    const typeMap: Record<string, 'numeric' | 'categorical'> = {};
-    
+    const typeMap: Record<string, "numeric" | "categorical"> = {};
+
     Object.entries(availableAttributes).forEach(([attribute, values]) => {
       // 全ての値が数値に変換可能かチェック
-      const isNumeric = values.every(value => {
+      const isNumeric = values.every((value) => {
         const trimmedValue = value.trim();
-        return trimmedValue === '' || !isNaN(Number(trimmedValue));
+        return trimmedValue === "" || !Number.isNaN(Number(trimmedValue));
       });
-      
-      typeMap[attribute] = isNumeric && values.length > 0 ? 'numeric' : 'categorical';
+
+      typeMap[attribute] = isNumeric && values.length > 0 ? "numeric" : "categorical";
     });
-    
+
     return typeMap;
   }, [availableAttributes]);
-  
+
   // 数値属性の範囲をキャッシュ
   const numericRanges = useMemo(() => {
     const ranges: Record<string, [number, number]> = {};
-    
+
     Object.entries(availableAttributes).forEach(([attribute, values]) => {
-      if (attributeTypes[attribute] === 'numeric') {
+      if (attributeTypes[attribute] === "numeric") {
         // 数値に変換
-        const numericValues = values.map(v => v.trim() === '' ? 0 : Number(v));
-        
+        const numericValues = values.map((v) => (v.trim() === "" ? 0 : Number(v)));
+
         // 最小値と最大値を設定
-        ranges[attribute] = [
-          Math.min(...numericValues),
-          Math.max(...numericValues)
-        ];
+        ranges[attribute] = [Math.min(...numericValues), Math.max(...numericValues)];
       }
     });
-    
+
     return ranges;
   }, [availableAttributes, attributeTypes]);
 
@@ -126,13 +123,17 @@ export function ClientContainer({ result }: Props) {
   }, [maxDensity, minValue, result.clusters]);
 
   // 属性フィルタと密度フィルタを組み合わせて適用する関数
-  function updateFilteredResult(maxDensity: number, minValue: number, attrFilters: AttributeFilters = attributeFilters) {
+  function updateFilteredResult(
+    maxDensity: number,
+    minValue: number,
+    attrFilters: AttributeFilters = attributeFilters,
+  ) {
     if (!result) return;
 
     // 1. 属性フィルタに基づいて引数をフィルタリング
     let filteredArgs = result.arguments;
     let filteredArgIds: string[] = [];
-    
+
     if (Object.keys(attrFilters).length > 0) {
       // フィルター条件を満たす引数を抽出
       filteredArgs = result.arguments.filter((arg) => {
@@ -142,55 +143,55 @@ export function ClientContainer({ result }: Props) {
           return Object.entries(attrFilters).every(([attrName, selectedValues]) => {
             const attrValue = arg.attributes?.[attrName];
             const values = selectedValues as string[];
-            
+
             // 数値範囲フィルターの処理
-            if (values.length === 1 && values[0].startsWith('range:')) {
-              const [_, minStr, maxStr] = values[0].split(':');
+            if (values.length === 1 && values[0].startsWith("range:")) {
+              const [_, minStr, maxStr] = values[0].split(":");
               const min = Number(minStr);
               const max = Number(maxStr);
               const numValue = Number(attrValue);
-              
-              return !isNaN(numValue) && numValue >= min && numValue <= max;
+
+              return !Number.isNaN(numValue) && numValue >= min && numValue <= max;
             }
-            
+
             // 通常のチェックボックスフィルターの処理
             return values.includes(String(attrValue));
           });
         }
         // 2. 後方互換性のため、commentオブジェクトからも確認
-        else if (arg.comment_id !== undefined) {
+        if (arg.comment_id !== undefined) {
           const commentId = arg.comment_id.toString();
           const comment = result.comments[commentId] as CommentWithAttributes | undefined;
-          
+
           if (!comment) return false;
-          
+
           // すべてのフィルタ条件を満たすか確認
           return Object.entries(attrFilters).every(([attrName, selectedValues]) => {
             const commentValue = comment[attrName];
             const values = selectedValues as string[];
-            
+
             // 数値範囲フィルターの処理
-            if (values.length === 1 && values[0].startsWith('range:')) {
-              const [_, minStr, maxStr] = values[0].split(':');
+            if (values.length === 1 && values[0].startsWith("range:")) {
+              const [_, minStr, maxStr] = values[0].split(":");
               const min = Number(minStr);
               const max = Number(maxStr);
               const numValue = Number(commentValue);
-              
-              return !isNaN(numValue) && numValue >= min && numValue <= max;
+
+              return !Number.isNaN(numValue) && numValue >= min && numValue <= max;
             }
-            
+
             // 通常のチェックボックスフィルターの処理
             return values.includes(String(commentValue));
           });
         }
-        
+
         return false;
       });
-      
+
       // フィルター条件を満たす引数のIDリストを作成
-      filteredArgIds = filteredArgs.map(arg => arg.arg_id);
+      filteredArgIds = filteredArgs.map((arg) => arg.arg_id);
     }
-    
+
     // 2. フィルタされた引数を含むクラスタIDを集める
     const clusterIdsWithFilteredArgs = new Set<string>();
     filteredArgs.forEach((arg) => {
@@ -198,15 +199,15 @@ export function ClientContainer({ result }: Props) {
         clusterIdsWithFilteredArgs.add(clusterId);
       });
     });
-    
+
     // 3. 密度フィルタを適用
     const { filtered: densityFilteredClusters } = getDenseClusters(result.clusters || [], maxDensity, minValue);
-    
+
     // 4. 両方のフィルタを組み合わせる
-    const combinedFilteredClusters = densityFilteredClusters.filter((cluster) => 
-      Object.keys(attrFilters).length === 0 || clusterIdsWithFilteredArgs.has(cluster.id)
+    const combinedFilteredClusters = densityFilteredClusters.filter(
+      (cluster) => Object.keys(attrFilters).length === 0 || clusterIdsWithFilteredArgs.has(cluster.id),
     );
-    
+
     setFilteredResult({
       ...result,
       clusters: combinedFilteredClusters,
@@ -235,19 +236,19 @@ export function ClientContainer({ result }: Props) {
       ? filteredResult.clusters.filter((c) => c.level === Math.max(...filteredResult.clusters.map((c) => c.level)))
       : result.clusters.filter((c) => c.level === 1);
 
-  const handleCloseDisplaySetting = function() {
+  const handleCloseDisplaySetting = () => {
     setOpenDensityFilterSetting(false);
   };
 
-  const handleToggleClusterLabels = function(value: boolean) {
+  const handleToggleClusterLabels = (value: boolean) => {
     setShowClusterLabels(value);
   };
 
-  const handleCloseAttributeFilter = function() {
+  const handleCloseAttributeFilter = () => {
     setOpenAttributeFilter(false);
   };
 
-  const handleChartChange = function(selectedChart: string) {
+  const handleChartChange = (selectedChart: string) => {
     setSelectedChart(selectedChart);
     if (selectedChart === "scatterAll") {
       updateFilteredResult(1, 0);
@@ -262,29 +263,29 @@ export function ClientContainer({ result }: Props) {
     }
   };
 
-  const handleClickDensitySetting = function() {
+  const handleClickDensitySetting = () => {
     setOpenDensityFilterSetting(true);
   };
 
-  const handleClickFullscreen = function() {
+  const handleClickFullscreen = () => {
     setIsFullscreen(true);
   };
 
-  const handleOpenAttributeFilter = function() {
+  const handleOpenAttributeFilter = () => {
     setOpenAttributeFilter(true);
   };
 
-  const handleExitFullscreen = function() {
+  const handleExitFullscreen = () => {
     setIsFullscreen(false);
   };
 
-  const handleTreeZoom = function(value: string) {
+  const handleTreeZoom = (value: string) => {
     setTreemapLevel(value);
   };
 
   return (
     <div>
-      {openDensityFilterSetting && 
+      {openDensityFilterSetting && (
         <DisplaySettingDialog
           currentMaxDensity={maxDensity}
           currentMinValue={minValue}
@@ -293,9 +294,9 @@ export function ClientContainer({ result }: Props) {
           showClusterLabels={showClusterLabels}
           onToggleClusterLabels={handleToggleClusterLabels}
         />
-      }
-      
-      {openAttributeFilter && 
+      )}
+
+      {openAttributeFilter && (
         <AttributeFilterDialog
           onClose={handleCloseAttributeFilter}
           onApplyFilters={handleApplyAttributeFilters}
@@ -304,8 +305,8 @@ export function ClientContainer({ result }: Props) {
           attributeTypes={attributeTypes}
           initialNumericRanges={numericRanges}
         />
-      }
-      
+      )}
+
       <Box display="flex" gap={2} mb={3}>
         <SelectChartButton
           selected={selectedChart}
@@ -316,20 +317,16 @@ export function ClientContainer({ result }: Props) {
           attributeFilterButton={
             Object.keys(availableAttributes).length > 0 ? (
               <Tooltip content={"属性フィルタ"} openDelay={0} closeDelay={0}>
-                <Button 
-                  onClick={handleOpenAttributeFilter}
-                  variant="outline"
-                  h={"50px"}
-                >
+                <Button onClick={handleOpenAttributeFilter} variant="outline" h={"50px"}>
                   <Box display="flex" alignItems="center" gap={1}>
                     <Icon>
                       <Filter size={16} />
                     </Icon>
-                    {Object.keys(attributeFilters).length > 0 && 
+                    {Object.keys(attributeFilters).length > 0 && (
                       <Box as="span" fontSize="xs" bg="cyan.500" color="white" p="1" borderRadius="md" minW="5">
                         {Object.keys(attributeFilters).length}
                       </Box>
-                    }
+                    )}
                   </Box>
                 </Button>
               </Tooltip>
@@ -337,7 +334,7 @@ export function ClientContainer({ result }: Props) {
           }
         />
       </Box>
-      
+
       <Chart
         result={filteredResult}
         selectedChart={selectedChart}

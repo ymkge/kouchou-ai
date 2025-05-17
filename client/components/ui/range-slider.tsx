@@ -8,15 +8,13 @@ interface RangeSliderProps {
   defaultValue?: [number, number];
   value?: [number, number];
   onChange?: (value: [number, number]) => void;
-  'aria-label'?: string[];
+  "aria-label"?: string[];
   mb?: number;
 }
 
 export function RangeSlider(props: RangeSliderProps) {
   const { min, max, step = 1, defaultValue, value, onChange, mb } = props;
-  const [localValue, setLocalValue] = React.useState<[number, number]>(
-    value || defaultValue || [min, max]
-  );
+  const [localValue, setLocalValue] = React.useState<[number, number]>(value || defaultValue || [min, max]);
 
   React.useEffect(() => {
     if (value) {
@@ -57,16 +55,12 @@ export function RangeSlider(props: RangeSliderProps) {
           >
             <ChakraSlider.Control>
               <ChakraSlider.Track>
-                <ChakraSlider.Range 
-                  start={0} 
-                  end={((localValue[0] - min) / (max - min)) * 100} 
-                  bg="gray.200" 
-                />
+                <ChakraSlider.Range start={0} end={((localValue[0] - min) / (max - min)) * 100} bg="gray.200" />
               </ChakraSlider.Track>
               <ChakraSlider.Thumb zIndex={2} />
             </ChakraSlider.Control>
           </ChakraSlider>
-          
+
           {/* Second Thumb - Max Value */}
           <ChakraSlider
             aria-label={props["aria-label"]?.[1] || "max"}
@@ -81,10 +75,10 @@ export function RangeSlider(props: RangeSliderProps) {
           >
             <ChakraSlider.Control>
               <ChakraSlider.Track>
-                <ChakraSlider.Range 
-                  start={((localValue[0] - min) / (max - min)) * 100} 
-                  end={((localValue[1] - min) / (max - min)) * 100} 
-                  bg="blue.500" 
+                <ChakraSlider.Range
+                  start={((localValue[0] - min) / (max - min)) * 100}
+                  end={((localValue[1] - min) / (max - min)) * 100}
+                  bg="blue.500"
                 />
               </ChakraSlider.Track>
               <ChakraSlider.Thumb zIndex={2} />
