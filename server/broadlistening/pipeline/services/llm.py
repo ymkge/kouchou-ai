@@ -536,7 +536,7 @@ def request_to_openrouter_chatcompletion(
 
             if is_json:
                 payload["response_format"] = {"type": "json_object"}
-            elif json_schema:
+            if json_schema:  # 両方有効化されていたら、json_schemaを優先
                 payload["response_format"] = json_schema
 
             response = client.chat.completions.create(**payload)
