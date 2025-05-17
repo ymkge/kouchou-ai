@@ -81,6 +81,44 @@ export function ClientContainer({ result }: Props) {
     return attributesArray;
   }, [result]);
 
+  // 属性タイプの検出と数値範囲の計算をキャッシュ
+  const attributeTypes = useMemo(() => {
+    // 数値のみの属性と通常の属性を判別
+    const typeMap: Record<string, 'numeric' | 'categorical'> = {};
+    
+    Object.entries(availableAttributes).forEach(([attribute, values]) => {
+      // 全ての値が数値に変換可能かチェック
+      const isNumeric = values.every(value => {
+        const trimmedValue = value.trim();
+        return trimmedValue === '' || !isNaN(Number(trimmedValue));
+      });
+      
+      typeMap[attribute] = isNumeric && values.length > 0 ? 'numeric' : 'categorical';
+    });
+    
+    return typeMap;
+  }, [availableAttributes]);
+  
+  // 数値属性の範囲をキャッシュ
+  const numericRanges = useMemo(() => {
+    const ranges: Record<string, [number, number]> = {};
+    
+    Object.entries(availableAttributes).forEach(([attribute, values]) => {
+      if (attributeTypes[attribute] === 'numeric') {
+        // 数値に変換
+        const numericValues = values.map(v => v.trim() === '' ? 0 : Number(v));
+        
+        // 最小値と最大値を設定
+        ranges[attribute] = [
+          Math.min(...numericValues),
+          Math.max(...numericValues)
+        ];
+      }
+    });
+    
+    return ranges;
+  }, [availableAttributes, attributeTypes]);
+
   // maxDensityやminValueが変化するたびに密度フィルターの結果をチェック
   useEffect(() => {
     const { filtered, isEmpty } = getDenseClusters(result.clusters || [], maxDensity, minValue);
@@ -103,10 +141,11 @@ export function ClientContainer({ result }: Props) {
           // すべてのフィルタ条件を満たすか確認
           return Object.entries(attrFilters).every(([attrName, selectedValues]) => {
             const attrValue = arg.attributes?.[attrName];
+            const values = selectedValues as string[];
             
             // 数値範囲フィルターの処理
-            if (selectedValues.length === 1 && selectedValues[0].startsWith('range:')) {
-              const [_, minStr, maxStr] = selectedValues[0].split(':');
+            if (values.length === 1 && values[0].startsWith('range:')) {
+              const [_, minStr, maxStr] = values[0].split(':');
               const min = Number(minStr);
               const max = Number(maxStr);
               const numValue = Number(attrValue);
@@ -115,7 +154,7 @@ export function ClientContainer({ result }: Props) {
             }
             
             // 通常のチェックボックスフィルターの処理
-            return selectedValues.includes(String(attrValue));
+            return values.includes(String(attrValue));
           });
         }
         // 2. 後方互換性のため、commentオブジェクトからも確認
@@ -128,10 +167,11 @@ export function ClientContainer({ result }: Props) {
           // すべてのフィルタ条件を満たすか確認
           return Object.entries(attrFilters).every(([attrName, selectedValues]) => {
             const commentValue = comment[attrName];
+            const values = selectedValues as string[];
             
             // 数値範囲フィルターの処理
-            if (selectedValues.length === 1 && selectedValues[0].startsWith('range:')) {
-              const [_, minStr, maxStr] = selectedValues[0].split(':');
+            if (values.length === 1 && values[0].startsWith('range:')) {
+              const [_, minStr, maxStr] = values[0].split(':');
               const min = Number(minStr);
               const max = Number(maxStr);
               const numValue = Number(commentValue);
@@ -140,7 +180,7 @@ export function ClientContainer({ result }: Props) {
             }
             
             // 通常のチェックボックスフィルターの処理
-            return selectedValues.includes(String(commentValue));
+            return values.includes(String(commentValue));
           });
         }
         
@@ -209,8 +249,13 @@ export function ClientContainer({ result }: Props) {
 
   const handleChartChange = function(selectedChart: string) {
     setSelectedChart(selectedChart);
-    if (selectedChart === "scatterAll" || selectedChart === "treemap") {
+    if (selectedChart === "scatterAll") {
       updateFilteredResult(1, 0);
+    }
+    if (selectedChart === "treemap") {
+      // treemapでは属性フィルターも解除する必要がある
+      setAttributeFilters({});
+      updateFilteredResult(1, 0, {});
     }
     if (selectedChart === "scatterDensity") {
       updateFilteredResult(maxDensity, minValue);
@@ -256,6 +301,8 @@ export function ClientContainer({ result }: Props) {
           onApplyFilters={handleApplyAttributeFilters}
           availableAttributes={availableAttributes}
           currentFilters={attributeFilters}
+          attributeTypes={attributeTypes}
+          initialNumericRanges={numericRanges}
         />
       }
       
