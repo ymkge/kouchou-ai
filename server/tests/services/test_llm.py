@@ -545,3 +545,82 @@ class TestLLMService:
         with pytest.raises(RuntimeError) as excinfo:
             _validate_model("invalid-model")
         assert "Invalid embedding model" in str(excinfo.value)
+
+    def test_request_to_chat_ai_use_openrouter(self):
+        """OpenRouterを使用するテストケース"""
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello!"},
+        ]
+        model = "openai/gpt-4o-2024-08-06"
+        
+        # OpenRouterのクライアントをモック化
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        mock_choice = MagicMock()
+        mock_choice.message.content = "Hi! How can I help you today?"
+        mock_response.choices = [mock_choice]
+        mock_client.chat.completions.create.return_value = mock_response
+
+        # 環境変数をモック化
+        env_vars = {
+            "OPENROUTER_API_KEY": "test-api-key",
+        }
+
+        with patch.dict(os.environ, env_vars):
+            with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
+                response = request_to_chat_ai(
+                    messages=messages,
+                    model=model,
+                    provider="openrouter",
+                )
+
+        assert response == "Hi! How can I help you today?"
+        mock_client.chat.completions.create.assert_called_once_with(
+            model=model,
+            messages=messages,
+            temperature=0,
+            n=1,
+            seed=0,
+            timeout=30,
+        )
+
+    def test_request_to_chat_ai_use_openrouter_without_env(self):
+        """OpenRouterの環境変数が設定されていない場合のテスト"""
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello!"},
+        ]
+        model = "openai/gpt-4o-2024-08-06"
+
+        # 環境変数をクリア
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(RuntimeError) as excinfo:
+                request_to_chat_ai(messages=messages, model=model, provider="openrouter")
+            assert "OPENROUTER_API_KEY environment variable is not set" in str(excinfo.value)
+
+    def test_request_to_chat_ai_use_openrouter_rate_limit(self):
+        """OpenRouterのレート制限エラーのテスト"""
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello!"},
+        ]
+        model = "openai/gpt-4o-2024-08-06"
+
+        # レート制限エラーの場合
+        mock_client = MagicMock()
+        rate_limit_error = openai.RateLimitError(
+            message="Rate limit exceeded",
+            response=MagicMock(),
+            body=MagicMock(),
+        )
+        mock_client.chat.completions.create.side_effect = rate_limit_error
+
+        env_vars = {
+            "OPENROUTER_API_KEY": "test-api-key",
+        }
+
+        with patch.dict(os.environ, env_vars):
+            with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
+                with pytest.raises(openai.RateLimitError):
+                    request_to_chat_ai(messages=messages, model=model, provider="openrouter")
