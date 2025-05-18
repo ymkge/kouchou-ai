@@ -202,7 +202,7 @@ export function ScatterChart({
               opacity: Array(notMatching.length).fill(0.5), // 半透明
             },
             text: Array(notMatching.length).fill(""), // ホバーテキストなし
-            type: "scatter",
+            type: "scattergl",
             hoverinfo: "skip", // ホバー表示を無効化
             showlegend: false,
           }
@@ -221,7 +221,7 @@ export function ScatterChart({
               opacity: Array(matching.length).fill(1), // 不透明
             },
             text: matching.map((arg) => `<b>${cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`),
-            type: "scatter",
+            type: "scattergl",
             hoverinfo: "text",
             hovertemplate: "%{text}<extra></extra>",
             hoverlabel: {
@@ -275,7 +275,7 @@ export function ScatterChart({
           text: clusterArguments.map(
             (arg) => `<b>${dataSet.cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`,
           ),
-          type: "scatter",
+          type: "scattergl",
           hoverinfo: "text",
           hoverlabel: {
             align: "left",
