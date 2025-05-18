@@ -281,7 +281,7 @@ function ReportCard({
               )}
               {/* トークン使用量の表示を追加 */}
               <Text fontSize="xs" color="gray.500" mb={1}>
-                トークン使用量: {report.tokenUsage !== undefined ? report.tokenUsage.toLocaleString() : "情報なし"}
+                トークン使用量: {report.tokenUsage != null ? report.tokenUsage.toLocaleString() : "情報なし"}
               </Text>
               {report.status !== "ready" && (
                 <Box mt={2}>
