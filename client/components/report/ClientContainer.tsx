@@ -137,7 +137,11 @@ export function ClientContainer({ result }: Props) {
     Object.entries(availableAttributes).forEach(([attribute, values]) => {
       if (attributeTypes[attribute] === "numeric") {
         // 数値に変換
-        const numericValues = values.map((v) => (v.trim() === "" ? 0 : Number(v)));
+        const numericValues = values
+                  .map((v) => v.trim() === "" ? NaN : Number(v))
+                  .filter((v) => !Number.isNaN(v));
+        // 数値が存在しない場合はスキップ
+        if (numericValues.length === 0) return;
 
         // 最小値と最大値を設定
         ranges[attribute] = [Math.min(...numericValues), Math.max(...numericValues)];
