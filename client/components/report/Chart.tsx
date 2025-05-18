@@ -43,7 +43,7 @@ export function Chart({
     // フィルター条件が空なら全て表示（未定義を返す）
     if (
       Object.keys(attributeFilters).length === 0 &&
-      Object.keys(enabledRanges).filter(k => enabledRanges[k]).length === 0
+      Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length === 0
     ) {
       return undefined;
     }
@@ -70,7 +70,7 @@ export function Chart({
             } else {
               // 数値
               const numValue = Number(attrValue);
-              if (isNaN(numValue) || numValue < range[0] || numValue > range[1]) return false;
+              if (Number.isNaN(numValue) || numValue < range[0] || numValue > range[1]) return false;
             }
           }
         }

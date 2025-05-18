@@ -159,77 +159,83 @@ export function ScatterChart({
       const clusterArguments = allArguments.filter((arg) => arg.cluster_ids.includes(cluster.id));
       return {
         matching: clusterArguments,
-        notMatching: [] as Argument[]
+        notMatching: [] as Argument[],
       };
     }
 
     // フィルター条件に合致するアイテム（前面に表示）
     const matchingArguments = allArguments.filter(
-      (arg) => arg.cluster_ids.includes(cluster.id) && filteredArgumentIds.includes(arg.arg_id)
+      (arg) => arg.cluster_ids.includes(cluster.id) && filteredArgumentIds.includes(arg.arg_id),
     );
 
     // フィルター条件に合致しないアイテム（背面に表示）
     const notMatchingArguments = allArguments.filter(
-      (arg) => arg.cluster_ids.includes(cluster.id) && !filteredArgumentIds.includes(arg.arg_id)
+      (arg) => arg.cluster_ids.includes(cluster.id) && !filteredArgumentIds.includes(arg.arg_id),
     );
 
     return {
       matching: matchingArguments,
-      notMatching: notMatchingArguments
+      notMatching: notMatchingArguments,
     };
   };
 
   // 各クラスターのデータを生成（フィルター対象外を背面に、フィルター対象を前面に描画するため分離）
   const clusterDataSets = targetClusters.map((cluster) => {
     const { matching, notMatching } = separateDataByFilter(cluster);
-    
+
     // クラスターの中心座標計算用にすべての引数を取得
     const allClusterArguments = [...notMatching, ...matching];
     const allXValues = allClusterArguments.map((arg) => arg.x);
     const allYValues = allClusterArguments.map((arg) => arg.y);
-    
+
     const centerX = allXValues.length > 0 ? allXValues.reduce((sum, val) => sum + val, 0) / allXValues.length : 0;
-    const centerY = allYValues.length > 0 ? allYValues.reduce((sum, val) => sum + val, 0) / allYValues.length : 0;    // フィルター対象外のアイテム（背面に描画）
-    const notMatchingData = notMatching.length > 0 ? {
-      x: notMatching.map((arg) => arg.x),
-      y: notMatching.map((arg) => arg.y),
-      mode: "markers",      marker: {
-        size: 7,
-        color: Array(notMatching.length).fill("#cccccc"), // グレー表示
-        opacity: Array(notMatching.length).fill(0.5),     // 半透明
-      },      text: Array(notMatching.length).fill(""),  // ホバーテキストなし
-      type: "scatter",
-      hoverinfo: "skip",                         // ホバー表示を無効化
-      showlegend: false,
-    } : null;
+    const centerY = allYValues.length > 0 ? allYValues.reduce((sum, val) => sum + val, 0) / allYValues.length : 0; // フィルター対象外のアイテム（背面に描画）
+    const notMatchingData =
+      notMatching.length > 0
+        ? {
+            x: notMatching.map((arg) => arg.x),
+            y: notMatching.map((arg) => arg.y),
+            mode: "markers",
+            marker: {
+              size: 7,
+              color: Array(notMatching.length).fill("#cccccc"), // グレー表示
+              opacity: Array(notMatching.length).fill(0.5), // 半透明
+            },
+            text: Array(notMatching.length).fill(""), // ホバーテキストなし
+            type: "scatter",
+            hoverinfo: "skip", // ホバー表示を無効化
+            showlegend: false,
+          }
+        : null;
 
     // フィルター対象のアイテム（前面に描画）
-    const matchingData = matching.length > 0 ? {
-      x: matching.map((arg) => arg.x),
-      y: matching.map((arg) => arg.y),
-      mode: "markers",
-      marker: {
-        size: 7,
-        color: Array(matching.length).fill(clusterColorMap[cluster.id]),
-        opacity: Array(matching.length).fill(1),  // 不透明
-      },
-      text: matching.map((arg) => 
-        `<b>${cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`
-      ),
-      type: "scatter",
-      hoverinfo: "text",
-      hovertemplate: "%{text}<extra></extra>",
-      hoverlabel: {
-        align: "left",
-        bgcolor: "white",
-        bordercolor: clusterColorMap[cluster.id],
-        font: {
-          size: 12,
-          color: "#333",
-        },
-      },
-      showlegend: false,
-    } : null;
+    const matchingData =
+      matching.length > 0
+        ? {
+            x: matching.map((arg) => arg.x),
+            y: matching.map((arg) => arg.y),
+            mode: "markers",
+            marker: {
+              size: 7,
+              color: Array(matching.length).fill(clusterColorMap[cluster.id]),
+              opacity: Array(matching.length).fill(1), // 不透明
+            },
+            text: matching.map((arg) => `<b>${cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`),
+            type: "scatter",
+            hoverinfo: "text",
+            hovertemplate: "%{text}<extra></extra>",
+            hoverlabel: {
+              align: "left",
+              bgcolor: "white",
+              bordercolor: clusterColorMap[cluster.id],
+              font: {
+                size: 12,
+                color: "#333",
+              },
+            },
+            showlegend: false,
+          }
+        : null;
 
     return {
       cluster,
@@ -243,7 +249,7 @@ export function ScatterChart({
   // 描画用のデータセットを作成
   const plotData = clusterDataSets.flatMap((dataSet) => {
     const result = [];
-    
+
     // フィルター対象外のデータ（背面に描画）
     if (dataSet.notMatchingData) {
       result.push(dataSet.notMatchingData);
@@ -266,8 +272,8 @@ export function ScatterChart({
             size: 7,
             color: clusterColorMap[dataSet.cluster.id],
           },
-          text: clusterArguments.map((arg) => 
-            `<b>${dataSet.cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`
+          text: clusterArguments.map(
+            (arg) => `<b>${dataSet.cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`,
           ),
           type: "scatter",
           hoverinfo: "text",

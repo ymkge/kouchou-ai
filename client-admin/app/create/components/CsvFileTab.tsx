@@ -93,7 +93,7 @@ export function CsvFileTab({
           onColumnChange={setSelectedCommentColumn}
         />
 
-        <AttributeColumnsSelector 
+        <AttributeColumnsSelector
           columns={csvColumns}
           selectedColumn={selectedCommentColumn}
           selectedAttributes={selectedAttributeColumns}

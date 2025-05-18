@@ -187,7 +187,7 @@ export function useInputData(onDataLoaded: (commentCount: number) => void) {
     importedId,
     csvColumns,
     selectedCommentColumn,
-    selectedAttributeColumns, 
+    selectedAttributeColumns,
     canImport,
     setInputType: handleInputTypeChange,
     setCsv: handleCsvChange,

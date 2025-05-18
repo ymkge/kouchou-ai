@@ -108,7 +108,7 @@ async def get_spreadsheet_data(file_name: str, api_key: str = Depends(verify_adm
                 comment["source"] = row.get("source")
             if "url" in df.columns:
                 comment["url"] = row.get("url")
-                
+
             # その他のカラムを属性として追加
             for col in df.columns:
                 if col not in ["comment-id", "comment", "source", "url"] and not pd.isna(row.get(col)):

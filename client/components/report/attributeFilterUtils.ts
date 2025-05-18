@@ -1,5 +1,5 @@
 // 属性フィルター条件に従って標本配列をフィルタリングするユーティリティ
-import { AttributeFilters } from "./AttributeFilterDialog";
+import type { AttributeFilters } from "./AttributeFilterDialog";
 
 export type NumericRangeFilters = Record<string, [number, number]>;
 
@@ -11,13 +11,10 @@ export function filterSamples(
   filters: AttributeFilters,
   numericRanges: NumericRangeFilters,
   enabledRanges: Record<string, boolean>,
-  includeEmpty: Record<string, boolean>
+  includeEmpty: Record<string, boolean>,
 ): Array<Record<string, string>> {
   // フィルター条件が空なら全て表示
-  if (
-    Object.keys(filters).length === 0 && 
-    Object.keys(enabledRanges).filter(k => enabledRanges[k]).length === 0
-  ) {
+  if (Object.keys(filters).length === 0 && Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length === 0) {
     return samples;
   }
 
@@ -30,7 +27,7 @@ export function filterSamples(
         }
       }
     }
-    
+
     // 数値属性
     for (const [attr, range] of Object.entries(numericRanges)) {
       if (enabledRanges[attr]) {
@@ -56,7 +53,7 @@ export function filterSamples(
 export function getFilteredArgumentIds(
   argumentIds: string[],
   samples: Array<Record<string, string>>,
-  filteredSamples: Array<Record<string, string>>
+  filteredSamples: Array<Record<string, string>>,
 ): string[] {
   // フィルター済み標本のインデックスセットを作成
   const filteredIndices = new Set<number>();
@@ -64,7 +61,7 @@ export function getFilteredArgumentIds(
     const idx = samples.findIndex((s) => Object.entries(s).every(([k, v]) => fs[k] === v));
     if (idx >= 0) filteredIndices.add(idx);
   });
-  
+
   // フィルター済みのインデックスに対応する引数IDを返す
-  return Array.from(filteredIndices).map(idx => argumentIds[idx]);
+  return Array.from(filteredIndices).map((idx) => argumentIds[idx]);
 }

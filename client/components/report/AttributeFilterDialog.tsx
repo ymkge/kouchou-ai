@@ -10,10 +10,10 @@ type AttributeTypes = Record<string, "numeric" | "categorical">;
 type Props = {
   onClose: () => void;
   onApplyFilters: (
-    filters: AttributeFilters, 
-    numericRanges: NumericRangeFilters, 
+    filters: AttributeFilters,
+    numericRanges: NumericRangeFilters,
     includeEmpty: Record<string, boolean>,
-    enabledRanges: Record<string, boolean>
+    enabledRanges: Record<string, boolean>,
   ) => void;
   samples: Array<Record<string, string>>; // 全標本
   // 現在のフィルター状態
@@ -84,7 +84,7 @@ export function AttributeFilterDialog({
   const [categoricalFilters, setCategoricalFilters] = useState<AttributeFilters>(initialFilters);
   // 数値属性: レンジ (初期値を反映、ない場合は全体の範囲)
   const [numericRanges, setNumericRanges] = useState<NumericRangeFilters>(
-    Object.keys(initialNumericRanges).length > 0 ? initialNumericRanges : numericRangesAll
+    Object.keys(initialNumericRanges).length > 0 ? initialNumericRanges : numericRangesAll,
   );
   // 数値属性: 有効/無効 (初期値を反映)
   const [enabledRanges, setEnabledRanges] = useState<Record<string, boolean>>(initialEnabledRanges);
@@ -101,25 +101,30 @@ export function AttributeFilterDialog({
         if (filtered.length === 0) delete next[attr];
         else next[attr] = filtered;
         return next;
-      } else {
-        return { ...prev, [attr]: [...arr, value] };
       }
+      return { ...prev, [attr]: [...arr, value] };
     });
   }, []);
 
-  const handleMinRangeChange = useCallback((attr: string, minValue: number) => {
-    setNumericRanges((prev) => {
-      const max = prev[attr]?.[1] ?? numericRangesAll[attr]?.[1] ?? 0;
-      return { ...prev, [attr]: [Math.min(minValue, max), max] };
-    });
-  }, [numericRangesAll]);
+  const handleMinRangeChange = useCallback(
+    (attr: string, minValue: number) => {
+      setNumericRanges((prev) => {
+        const max = prev[attr]?.[1] ?? numericRangesAll[attr]?.[1] ?? 0;
+        return { ...prev, [attr]: [Math.min(minValue, max), max] };
+      });
+    },
+    [numericRangesAll],
+  );
 
-  const handleMaxRangeChange = useCallback((attr: string, maxValue: number) => {
-    setNumericRanges((prev) => {
-      const min = prev[attr]?.[0] ?? numericRangesAll[attr]?.[0] ?? 0;
-      return { ...prev, [attr]: [min, Math.max(maxValue, min)] };
-    });
-  }, [numericRangesAll]);
+  const handleMaxRangeChange = useCallback(
+    (attr: string, maxValue: number) => {
+      setNumericRanges((prev) => {
+        const min = prev[attr]?.[0] ?? numericRangesAll[attr]?.[0] ?? 0;
+        return { ...prev, [attr]: [min, Math.max(maxValue, min)] };
+      });
+    },
+    [numericRangesAll],
+  );
 
   const toggleRangeFilter = useCallback((attr: string, isEnabled: boolean) => {
     setEnabledRanges((prev) => ({ ...prev, [attr]: isEnabled }));
@@ -144,10 +149,16 @@ export function AttributeFilterDialog({
       <DialogContent width="80vw" maxWidth="1200px">
         <DialogBody>
           <Box mb={6} mt={4}>
-            <Heading as="h3" size="md" mb={2}>属性フィルター</Heading>
-            <Text fontSize="sm" mb={5} color="gray.600">表示する意見グループを属性で絞り込みます。</Text>
+            <Heading as="h3" size="md" mb={2}>
+              属性フィルター
+            </Heading>
+            <Text fontSize="sm" mb={5} color="gray.600">
+              表示する意見グループを属性で絞り込みます。
+            </Text>
             {attributeNames.length === 0 ? (
-              <Text fontSize="sm" color="gray.500">利用できる属性情報がありません。CSVファイルをアップロードする際に、属性列を選択してください。</Text>
+              <Text fontSize="sm" color="gray.500">
+                利用できる属性情報がありません。CSVファイルをアップロードする際に、属性列を選択してください。
+              </Text>
             ) : (
               attributeNames.map((attr) => {
                 const values = availableAttributes[attr];
@@ -155,12 +166,16 @@ export function AttributeFilterDialog({
                 return (
                   <Box key={attr} mb={4}>
                     <Flex align="center" mb={2}>
-                      <Heading size="sm" mb={0} mr={3}>{attr}</Heading>
+                      <Heading size="sm" mb={0} mr={3}>
+                        {attr}
+                      </Heading>
                       {isNumeric && values.length > 0 && (
                         <Checkbox
                           checked={!!enabledRanges[attr]}
                           onChange={() => toggleRangeFilter(attr, !enabledRanges[attr])}
-                        >フィルター有効化</Checkbox>
+                        >
+                          フィルター有効化
+                        </Checkbox>
                       )}
                     </Flex>
                     {isNumeric && values.length > 0 ? (
@@ -171,7 +186,9 @@ export function AttributeFilterDialog({
                             onChange={() => setIncludeEmptyValues((prev) => ({ ...prev, [attr]: !prev[attr] }))}
                             disabled={!enabledRanges[attr]}
                             mr={4}
-                          >空の値を含める</Checkbox>
+                          >
+                            空の値を含める
+                          </Checkbox>
                           <Text fontSize="xs" width="60px" textAlign="right" mr={2}>
                             最小: {numericRangesAll[attr]?.[0] ?? "-"}
                           </Text>
@@ -215,9 +232,11 @@ export function AttributeFilterDialog({
                                 <Checkbox
                                   checked={categoricalFilters[attr]?.includes(value) || false}
                                   onChange={() => handleCheckboxChange(attr, value)}
-                                >{value || "(空)"}</Checkbox>
+                                >
+                                  {value || "(空)"}
+                                </Checkbox>
                                 <Text as="span" fontSize="xs" ml={1} color="gray.500">
-                                  {samples.filter(s => s[attr] === value).length}
+                                  {samples.filter((s) => s[attr] === value).length}
                                 </Text>
                               </Box>
                             </WrapItem>
@@ -232,8 +251,12 @@ export function AttributeFilterDialog({
           </Box>
         </DialogBody>
         <DialogFooter justifyContent="space-between">
-          <Button onClick={handleClearFilters} variant="outline" size="sm">すべてクリア</Button>
-          <Button onClick={onApply} colorScheme="blue">設定を適用</Button>
+          <Button onClick={handleClearFilters} variant="outline" size="sm">
+            すべてクリア
+          </Button>
+          <Button onClick={onApply} colorScheme="blue">
+            設定を適用
+          </Button>
         </DialogFooter>
       </DialogContent>
     </DialogRoot>

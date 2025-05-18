@@ -15,10 +15,10 @@ CONFIG_DIR = ROOT_DIR / "scatter" / "pipeline" / "configs"
 def json_serialize_numpy(obj: Any) -> Any:
     """
     Recursively convert NumPy data types to native Python types for JSON serialization.
-    
+
     Args:
         obj: Any Python object which might contain NumPy data types
-        
+
     Returns:
         The same object structure with NumPy types converted to Python native types
     """
@@ -100,7 +100,7 @@ def hierarchical_aggregation(config):
 
     # Convert non-serializable NumPy types to native Python types
     results = json_serialize_numpy(results)
-    
+
     with open(path, "w") as file:
         json.dump(results, file, indent=2, ensure_ascii=False)
     # TODO: サンプリングロジックを実装したいが、現状は全件抽出
@@ -165,7 +165,7 @@ def add_original_comments(labels, arguments, relation_df, clusters, config):
     for col in ["x", "y", "source", "url"]:
         if col in comments.columns:
             final_cols.append(col)
-            
+
     # 属性カラムを追加
     attribute_columns = []
     for col in comments.columns:
@@ -173,9 +173,9 @@ def add_original_comments(labels, arguments, relation_df, clusters, config):
         if col.startswith("attribute_"):
             attribute_columns.append(col)
             final_cols.append(col)
-            
+
     print(f"属性カラム検出: {attribute_columns}")
-    
+
     # 必要なカラムだけ選択
     final_df = final_df[final_cols]
     final_df = final_df.rename(
@@ -195,7 +195,7 @@ def add_original_comments(labels, arguments, relation_df, clusters, config):
 def _build_arguments(clusters: pd.DataFrame, comments: pd.DataFrame, relation_df: pd.DataFrame) -> list[Argument]:
     """
     Build the arguments list including attribute information from original comments
-    
+
     Args:
         clusters: DataFrame containing cluster information for each argument
         comments: DataFrame containing original comments with attribute columns
@@ -206,7 +206,7 @@ def _build_arguments(clusters: pd.DataFrame, comments: pd.DataFrame, relation_df
     # Prepare for merging with original comments to get attributes
     comments_copy = comments.copy()
     comments_copy["comment-id"] = comments_copy["comment-id"].astype(str)
-    
+
     # Get argument to comment mapping
     arg_comment_map = {}
     if "comment-id" in relation_df.columns:
@@ -222,7 +222,7 @@ def _build_arguments(clusters: pd.DataFrame, comments: pd.DataFrame, relation_df
         cluster_ids = ["0"]
         for cluster_column in cluster_columns:
             cluster_ids.append(str(row[cluster_column]))  # Convert to string to ensure serializable
-        
+
         # Create base argument
         argument: Argument = {
             "arg_id": str(row["arg-id"]),  # Convert to string to ensure serializable
@@ -231,20 +231,20 @@ def _build_arguments(clusters: pd.DataFrame, comments: pd.DataFrame, relation_df
             "y": float(row["y"]),  # Convert to native float
             "p": 0,  # NOTE: 一旦全部0でいれる
             "cluster_ids": cluster_ids,
-            "attributes": None
+            "attributes": None,
         }
-        
+
         # Add attributes if available
         if attribute_columns and row["arg-id"] in arg_comment_map:
             comment_id = arg_comment_map[row["arg-id"]]
             comment_rows = comments_copy[comments_copy["comment-id"] == comment_id]
-            
+
             if not comment_rows.empty:
                 comment_row = comment_rows.iloc[0]
                 attributes = {}
                 for attr_col in attribute_columns:
                     # Remove "attribute_" prefix for cleaner attribute names
-                    attr_name = attr_col[len("attribute_"):]
+                    attr_name = attr_col[len("attribute_") :]
                     # Convert potential numpy types to Python native types
                     attr_value = comment_row.get(attr_col, None)
                     if attr_value is not None:
@@ -255,11 +255,11 @@ def _build_arguments(clusters: pd.DataFrame, comments: pd.DataFrame, relation_df
                         elif isinstance(attr_value, np.ndarray):
                             attr_value = attr_value.tolist()
                     attributes[attr_name] = attr_value
-                
+
                 # Only add non-empty attributes
                 if any(v is not None for v in attributes.values()):
                     argument["attributes"] = attributes
-        
+
         arguments.append(argument)
     return arguments
 
@@ -279,21 +279,25 @@ def _build_cluster_value(melted_labels: pd.DataFrame, total_num: int) -> list[Cl
 
     for _, melted_label in melted_labels.iterrows():
         # Convert potential NumPy types to native Python types
-        level = int(melted_label["level"]) if isinstance(melted_label["level"], (int, np.integer)) else melted_label["level"]
+        level = (
+            int(melted_label["level"]) if isinstance(melted_label["level"], int | np.integer) else melted_label["level"]
+        )
         cluster_id = str(melted_label["id"])
         label = str(melted_label["label"])
         takeaway = str(melted_label["description"])
-        value = int(melted_label["value"]) if isinstance(melted_label["value"], (int, np.integer)) else melted_label["value"]
+        value = (
+            int(melted_label["value"]) if isinstance(melted_label["value"], int | np.integer) else melted_label["value"]
+        )
         parent = str(melted_label.get("parent", "全体"))
-        
+
         # Handle density_rank_percentile which might be None or a numeric value
         density_rank = melted_label.get("density_rank_percentile")
         if density_rank is not None:
-            if isinstance(density_rank, (float, np.floating)):
+            if isinstance(density_rank, float | np.floating):
                 density_rank = float(density_rank)
-            elif isinstance(density_rank, (int, np.integer)):
+            elif isinstance(density_rank, int | np.integer):
                 density_rank = int(density_rank)
-        
+
         cluster_value = Cluster(
             level=level,
             id=cluster_id,
@@ -335,7 +339,9 @@ def _build_translations(config):
     return {}
 
 
-def _build_property_map(arguments: pd.DataFrame, comments: pd.DataFrame, hidden_properties_map: dict[str, list[str]], config: dict) -> dict[str, dict[str, str]]:
+def _build_property_map(
+    arguments: pd.DataFrame, comments: pd.DataFrame, hidden_properties_map: dict[str, list[str]], config: dict
+) -> dict[str, dict[str, str]]:
     property_columns = list(hidden_properties_map.keys()) + list(config["extraction"]["categories"].keys())
     property_map = defaultdict(dict)
 
@@ -351,7 +357,7 @@ def _build_property_map(arguments: pd.DataFrame, comments: pd.DataFrame, hidden_
         for arg_id, row in arguments.iterrows():
             # LLMによるcategory classificationがうまく行かず、NaNの場合はNoneにする
             value = row[prop] if not pd.isna(row[prop]) else None
-            
+
             # Convert NumPy types to Python native types
             if value is not None:
                 if isinstance(value, np.integer):
@@ -366,11 +372,11 @@ def _build_property_map(arguments: pd.DataFrame, comments: pd.DataFrame, hidden_
                         value = str(value)
                     except:
                         value = None
-            
+
             # Make sure arg_id is string
             str_arg_id = str(arg_id)
             property_map[prop][str_arg_id] = value
-            
+
     return property_map
 
 
@@ -379,9 +385,9 @@ def json_serialize_numpy(data):
         return {key: json_serialize_numpy(value) for key, value in data.items()}
     elif isinstance(data, list):
         return [json_serialize_numpy(element) for element in data]
-    elif isinstance(data, (int, float, str, bool)) or data is None:
+    elif isinstance(data, int | float | str | bool) or data is None:
         return data
-    elif isinstance(data, (np.integer, np.floating)):
+    elif isinstance(data, np.integer | np.floating):
         return data.item()
     else:
         raise TypeError(f"Type {type(data)} not serializable")

@@ -16,7 +16,7 @@ export function AttributeColumnsSelector({
   onAttributeChange: (attributes: string[]) => void; // 属性選択変更時のコールバック
 }) {
   // 選択可能な属性カラム (コメントカラム、IDは除外)
-  const availableAttributes = columns.filter(col => col !== selectedColumn && col !== "id")
+  const availableAttributes = columns.filter((col) => col !== selectedColumn && col !== "id");
 
   // チェックボックスの変更ハンドラー
   const handleCheckboxChange = (attribute: string, isChecked: boolean) => {
@@ -25,7 +25,7 @@ export function AttributeColumnsSelector({
       onAttributeChange([...selectedAttributes, attribute]);
     } else {
       // 属性を削除
-      onAttributeChange(selectedAttributes.filter(attr => attr !== attribute));
+      onAttributeChange(selectedAttributes.filter((attr) => attr !== attribute));
     }
   };
 
@@ -35,7 +35,9 @@ export function AttributeColumnsSelector({
 
   return (
     <Box mt={4}>
-      <Text fontWeight="bold" mb={1}>属性カラム選択</Text>
+      <Text fontWeight="bold" mb={1}>
+        属性カラム選択
+      </Text>
       <VStack align="flex-start" gap={2}>
         {availableAttributes.map((attribute) => (
           <Box key={attribute} display="flex" alignItems="center">
@@ -44,7 +46,7 @@ export function AttributeColumnsSelector({
               id={`attribute-${attribute}`}
               checked={selectedAttributes.includes(attribute)}
               onChange={(e) => handleCheckboxChange(attribute, e.target.checked)}
-              style={{ marginRight: '8px' }}
+              style={{ marginRight: "8px" }}
             />
             <label htmlFor={`attribute-${attribute}`}>{attribute}</label>
           </Box>

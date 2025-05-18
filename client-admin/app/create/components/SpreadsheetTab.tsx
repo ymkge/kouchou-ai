@@ -78,7 +78,7 @@ export function SpreadsheetTab({
             onColumnChange={setSelectedCommentColumn}
           />
 
-          <AttributeColumnsSelector 
+          <AttributeColumnsSelector
             columns={csvColumns}
             selectedColumn={selectedCommentColumn}
             selectedAttributes={selectedAttributeColumns}

@@ -13,20 +13,20 @@ type Props = {
 
 export function TreemapChart({ clusterList, argumentList, onHover, level, onTreeZoom, filteredArgumentIds }: Props) {
   // フィルターされていない場合は全ての引数を表示
-  const convertedArgumentList = argumentList.map(arg => {
+  const convertedArgumentList = argumentList.map((arg) => {
     const converted = convertArgumentToCluster(arg);
-    
+
     // フィルターが適用されていて、フィルター結果に含まれない場合はグレーにする
     if (filteredArgumentIds && !filteredArgumentIds.includes(arg.arg_id)) {
       // フィルターに該当しないものは灰色表示用のプロパティを追加
       return {
         ...converted,
-        filtered: true // フィルターで除外されたフラグ
+        filtered: true, // フィルターで除外されたフラグ
       };
     }
     return converted;
   });
-  
+
   const list = [{ ...clusterList[0], parent: "" }, ...clusterList.slice(1), ...convertedArgumentList];
   const ids = list.map((node) => node.id);
   const labels = list.map((node) => {
@@ -37,20 +37,20 @@ export function TreemapChart({ clusterList, argumentList, onHover, level, onTree
   const customdata = list.map((node) => {
     const takeaway = node.takeaway.replace(/(.{15})/g, "$1<br />");
     // @ts-ignore filtered プロパティを追加したので無視
-    return node.filtered 
+    return node.filtered
       ? "" // フィルター対象外はホバー表示しない
       : takeaway;
   });
-  
+
   // フィルター状態によって色を変更
-  const colors = list.map(node => {
+  const colors = list.map((node) => {
     // @ts-ignore filtered プロパティを追加したので無視
-    return node.filtered ? '#cccccc' : ''; // フィルターに該当しないものはグレー、それ以外はデフォルト色
+    return node.filtered ? "#cccccc" : ""; // フィルターに該当しないものはグレー、それ以外はデフォルト色
   });
-  
+
   // すべてのアイテムでホバー表示を有効にする
   // ホバーテンプレートでカスタムデータを使用するため、hoverinfo は不要になった
-  
+
   const data: Partial<PlotData & { maxdepth: number; pathbar: { thickness: number } }> = {
     type: "treemap",
     ids: ids,
@@ -64,12 +64,12 @@ export function TreemapChart({ clusterList, argumentList, onHover, level, onTree
       colors: colors,
       line: {
         width: 1,
-        color: 'white'
+        color: "white",
       },
-      opacity: list.map(node => {
+      opacity: list.map((node) => {
         // @ts-ignore filtered プロパティを追加したので無視
         return node.filtered ? 0.5 : 1; // フィルターに該当しないものは半透明に
-      })
+      }),
     },
     // フィルター対象外のノードではホバー表示を無効にする
     hoverinfo: "text",

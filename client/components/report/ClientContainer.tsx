@@ -10,7 +10,7 @@ import type { Cluster, Result } from "@/type";
 import { Box, Button, Icon } from "@chakra-ui/react";
 import { Filter } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { filterSamples, NumericRangeFilters } from "./attributeFilterUtils";
+import { type NumericRangeFilters, filterSamples } from "./attributeFilterUtils";
 
 type Props = {
   result: Result;
@@ -44,7 +44,8 @@ export function ClientContainer({ result }: Props) {
           rec[k] = v == null ? "" : String(v);
         });
         return rec;
-      } else if (arg.comment_id !== undefined) {
+      }
+      if (arg.comment_id !== undefined) {
         const commentId = arg.comment_id.toString();
         const comment = result.comments[commentId] as CommentWithAttributes | undefined;
         if (comment) {
@@ -165,9 +166,8 @@ export function ClientContainer({ result }: Props) {
     let filteredArgIds: string[] = [];
 
     // カテゴリーフィルターか数値フィルターのいずれかがアクティブかチェック
-    const hasActiveFilters = 
-      Object.keys(attrFilters).length > 0 || 
-      Object.keys(enabledRanges).filter(k => enabledRanges[k]).length > 0;
+    const hasActiveFilters =
+      Object.keys(attrFilters).length > 0 || Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0;
 
     if (hasActiveFilters) {
       // フィルター条件を満たす引数を抽出
@@ -197,19 +197,19 @@ export function ClientContainer({ result }: Props) {
           const passesNumericRanges = Object.entries(numericRanges).every(([attrName, range]) => {
             // フィルターが有効でない場合はパスする
             if (!enabledRanges[attrName]) return true;
-            
+
             const attrValue = arg.attributes?.[attrName];
-            
+
             // 空値の場合のチェック
             if (attrValue === undefined || attrValue === null || attrValue === "") {
               return includeEmptyValues[attrName] || false;
             }
-            
+
             // 数値範囲チェック
             const numValue = Number(attrValue);
             return !Number.isNaN(numValue) && numValue >= range[0] && numValue <= range[1];
           });
-          
+
           return passesAttributeFilters && passesNumericRanges;
         }
         // 2. 後方互換性のため、commentオブジェクトからも確認
@@ -283,20 +283,20 @@ export function ClientContainer({ result }: Props) {
     filters: AttributeFilters,
     numericRanges_: NumericRangeFilters,
     includeEmpty: Record<string, boolean>,
-    enabledRanges_: Record<string, boolean>
+    enabledRanges_: Record<string, boolean>,
   ) {
     setAttributeFilters(filters);
     setNumericRanges(numericRanges_);
     setIncludeEmptyValues(includeEmpty);
     setEnabledRanges(enabledRanges_);
-    
+
     // フィルター適用後にチャート表示を更新
     if (selectedChart === "scatterAll" || selectedChart === "scatterDensity") {
       // 属性フィルターと既存の密度フィルターを組み合わせて適用
       updateFilteredResult(
         selectedChart === "scatterDensity" ? maxDensity : 1,
         selectedChart === "scatterDensity" ? minValue : 0,
-        filters
+        filters,
       );
     }
   }
@@ -399,20 +399,22 @@ export function ClientContainer({ result }: Props) {
                     <Icon>
                       <Filter size={16} />
                     </Icon>
-                    {(Object.keys(attributeFilters).length > 0 || Object.keys(enabledRanges).filter(k => enabledRanges[k]).length > 0) && (                  <Box as="span" fontSize="xs" bg="cyan.500" color="white" p="1" borderRadius="md" minW="5">
-                      {(() => {
-                        // カテゴリーフィルターの属性数
-                        const categoryFilterCount = Object.keys(attributeFilters).length;
-                        // 有効な数値フィルターの属性数
-                        const numericFilterCount = Object.keys(enabledRanges).filter(k => enabledRanges[k]).length;
-                        // 合計をユニークな属性数として計算（重複カウント防止）
-                        const allFilteredAttributes = new Set([
-                          ...Object.keys(attributeFilters),
-                          ...Object.keys(enabledRanges).filter(k => enabledRanges[k])
-                        ]);
-                        return allFilteredAttributes.size;
-                      })()}
-                    </Box>
+                    {(Object.keys(attributeFilters).length > 0 ||
+                      Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0) && (
+                      <Box as="span" fontSize="xs" bg="cyan.500" color="white" p="1" borderRadius="md" minW="5">
+                        {(() => {
+                          // カテゴリーフィルターの属性数
+                          const categoryFilterCount = Object.keys(attributeFilters).length;
+                          // 有効な数値フィルターの属性数
+                          const numericFilterCount = Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length;
+                          // 合計をユニークな属性数として計算（重複カウント防止）
+                          const allFilteredAttributes = new Set([
+                            ...Object.keys(attributeFilters),
+                            ...Object.keys(enabledRanges).filter((k) => enabledRanges[k]),
+                          ]);
+                          return allFilteredAttributes.size;
+                        })()}
+                      </Box>
                     )}
                   </Box>
                 </Button>

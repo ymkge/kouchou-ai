@@ -90,16 +90,16 @@ export default function Page() {
             source: null,
             url: null,
           };
-          
+
           // 選択された属性カラムの値を直接追加（"attribute" プレフィックス付き）
-          inputData.selectedAttributeColumns.forEach(attrCol => {
+          inputData.selectedAttributeColumns.forEach((attrCol) => {
             if (rowData[attrCol] !== undefined && rowData[attrCol] !== null) {
               // 属性カラムの名前に "attribute" プレフィックスを追加
               const attributeKey = `attribute_${attrCol}`;
               comment[attributeKey] = rowData[attrCol] as string;
             }
           });
-          
+
           return comment;
         });
 
@@ -117,7 +117,7 @@ export default function Page() {
       } else if (inputData.inputType === "spreadsheet" && inputData.spreadsheetImported) {
         comments = inputData.spreadsheetData.map((row, index) => {
           const rowData = row as unknown as Record<string, unknown>;
-          
+
           // コメントオブジェクトの作成（基本フィールド）
           const comment: CsvData = {
             id: row.id || `spreadsheet-${index + 1}`,
@@ -125,16 +125,16 @@ export default function Page() {
             source: row.source || null,
             url: row.url || null,
           };
-          
+
           // 選択された属性カラムの値を直接追加（"attribute" プレフィックス付き）
-          inputData.selectedAttributeColumns.forEach(attrCol => {
+          inputData.selectedAttributeColumns.forEach((attrCol) => {
             if (rowData[attrCol] !== undefined && rowData[attrCol] !== null) {
               // 属性カラムの名前に "attribute" プレフィックスを追加
               const attributeKey = `attribute_${attrCol}`;
               comment[attributeKey] = rowData[attrCol] as string;
             }
           });
-          
+
           return comment;
         });
       }
