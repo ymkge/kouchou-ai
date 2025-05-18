@@ -1,11 +1,11 @@
 """Generate a convenient JSON output file."""
 
 import json
-import numpy as np
 from collections import defaultdict
 from pathlib import Path
-from typing import TypedDict, Any
+from typing import Any, TypedDict
 
+import numpy as np
 import pandas as pd
 
 ROOT_DIR = Path(__file__).parent.parent.parent.parent
@@ -211,7 +211,7 @@ def _build_arguments(clusters: pd.DataFrame, comments: pd.DataFrame, relation_df
     arg_comment_map = {}
     if "comment-id" in relation_df.columns:
         relation_df["comment-id"] = relation_df["comment-id"].astype(str)
-        arg_comment_map = dict(zip(relation_df["arg-id"], relation_df["comment-id"]))
+        arg_comment_map = dict(zip(relation_df["arg-id"], relation_df["comment-id"], strict=False))
 
     # Find attribute columns in comments dataframe
     attribute_columns = [col for col in comments.columns if col.startswith("attribute_")]
