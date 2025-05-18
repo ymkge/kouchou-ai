@@ -370,7 +370,8 @@ def _build_property_map(
                     # Convert any other types to string to ensure serialization
                     try:
                         value = str(value)
-                    except:
+                    except Exception as e:
+                        print(f"Error converting value to string: {e}")
                         value = None
 
             # Make sure arg_id is string
