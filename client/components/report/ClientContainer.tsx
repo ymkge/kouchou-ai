@@ -10,6 +10,7 @@ import type { Cluster, Result } from "@/type";
 import { Box, Button, Icon } from "@chakra-ui/react";
 import { Filter } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { filterSamples, NumericRangeFilters } from "./attributeFilterUtils";
 
 type Props = {
   result: Result;
@@ -32,8 +33,37 @@ export function ClientContainer({ result }: Props) {
   const [showClusterLabels, setShowClusterLabels] = useState(true);
   const [treemapLevel, setTreemapLevel] = useState("0");
 
-  // 属性フィルタの状態を管理
+  // 標本データ生成（全コメントをRecord<string, string>で配列化）
+  const samples = useMemo(() => {
+    // attributes優先、なければcommentオブジェクトから属性を抽出
+    return result.arguments.map((arg) => {
+      if (arg.attributes) {
+        // すべてstring化
+        const rec: Record<string, string> = {};
+        Object.entries(arg.attributes).forEach(([k, v]) => {
+          rec[k] = v == null ? "" : String(v);
+        });
+        return rec;
+      } else if (arg.comment_id !== undefined) {
+        const commentId = arg.comment_id.toString();
+        const comment = result.comments[commentId] as CommentWithAttributes | undefined;
+        if (comment) {
+          const rec: Record<string, string> = {};
+          Object.entries(comment).forEach(([k, v]) => {
+            if (k !== "comment") rec[k] = v == null ? "" : String(v);
+          });
+          return rec;
+        }
+      }
+      return {};
+    });
+  }, [result]);
+
+  // 属性フィルターの状態
   const [attributeFilters, setAttributeFilters] = useState<AttributeFilters>({});
+  const [numericRanges, setNumericRanges] = useState<NumericRangeFilters>({});
+  const [enabledRanges, setEnabledRanges] = useState<Record<string, boolean>>({});
+  const [includeEmptyValues, setIncludeEmptyValues] = useState<Record<string, boolean>>({});
   const [openAttributeFilter, setOpenAttributeFilter] = useState(false);
 
   // 利用可能な属性と値のセットを抽出
@@ -100,7 +130,7 @@ export function ClientContainer({ result }: Props) {
   }, [availableAttributes]);
 
   // 数値属性の範囲をキャッシュ
-  const numericRanges = useMemo(() => {
+  const numericRangesMemo = useMemo(() => {
     const ranges: Record<string, [number, number]> = {};
 
     Object.entries(availableAttributes).forEach(([attribute, values]) => {
@@ -134,13 +164,18 @@ export function ClientContainer({ result }: Props) {
     let filteredArgs = result.arguments;
     let filteredArgIds: string[] = [];
 
-    if (Object.keys(attrFilters).length > 0) {
+    // カテゴリーフィルターか数値フィルターのいずれかがアクティブかチェック
+    const hasActiveFilters = 
+      Object.keys(attrFilters).length > 0 || 
+      Object.keys(enabledRanges).filter(k => enabledRanges[k]).length > 0;
+
+    if (hasActiveFilters) {
       // フィルター条件を満たす引数を抽出
       filteredArgs = result.arguments.filter((arg) => {
         // 1. まず attributes フィールドを確認
         if (arg.attributes) {
-          // すべてのフィルタ条件を満たすか確認
-          return Object.entries(attrFilters).every(([attrName, selectedValues]) => {
+          // カテゴリーフィルター条件をチェック
+          const passesAttributeFilters = Object.entries(attrFilters).every(([attrName, selectedValues]) => {
             const attrValue = arg.attributes?.[attrName];
             const values = selectedValues as string[];
 
@@ -157,6 +192,25 @@ export function ClientContainer({ result }: Props) {
             // 通常のチェックボックスフィルターの処理
             return values.includes(String(attrValue));
           });
+
+          // 数値範囲フィルター条件をチェック
+          const passesNumericRanges = Object.entries(numericRanges).every(([attrName, range]) => {
+            // フィルターが有効でない場合はパスする
+            if (!enabledRanges[attrName]) return true;
+            
+            const attrValue = arg.attributes?.[attrName];
+            
+            // 空値の場合のチェック
+            if (attrValue === undefined || attrValue === null || attrValue === "") {
+              return includeEmptyValues[attrName] || false;
+            }
+            
+            // 数値範囲チェック
+            const numValue = Number(attrValue);
+            return !Number.isNaN(numValue) && numValue >= range[0] && numValue <= range[1];
+          });
+          
+          return passesAttributeFilters && passesNumericRanges;
         }
         // 2. 後方互換性のため、commentオブジェクトからも確認
         if (arg.comment_id !== undefined) {
@@ -205,7 +259,7 @@ export function ClientContainer({ result }: Props) {
 
     // 4. 両方のフィルタを組み合わせる
     const combinedFilteredClusters = densityFilteredClusters.filter(
-      (cluster) => Object.keys(attrFilters).length === 0 || clusterIdsWithFilteredArgs.has(cluster.id),
+      (cluster) => !hasActiveFilters || clusterIdsWithFilteredArgs.has(cluster.id),
     );
 
     setFilteredResult({
@@ -213,7 +267,7 @@ export function ClientContainer({ result }: Props) {
       clusters: combinedFilteredClusters,
       arguments: result.arguments, // 全ての引数を含め、グレーアウト表示のために使用
       // 新しいプロパティとしてフィルター条件に合致する引数IDのリストを追加
-      filteredArgumentIds: Object.keys(attrFilters).length > 0 ? filteredArgIds : undefined,
+      filteredArgumentIds: hasActiveFilters ? filteredArgIds : undefined,
     });
   }
 
@@ -225,10 +279,32 @@ export function ClientContainer({ result }: Props) {
     }
   }
 
-  function handleApplyAttributeFilters(filters: AttributeFilters) {
+  function handleApplyAttributeFilters(
+    filters: AttributeFilters,
+    numericRanges_: NumericRangeFilters,
+    includeEmpty: Record<string, boolean>,
+    enabledRanges_: Record<string, boolean>
+  ) {
     setAttributeFilters(filters);
-    updateFilteredResult(maxDensity, minValue, filters);
+    setNumericRanges(numericRanges_);
+    setIncludeEmptyValues(includeEmpty);
+    setEnabledRanges(enabledRanges_);
+    
+    // フィルター適用後にチャート表示を更新
+    if (selectedChart === "scatterAll" || selectedChart === "scatterDensity") {
+      // 属性フィルターと既存の密度フィルターを組み合わせて適用
+      updateFilteredResult(
+        selectedChart === "scatterDensity" ? maxDensity : 1,
+        selectedChart === "scatterDensity" ? minValue : 0,
+        filters
+      );
+    }
   }
+
+  // フィルター済み標本を計算
+  const filteredSamples = useMemo(() => {
+    return filterSamples(samples, attributeFilters, numericRanges, enabledRanges, includeEmptyValues);
+  }, [samples, attributeFilters, numericRanges, enabledRanges, includeEmptyValues]);
 
   // 表示するクラスタを選択
   const clustersToDisplay =
@@ -300,10 +376,11 @@ export function ClientContainer({ result }: Props) {
         <AttributeFilterDialog
           onClose={handleCloseAttributeFilter}
           onApplyFilters={handleApplyAttributeFilters}
-          availableAttributes={availableAttributes}
-          currentFilters={attributeFilters}
-          attributeTypes={attributeTypes}
+          samples={samples}
+          initialFilters={attributeFilters}
           initialNumericRanges={numericRanges}
+          initialEnabledRanges={enabledRanges}
+          initialIncludeEmptyValues={includeEmptyValues}
         />
       )}
 
@@ -322,10 +399,20 @@ export function ClientContainer({ result }: Props) {
                     <Icon>
                       <Filter size={16} />
                     </Icon>
-                    {Object.keys(attributeFilters).length > 0 && (
-                      <Box as="span" fontSize="xs" bg="cyan.500" color="white" p="1" borderRadius="md" minW="5">
-                        {Object.keys(attributeFilters).length}
-                      </Box>
+                    {(Object.keys(attributeFilters).length > 0 || Object.keys(enabledRanges).filter(k => enabledRanges[k]).length > 0) && (                  <Box as="span" fontSize="xs" bg="cyan.500" color="white" p="1" borderRadius="md" minW="5">
+                      {(() => {
+                        // カテゴリーフィルターの属性数
+                        const categoryFilterCount = Object.keys(attributeFilters).length;
+                        // 有効な数値フィルターの属性数
+                        const numericFilterCount = Object.keys(enabledRanges).filter(k => enabledRanges[k]).length;
+                        // 合計をユニークな属性数として計算（重複カウント防止）
+                        const allFilteredAttributes = new Set([
+                          ...Object.keys(attributeFilters),
+                          ...Object.keys(enabledRanges).filter(k => enabledRanges[k])
+                        ]);
+                        return allFilteredAttributes.size;
+                      })()}
+                    </Box>
                     )}
                   </Box>
                 </Button>
@@ -344,6 +431,12 @@ export function ClientContainer({ result }: Props) {
         onToggleClusterLabels={handleToggleClusterLabels}
         treemapLevel={treemapLevel}
         onTreeZoom={handleTreeZoom}
+        filterState={{
+          attributeFilters,
+          numericRanges,
+          enabledRanges,
+          includeEmptyValues,
+        }}
       />
 
       {clustersToDisplay.map((c) => (

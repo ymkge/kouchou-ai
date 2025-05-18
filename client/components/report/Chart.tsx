@@ -4,6 +4,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import type { Result } from "@/type";
 import { Box, Button, HStack, Icon } from "@chakra-ui/react";
 import { Minimize2 } from "lucide-react";
+import { useMemo } from "react";
 
 type ReportProps = {
   result: Result;
@@ -16,6 +17,13 @@ type ReportProps = {
   onTreeZoom: (level: string) => void;
 };
 
+type FilterState = {
+  attributeFilters: Record<string, string[]>;
+  numericRanges: Record<string, [number, number]>;
+  enabledRanges: Record<string, boolean>;
+  includeEmptyValues: Record<string, boolean>;
+};
+
 export function Chart({
   result,
   selectedChart,
@@ -25,7 +33,52 @@ export function Chart({
   onToggleClusterLabels,
   treemapLevel,
   onTreeZoom,
-}: ReportProps) {
+  filterState, // 追加: フィルター状態
+}: ReportProps & { filterState?: FilterState }) {
+  // フィルター済み引数IDリストを計算
+  const filteredArgumentIds = useMemo(() => {
+    if (!filterState) return undefined;
+    const { attributeFilters, numericRanges, enabledRanges, includeEmptyValues } = filterState;
+
+    // フィルター条件が空なら全て表示（未定義を返す）
+    if (
+      Object.keys(attributeFilters).length === 0 &&
+      Object.keys(enabledRanges).filter(k => enabledRanges[k]).length === 0
+    ) {
+      return undefined;
+    }
+
+    // フィルター条件に合致する引数IDを返す
+    return result.arguments
+      .filter((arg) => {
+        // 属性フィルタをチェック
+        if (arg.attributes) {
+          // カテゴリーフィルター
+          for (const [attr, values] of Object.entries(attributeFilters)) {
+            if (values.length === 0) continue;
+            const attrValue = String(arg.attributes[attr] ?? "");
+            if (!values.includes(attrValue)) return false;
+          }
+
+          // 数値レンジフィルター
+          for (const [attr, range] of Object.entries(numericRanges)) {
+            if (!enabledRanges[attr]) continue;
+            const attrValue = arg.attributes[attr];
+            if (attrValue === undefined || attrValue === null || attrValue === "") {
+              // 空値
+              if (!includeEmptyValues[attr]) return false;
+            } else {
+              // 数値
+              const numValue = Number(attrValue);
+              if (isNaN(numValue) || numValue < range[0] || numValue > range[1]) return false;
+            }
+          }
+        }
+        return true;
+      })
+      .map((arg) => arg.arg_id);
+  }, [result.arguments, filterState]);
+
   if (isFullscreen) {
     return (
       <Box
@@ -55,7 +108,7 @@ export function Chart({
             targetLevel={selectedChart === "scatterAll" ? 1 : Math.max(...result.clusters.map((c) => c.level))}
             onHover={() => setTimeout(avoidHoverTextCoveringShrinkButton, 500)}
             showClusterLabels={showClusterLabels}
-            filteredArgumentIds={result.filteredArgumentIds}
+            filteredArgumentIds={filteredArgumentIds}
           />
         )}
         {selectedChart === "treemap" && (
@@ -66,6 +119,7 @@ export function Chart({
             onHover={avoidHoverTextCoveringShrinkButton}
             level={treemapLevel}
             onTreeZoom={onTreeZoom}
+            filteredArgumentIds={filteredArgumentIds}
           />
         )}
       </Box>
@@ -82,6 +136,7 @@ export function Chart({
             argumentList={result.arguments}
             level={treemapLevel}
             onTreeZoom={onTreeZoom}
+            filteredArgumentIds={filteredArgumentIds}
           />
         )}
         {(selectedChart === "scatterAll" || selectedChart === "scatterDensity") && (
@@ -90,7 +145,7 @@ export function Chart({
             argumentList={result.arguments}
             targetLevel={selectedChart === "scatterAll" ? 1 : Math.max(...result.clusters.map((c) => c.level))}
             showClusterLabels={showClusterLabels}
-            filteredArgumentIds={result.filteredArgumentIds}
+            filteredArgumentIds={filteredArgumentIds}
           />
         )}
       </Box>

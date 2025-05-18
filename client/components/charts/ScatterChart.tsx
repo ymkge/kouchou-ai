@@ -1,3 +1,4 @@
+// filepath: c:\Users\shinta\Documents\GitHub\kouchou-ai\client\components\charts\ScatterChart.tsx
 import type { Argument, Cluster } from "@/type";
 import { Box } from "@chakra-ui/react";
 import { ChartCore } from "./ChartCore";
@@ -18,8 +19,12 @@ export function ScatterChart({
   targetLevel,
   onHover,
   showClusterLabels,
-  filteredArgumentIds,
+  filteredArgumentIds, // フィルター済みIDリスト（フィルター条件に合致する引数のID）
 }: Props) {
+  // 全ての引数を表示するため、argumentListをそのまま使用
+  // フィルター条件に合致しないものは後で灰色表示する
+  const allArguments = argumentList;
+
   const targetClusters = clusterList.filter((cluster) => cluster.level === targetLevel);
   const softColors = [
     "#7ac943",
@@ -89,7 +94,6 @@ export function ScatterChart({
   const annotationFontsize = 14; // フォントサイズを指定
 
   // ラベルのテキストを折り返すための関数
-  // ラベルのテキストを折り返すための関数
   const wrapLabelText = (text: string): string => {
     // 英語と日本語の文字数を考慮して、適切な長さで折り返す
 
@@ -147,110 +151,167 @@ export function ScatterChart({
     // プロット操作用アイコンのエリアを「全画面終了」ボタンの下に移動する
     avoidModBarCoveringShrinkButton();
   };
-  const clusterData = targetClusters.map((cluster) => {
-    const clusterArguments = argumentList.filter((arg) => arg.cluster_ids.includes(cluster.id));
 
-    // フィルターに該当するかどうかを判定
-    const markerColors = clusterArguments.map((arg) => {
-      // フィルターが適用されていて、フィルター結果に含まれない場合はグレーにする
-      const isFiltered = filteredArgumentIds && !filteredArgumentIds.includes(arg.arg_id);
-      return isFiltered ? "#cccccc" : clusterColorMap[cluster.id];
-    });
+  // フィルターが適用されている場合、フィルター条件に合致するアイテムと合致しないアイテムを分離
+  const separateDataByFilter = (cluster: Cluster) => {
+    if (!filteredArgumentIds) {
+      // フィルターなしの場合は通常表示
+      const clusterArguments = allArguments.filter((arg) => arg.cluster_ids.includes(cluster.id));
+      return {
+        matching: clusterArguments,
+        notMatching: [] as Argument[]
+      };
+    }
 
-    const xValues = clusterArguments.map((arg) => arg.x);
-    const yValues = clusterArguments.map((arg) => arg.y);
+    // フィルター条件に合致するアイテム（前面に表示）
+    const matchingArguments = allArguments.filter(
+      (arg) => arg.cluster_ids.includes(cluster.id) && filteredArgumentIds.includes(arg.arg_id)
+    );
 
-    // フィルターされたポイントはホバーテキストを空にする
-    const texts = clusterArguments.map((arg) => {
-      const isFiltered = filteredArgumentIds && !filteredArgumentIds.includes(arg.arg_id);
-      return isFiltered ? "" : `<b>${cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`;
-    });
+    // フィルター条件に合致しないアイテム（背面に表示）
+    const notMatchingArguments = allArguments.filter(
+      (arg) => arg.cluster_ids.includes(cluster.id) && !filteredArgumentIds.includes(arg.arg_id)
+    );
 
-    // フィルター結果のフラグ配列 - hoverinfo は "text" または "skip" を設定
-    const hoverInfoArray = clusterArguments.map((arg) => {
-      const isFiltered = filteredArgumentIds && !filteredArgumentIds.includes(arg.arg_id);
-      return isFiltered ? "skip" : "text"; // skipはホバー表示を無効にする
-    });
+    return {
+      matching: matchingArguments,
+      notMatching: notMatchingArguments
+    };
+  };
 
-    // 透明度の設定 - フィルター適用時に非マッチのデータポイントは半透明にする
-    const opacityArray = clusterArguments.map((arg) => {
-      const isFiltered = filteredArgumentIds && !filteredArgumentIds.includes(arg.arg_id);
-      return isFiltered ? 0.5 : 1; // フィルターされているポイントは半透明に
-    });
+  // 各クラスターのデータを生成（フィルター対象外を背面に、フィルター対象を前面に描画するため分離）
+  const clusterDataSets = targetClusters.map((cluster) => {
+    const { matching, notMatching } = separateDataByFilter(cluster);
+    
+    // クラスターの中心座標計算用にすべての引数を取得
+    const allClusterArguments = [...notMatching, ...matching];
+    const allXValues = allClusterArguments.map((arg) => arg.x);
+    const allYValues = allClusterArguments.map((arg) => arg.y);
+    
+    const centerX = allXValues.length > 0 ? allXValues.reduce((sum, val) => sum + val, 0) / allXValues.length : 0;
+    const centerY = allYValues.length > 0 ? allYValues.reduce((sum, val) => sum + val, 0) / allYValues.length : 0;    // フィルター対象外のアイテム（背面に描画）
+    const notMatchingData = notMatching.length > 0 ? {
+      x: notMatching.map((arg) => arg.x),
+      y: notMatching.map((arg) => arg.y),
+      mode: "markers",      marker: {
+        size: 7,
+        color: Array(notMatching.length).fill("#cccccc"), // グレー表示
+        opacity: Array(notMatching.length).fill(0.5),     // 半透明
+      },      text: Array(notMatching.length).fill(""),  // ホバーテキストなし
+      type: "scatter",
+      hoverinfo: "skip",                         // ホバー表示を無効化
+      showlegend: false,
+    } : null;
 
-    const centerX = xValues.reduce((sum, val) => sum + val, 0) / xValues.length;
-    const centerY = yValues.reduce((sum, val) => sum + val, 0) / yValues.length;
+    // フィルター対象のアイテム（前面に描画）
+    const matchingData = matching.length > 0 ? {
+      x: matching.map((arg) => arg.x),
+      y: matching.map((arg) => arg.y),
+      mode: "markers",
+      marker: {
+        size: 7,
+        color: Array(matching.length).fill(clusterColorMap[cluster.id]),
+        opacity: Array(matching.length).fill(1),  // 不透明
+      },
+      text: matching.map((arg) => 
+        `<b>${cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`
+      ),
+      type: "scatter",
+      hoverinfo: "text",
+      hovertemplate: "%{text}<extra></extra>",
+      hoverlabel: {
+        align: "left",
+        bgcolor: "white",
+        bordercolor: clusterColorMap[cluster.id],
+        font: {
+          size: 12,
+          color: "#333",
+        },
+      },
+      showlegend: false,
+    } : null;
 
     return {
       cluster,
-      xValues,
-      yValues,
-      texts,
+      notMatchingData,
+      matchingData,
       centerX,
       centerY,
-      markerColors,
-      hoverInfoArray,
-      opacityArray,
     };
   });
+
+  // 描画用のデータセットを作成
+  const plotData = clusterDataSets.flatMap((dataSet) => {
+    const result = [];
+    
+    // フィルター対象外のデータ（背面に描画）
+    if (dataSet.notMatchingData) {
+      result.push(dataSet.notMatchingData);
+    }
+
+    // フィルター対象のデータ（前面に描画）
+    if (dataSet.matchingData) {
+      result.push(dataSet.matchingData);
+    }
+
+    // フィルターがない場合の通常表示
+    if (!filteredArgumentIds) {
+      const clusterArguments = allArguments.filter((arg) => arg.cluster_ids.includes(dataSet.cluster.id));
+      if (clusterArguments.length > 0) {
+        result.push({
+          x: clusterArguments.map((arg) => arg.x),
+          y: clusterArguments.map((arg) => arg.y),
+          mode: "markers",
+          marker: {
+            size: 7,
+            color: clusterColorMap[dataSet.cluster.id],
+          },
+          text: clusterArguments.map((arg) => 
+            `<b>${dataSet.cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`
+          ),
+          type: "scatter",
+          hoverinfo: "text",
+          hoverlabel: {
+            align: "left",
+            bgcolor: "white",
+            bordercolor: clusterColorMap[dataSet.cluster.id],
+            font: {
+              size: 12,
+              color: "#333",
+            },
+          },
+          showlegend: false,
+        });
+      }
+    }
+
+    return result;
+  });
+
+  // アノテーションの設定
+  const annotations = showClusterLabels
+    ? clusterDataSets.map((dataSet) => ({
+        x: dataSet.centerX,
+        y: dataSet.centerY,
+        text: wrapLabelText(dataSet.cluster.label), // ラベルを折り返し処理
+        showarrow: false,
+        font: {
+          color: "white",
+          size: annotationFontsize,
+          weight: 700,
+        },
+        bgcolor: clusterColorMapA[dataSet.cluster.id], // 背景はアルファ付き
+        borderpad: 10,
+        width: annotationLabelWidth,
+        align: "left",
+      }))
+    : [];
 
   return (
     <Box width="100%" height="100%" display="flex" flexDirection="column">
       <Box position="relative" flex="1">
         <ChartCore
-          data={clusterData.map((data) => {
-            // filteredArgumentIds が設定されている場合、データポイントごとに個別の設定を適用する
-            if (filteredArgumentIds) {
-              return {
-                x: data.xValues,
-                y: data.yValues,
-                mode: "markers",
-                marker: {
-                  size: 7,
-                  color: data.markerColors,
-                  opacity: data.opacityArray, // 各ポイントごとに透明度を設定
-                },
-                type: "scatter",
-                text: data.texts,
-                // hoverinfo はデータセット全体に一括して適用する必要がある
-                hoverinfo: "text",
-                customdata: data.hoverInfoArray, // カスタムデータとしてフィルター状態を保存
-                // custom制御用の設定
-                hovertemplate: "%{text}<extra></extra>",
-                hoverlabel: {
-                  align: "left",
-                  bgcolor: "white",
-                  bordercolor: clusterColorMap[data.cluster.id],
-                  font: {
-                    size: 12,
-                    color: "#333",
-                  },
-                },
-              };
-            }
-            // 通常の表示設定
-            return {
-              x: data.xValues,
-              y: data.yValues,
-              mode: "markers",
-              marker: {
-                size: 7,
-                color: clusterColorMap[data.cluster.id],
-              },
-              type: "scatter",
-              text: data.texts,
-              hoverinfo: "text",
-              hoverlabel: {
-                align: "left",
-                bgcolor: "white",
-                bordercolor: clusterColorMap[data.cluster.id],
-                font: {
-                  size: 12,
-                  color: "#333",
-                },
-              },
-            };
-          })}
+          data={plotData}
           layout={{
             margin: { l: 0, r: 0, b: 0, t: 0 },
             xaxis: {
@@ -265,23 +326,7 @@ export function ScatterChart({
             },
             hovermode: "closest",
             dragmode: "pan", // ドラッグによる移動（パン）を有効化
-            annotations: showClusterLabels
-              ? clusterData.map((data) => ({
-                  x: data.centerX,
-                  y: data.centerY,
-                  text: wrapLabelText(data.cluster.label), // ラベルを折り返し処理
-                  showarrow: false,
-                  font: {
-                    color: "white",
-                    size: annotationFontsize,
-                    weight: 700,
-                  },
-                  bgcolor: clusterColorMapA[data.cluster.id], // 背景はアルファ付き
-                  borderpad: 10,
-                  width: annotationLabelWidth,
-                  align: "left",
-                }))
-              : [],
+            annotations,
             showlegend: false,
           }}
           useResizeHandler={true}
