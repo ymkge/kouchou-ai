@@ -154,16 +154,13 @@ export function AttributeFilterDialog({
     },
     [numericRanges],
   );
-  const handleRangeChange = useCallback(
-    (attribute: string, range: [number, number]) => {
-      setNumericRanges((prev) => ({
-        ...prev,
-        [attribute]: range,
-      }));
-      // setFiltersは呼ばない（即時反映しない）
-    },
-    [],
-  );
+  const handleRangeChange = useCallback((attribute: string, range: [number, number]) => {
+    setNumericRanges((prev) => ({
+      ...prev,
+      [attribute]: range,
+    }));
+    // setFiltersは呼ばない（即時反映しない）
+  }, []);
 
   // Memoize apply handler
   const onApply = useCallback(() => {
@@ -190,7 +187,16 @@ export function AttributeFilterDialog({
     setFilters(newFilters); // 状態も更新
     onApplyFilters(newFilters);
     onClose();
-  }, [availableAttributes, attributeTypes, enabledRanges, numericRanges, includeEmptyValues, pendingCategoricalFilters, onApplyFilters, onClose]);
+  }, [
+    availableAttributes,
+    attributeTypes,
+    enabledRanges,
+    numericRanges,
+    includeEmptyValues,
+    pendingCategoricalFilters,
+    onApplyFilters,
+    onClose,
+  ]);
   // Memoize clear filters handler
   const handleClearFilters = useCallback(() => {
     setFilters({});
@@ -204,16 +210,13 @@ export function AttributeFilterDialog({
   }, [calculatedNumericRanges]);
 
   // レンジフィルターの有効/無効を切り替える
-  const toggleRangeFilter = useCallback(
-    (attribute: string, isEnabled: boolean) => {
-      setEnabledRanges((prev) => ({
-        ...prev,
-        [attribute]: isEnabled,
-      }));
-      // setFiltersは呼ばない（即時反映しない）
-    },
-    []
-  );
+  const toggleRangeFilter = useCallback((attribute: string, isEnabled: boolean) => {
+    setEnabledRanges((prev) => ({
+      ...prev,
+      [attribute]: isEnabled,
+    }));
+    // setFiltersは呼ばない（即時反映しない）
+  }, []);
   // Memoize the list of attributes
   const attributeEntries = useMemo(() => Object.entries(availableAttributes), [availableAttributes]);
 
