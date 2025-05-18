@@ -317,7 +317,7 @@ export function ScatterChart({
     <Box width="100%" height="100%" display="flex" flexDirection="column">
       <Box position="relative" flex="1">
         <ChartCore
-          data={plotData}
+          data={plotData as any} // 型エラーを回避するためにanyを使用
           layout={{
             margin: { l: 0, r: 0, b: 0, t: 0 },
             xaxis: {
