@@ -2,8 +2,11 @@ import json
 import os
 import traceback
 from datetime import datetime, timedelta
+from pathlib import Path
 
-with open("./hierarchical_specs.json") as f:
+PIPELINE_DIR = Path(__file__).parent
+
+with open(PIPELINE_DIR / "hierarchical_specs.json") as f:
     specs = json.load(f)
 
 
@@ -80,7 +83,7 @@ def decide_what_to_run(config, previous):
             reason = "forced this step with -o"
         elif not found_prev:
             reason = "not trace of previous run"
-        elif not os.path.exists(f"outputs/{config['output_dir']}/{step['filename']}"):
+        elif not os.path.exists(PIPELINE_DIR / f"outputs/{config['output_dir']}/{step['filename']}"):
             reason = "previous data not found"
         else:
             deps = step["dependencies"]["steps"]
@@ -123,8 +126,8 @@ def initialization(sysargv):
 
     # check if job has run before
     previous = False
-    if os.path.exists(f"outputs/{output_dir}/hierarchical_status.json"):
-        with open(f"outputs/{output_dir}/hierarchical_status.json") as f:
+    if os.path.exists(PIPELINE_DIR / f"outputs/{output_dir}/hierarchical_status.json"):
+        with open(PIPELINE_DIR / f"outputs/{output_dir}/hierarchical_status.json") as f:
             previous = json.load(f)
         config["previous"] = previous
 
@@ -152,7 +155,7 @@ def initialization(sysargv):
                     config[step][key] = value
         # try and include source code
         try:
-            with open(f"steps/{step}.py") as f:
+            with open(PIPELINE_DIR / f"steps/{step}.py") as f:
                 config[step]["source_code"] = f.read()
         except Exception:
             print(f"Warning: could not find source code for step '{step}'")
@@ -161,7 +164,7 @@ def initialization(sysargv):
             # resolve prompt
             if "prompt" not in config.get(step):
                 file = config.get(step).get("prompt_file", "default")
-                with open(f"prompts/{step}/{file}.txt") as f:
+                with open(PIPELINE_DIR / f"prompts/{step}/{file}.txt") as f:
                     config[step]["prompt"] = f.read()
             # resolve model
             if "model" not in config.get(step):
@@ -169,8 +172,8 @@ def initialization(sysargv):
                     config[step]["model"] = config["model"]
 
     # create output directory if needed
-    if not os.path.exists(f"outputs/{output_dir}"):
-        os.makedirs(f"outputs/{output_dir}")
+    if not os.path.exists(PIPELINE_DIR / f"outputs/{output_dir}"):
+        os.makedirs(PIPELINE_DIR / f"outputs/{output_dir}")
 
     # check if user is happy with the plan...
     plan = decide_what_to_run(config, previous)
@@ -203,7 +206,7 @@ def update_status(config, updates):
         else:
             config[key] = value
     config["lock_until"] = (datetime.now() + timedelta(minutes=5)).isoformat()
-    with open(f"outputs/{output_dir}/hierarchical_status.json", "w") as file:
+    with open(PIPELINE_DIR / f"outputs/{output_dir}/hierarchical_status.json", "w") as file:
         json.dump(config, file, indent=2)
 
 

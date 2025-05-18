@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
-import type { Report, ClusterResponse } from "@/type";
+import type { ClusterResponse, Report } from "@/type";
 import {
   Box,
   Button,
@@ -551,14 +551,11 @@ function ReportCard({
                   onClick={async (e) => {
                     e.stopPropagation();
                     try {
-                      const response = await fetch(
-                        `${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`,
-                        {
-                          headers: {
-                            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                          },
+                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`, {
+                        headers: {
+                          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
                         },
-                      );
+                      });
                       if (!response.ok) {
                         throw new Error("クラスタ一覧の取得に失敗しました");
                       }
@@ -777,7 +774,9 @@ function ReportCard({
                       編集対象のクラスタタイトル
                     </Text>
                     <Select.Root
-                      collection={createListCollection({ items: clusters.map((c) => ({ label: c.label, value: c.id })) })}
+                      collection={createListCollection({
+                        items: clusters.map((c) => ({ label: c.label, value: c.id })),
+                      })}
                       defaultValue={selectedClusterId ? [selectedClusterId] : []}
                       onValueChange={(item) => {
                         if (item?.value) {
@@ -880,10 +879,12 @@ function ReportCard({
                         const clusterData = await clusterResponse.json();
                         setClusters(clusterData.clusters);
                         // 更新されたクラスタ情報をフォームに再設定
-                        const updatedSelectedCluster = clusterData.clusters.find((c: ClusterResponse) => c.id === selectedClusterId);
+                        const updatedSelectedCluster = clusterData.clusters.find(
+                          (c: ClusterResponse) => c.id === selectedClusterId,
+                        );
                         if (updatedSelectedCluster) {
-                            setEditClusterTitle(updatedSelectedCluster.label);
-                            setEditClusterDescription(updatedSelectedCluster.description);
+                          setEditClusterTitle(updatedSelectedCluster.label);
+                          setEditClusterDescription(updatedSelectedCluster.description);
                         }
                       }
 

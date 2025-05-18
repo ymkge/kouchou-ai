@@ -21,6 +21,15 @@ from src.services.report_status import (
 )
 from src.utils.logger import setup_logger
 
+from src.broadlistening.pipeline.utils import initialization, run_step
+
+
+def execute_aggregation(slug: str):
+    config_path = settings.REPORT_DIR / slug / "hierarchical_config.json"
+    config = initialization(config_path)
+    run_step("aggregation", aggregation, config)
+
+
 slogger = setup_logger()
 router = APIRouter()
 
@@ -178,8 +187,12 @@ async def get_clusters(slug: str, api_key: str = Depends(verify_admin_api_key)) 
 @router.patch("/admin/reports/{slug}/cluster-label")
 async def update_cluster_label(slug: str, updated_cluster: ClusterUpdate, api_key: str = Depends(verify_admin_api_key)) -> dict[str, bool]:
     repo = ClusterRepository(slug)
-    result = repo.update_csv(updated_cluster)
-    return {"success": result}
+    is_updated = repo.update_csv(updated_cluster)
+
+    if is_updated:
+        # aggregation を実行
+        pass
+    return {"success": is_updated}
 
 
 @router.get("/admin/models")

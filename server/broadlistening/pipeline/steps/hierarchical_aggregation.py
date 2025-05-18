@@ -9,6 +9,7 @@ import pandas as pd
 
 ROOT_DIR = Path(__file__).parent.parent.parent.parent
 CONFIG_DIR = ROOT_DIR / "scatter" / "pipeline" / "configs"
+PIPELINE_DIR = ROOT_DIR / "broadlistening" / "pipeline"
 
 
 class Argument(TypedDict):
@@ -31,58 +32,67 @@ class Cluster(TypedDict):
     density_rank_percentile: float | None
 
 
-def hierarchical_aggregation(config):
-    path = f"outputs/{config['output_dir']}/hierarchical_result.json"
-    results = {
-        "arguments": [],
-        "clusters": [],
-        "comments": {},
-        "propertyMap": {},
-        "translations": {},
-        "overview": "",
-        "config": config,
-    }
+def hierarchical_aggregation(config) -> bool:
+    try:
+        path = PIPELINE_DIR / f"outputs/{config['output_dir']}/hierarchical_result.json"
+        results = {
+            "arguments": [],
+            "clusters": [],
+            "comments": {},
+            "propertyMap": {},
+            "translations": {},
+            "overview": "",
+            "config": config,
+        }
 
-    arguments = pd.read_csv(f"outputs/{config['output_dir']}/args.csv")
-    arguments.set_index("arg-id", inplace=True)
-    arg_num = len(arguments)
-    relation_df = pd.read_csv(f"outputs/{config['output_dir']}/relations.csv")
-    comments = pd.read_csv(f"inputs/{config['input']}.csv")
-    clusters = pd.read_csv(f"outputs/{config['output_dir']}/hierarchical_clusters.csv")
-    labels = pd.read_csv(f"outputs/{config['output_dir']}/hierarchical_merge_labels.csv")
+        arguments = pd.read_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/args.csv")
+        arguments.set_index("arg-id", inplace=True)
+        arg_num = len(arguments)
+        
+        relation_df = pd.read_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/relations.csv")
+        comments = pd.read_csv(PIPELINE_DIR / f"inputs/{config['input']}.csv")
+        clusters = pd.read_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/hierarchical_clusters.csv")
+        labels = pd.read_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/hierarchical_merge_labels.csv")
 
-    hidden_properties_map: dict[str, list[str]] = config["hierarchical_aggregation"]["hidden_properties"]
+        hidden_properties_map: dict[str, list[str]] = config["hierarchical_aggregation"]["hidden_properties"]
 
-    results["arguments"] = _build_arguments(clusters)
-    results["clusters"] = _build_cluster_value(labels, arg_num)
-    # NOTE: 属性に応じたコメントフィルタ機能が実装されておらず、全てのコメントが含まれてしまうので、コメントアウト
-    # results["comments"] = _build_comments_value(
-    #     comments, arguments, hidden_properties_map
-    # )
-    results["comment_num"] = len(comments)
-    results["translations"] = _build_translations(config)
-    # 属性情報のカラムは、元データに対して指定したカラムとclassificationするカテゴリを合わせたもの
-    results["propertyMap"] = _build_property_map(arguments, hidden_properties_map, config)
+        results["arguments"] = _build_arguments(clusters)
+        results["clusters"] = _build_cluster_value(labels, arg_num)
 
-    with open(f"outputs/{config['output_dir']}/hierarchical_overview.txt") as f:
-        overview = f.read()
-    print("overview")
-    print(overview)
-    results["overview"] = overview
+        # NOTE: 属性に応じたコメントフィルタ機能が実装されておらず、全てのコメントが含まれてしまうので、コメントアウト
+        # results["comments"] = _build_comments_value(
+        #     comments, arguments, hidden_properties_map
+        # )
+        
+        results["comment_num"] = len(comments)
+        results["translations"] = _build_translations(config)
+        # 属性情報のカラムは、元データに対して指定したカラムとclassificationするカテゴリを合わせたもの
+        results["propertyMap"] = _build_property_map(arguments, hidden_properties_map, config)
 
-    with open(path, "w") as file:
-        json.dump(results, file, indent=2, ensure_ascii=False)
-    # TODO: サンプリングロジックを実装したいが、現状は全件抽出
-    create_custom_intro(config)
-    if config["is_pubcom"]:
-        add_original_comments(labels, arguments, relation_df, clusters, config)
+        with open(PIPELINE_DIR / f"outputs/{config['output_dir']}/hierarchical_overview.txt") as f:
+            overview = f.read()
+        print("overview")
+        print(overview)
+        results["overview"] = overview
+
+        with open(path, "w") as file:
+            json.dump(results, file, indent=2, ensure_ascii=False)
+        # TODO: サンプリングロジックを実装したいが、現状は全件抽出
+        create_custom_intro(config)
+        if config["is_pubcom"]:
+            add_original_comments(labels, arguments, relation_df, clusters, config)
+        return True
+    except Exception as e:
+        print("error")
+        print(e)
+        return False
 
 
 def create_custom_intro(config):
     dataset = config["output_dir"]
-    args_path = f"outputs/{dataset}/args.csv"
-    comments = pd.read_csv(f"inputs/{config['input']}.csv")
-    result_path = f"outputs/{dataset}/hierarchical_result.json"
+    args_path = PIPELINE_DIR / f"outputs/{dataset}/args.csv"
+    comments = pd.read_csv(PIPELINE_DIR / f"inputs/{config['input']}.csv")
+    result_path = PIPELINE_DIR / f"outputs/{dataset}/hierarchical_result.json"
 
     input_count = len(comments)
     args_count = len(pd.read_csv(args_path))
@@ -120,7 +130,7 @@ def add_original_comments(labels, arguments, relation_df, clusters, config):
     merged = merged.merge(relation_df, on="arg-id", how="left")
 
     # 元コメント取得
-    comments = pd.read_csv(f"inputs/{config['input']}.csv")
+    comments = pd.read_csv(PIPELINE_DIR / f"inputs/{config['input']}.csv")
     comments["comment-id"] = comments["comment-id"].astype(str)
     merged["comment-id"] = merged["comment-id"].astype(str)
 
@@ -145,7 +155,7 @@ def add_original_comments(labels, arguments, relation_df, clusters, config):
     )
 
     # 保存
-    final_df.to_csv(f"outputs/{config['output_dir']}/final_result_with_comments.csv", index=False)
+    final_df.to_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/final_result_with_comments.csv", index=False)
 
 
 def _build_arguments(clusters: pd.DataFrame) -> list[Argument]:
@@ -182,6 +192,8 @@ def _build_cluster_value(melted_labels: pd.DataFrame, total_num: int) -> list[Cl
     ]
 
     for _, melted_label in melted_labels.iterrows():
+        print("melted_label")
+        print(melted_label)
         cluster_value = Cluster(
             level=melted_label["level"],
             id=melted_label["id"],
@@ -217,7 +229,7 @@ def _build_comments_value(
 def _build_translations(config):
     languages = list(config.get("translation", {}).get("languages", []))
     if len(languages) > 0:
-        with open(f"outputs/{config['output_dir']}/translations.json") as f:
+        with open(PIPELINE_DIR / f"outputs/{config['output_dir']}/translations.json") as f:
             translations = f.read()
         return json.loads(translations)
     return {}
