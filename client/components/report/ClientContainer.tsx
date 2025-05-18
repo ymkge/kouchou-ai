@@ -103,8 +103,8 @@ export function ClientContainer({ result }: Props) {
       if (attributeTypes[attribute] === "numeric") {
         // 数値に変換
         const numericValues = values
-                  .map((v) => v.trim() === "" ? NaN : Number(v))
-                  .filter((v) => !Number.isNaN(v));
+          .map((v) => (v.trim() === "" ? Number.NaN : Number(v)))
+          .filter((v) => !Number.isNaN(v));
         // 数値が存在しない場合はスキップ
         if (numericValues.length === 0) return;
 

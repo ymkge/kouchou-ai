@@ -1,6 +1,7 @@
 // filepath: c:\Users\shinta\Documents\GitHub\kouchou-ai\client\components\charts\ScatterChart.tsx
 import type { Argument, Cluster } from "@/type";
 import { Box } from "@chakra-ui/react";
+import type { Annotations, Data, Layout } from "plotly.js";
 import { ChartCore } from "./ChartCore";
 
 type Props = {
@@ -225,7 +226,7 @@ export function ScatterChart({
             hoverinfo: "text",
             hovertemplate: "%{text}<extra></extra>",
             hoverlabel: {
-              align: "left",
+              align: "left" as const,
               bgcolor: "white",
               bordercolor: clusterColorMap[cluster.id],
               font: {
@@ -278,7 +279,7 @@ export function ScatterChart({
           type: "scattergl",
           hoverinfo: "text",
           hoverlabel: {
-            align: "left",
+            align: "left" as const,
             bgcolor: "white",
             bordercolor: clusterColorMap[dataSet.cluster.id],
             font: {
@@ -295,7 +296,7 @@ export function ScatterChart({
   });
 
   // アノテーションの設定
-  const annotations = showClusterLabels
+  const annotations: Partial<Annotations>[] = showClusterLabels
     ? clusterDataSets.map((dataSet) => ({
         x: dataSet.centerX,
         y: dataSet.centerY,
@@ -309,7 +310,7 @@ export function ScatterChart({
         bgcolor: clusterColorMapA[dataSet.cluster.id], // 背景はアルファ付き
         borderpad: 10,
         width: annotationLabelWidth,
-        align: "left",
+        align: "left" as const,
       }))
     : [];
 
@@ -317,24 +318,26 @@ export function ScatterChart({
     <Box width="100%" height="100%" display="flex" flexDirection="column">
       <Box position="relative" flex="1">
         <ChartCore
-          data={plotData as any} // 型エラーを回避するためにanyを使用
-          layout={{
-            margin: { l: 0, r: 0, b: 0, t: 0 },
-            xaxis: {
-              zeroline: false,
-              showticklabels: false,
-              showgrid: false,
-            },
-            yaxis: {
-              zeroline: false,
-              showticklabels: false,
-              showgrid: false,
-            },
-            hovermode: "closest",
-            dragmode: "pan", // ドラッグによる移動（パン）を有効化
-            annotations,
-            showlegend: false,
-          }}
+          data={plotData as unknown as Data[]}
+          layout={
+            {
+              margin: { l: 0, r: 0, b: 0, t: 0 },
+              xaxis: {
+                zeroline: false,
+                showticklabels: false,
+                showgrid: false,
+              },
+              yaxis: {
+                zeroline: false,
+                showticklabels: false,
+                showgrid: false,
+              },
+              hovermode: "closest",
+              dragmode: "pan", // ドラッグによる移動（パン）を有効化
+              annotations,
+              showlegend: false,
+            } as Partial<Layout>
+          }
           useResizeHandler={true}
           style={{ width: "100%", height: "100%" }}
           config={{
