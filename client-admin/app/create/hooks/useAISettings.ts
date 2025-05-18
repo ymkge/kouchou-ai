@@ -200,7 +200,7 @@ export function useAISettings() {
     },
     local: {
       models: localLLMModels,
-      description: "ローカルで実行されているLLMサーバーに接続します。（将来対応予定）",
+      description: "ローカルで実行されているLLMサーバーに接続します。",
       requiresConnection: true,
     },
   };
