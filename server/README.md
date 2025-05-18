@@ -15,7 +15,7 @@ kouchou-aiのAPIサーバーです。
 ```bash
 cp .env.example .env
 ```
-ユーザーが独自に設定すべき環境変数は現状以下の2つ
+ユーザーが設定できるLLMモデルの環境変数設定は以下の通りです。（最低どっちか片方あれば、動作確認できます）
 * OPENAI_API_KEY
   * OpenAIのAPIキー。レポート作成時に利用。
 * OPENROUTER_API_KEY
