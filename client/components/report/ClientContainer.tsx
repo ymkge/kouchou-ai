@@ -16,12 +16,6 @@ type Props = {
   result: Result;
 };
 
-// コメントオブジェクトの型定義を拡張
-type CommentWithAttributes = {
-  comment: string;
-  [key: string]: string | undefined;
-};
-
 export function ClientContainer({ result }: Props) {
   const [filteredResult, setFilteredResult] = useState<Result>(result);
   const [openDensityFilterSetting, setOpenDensityFilterSetting] = useState(false);
@@ -35,7 +29,6 @@ export function ClientContainer({ result }: Props) {
 
   // 標本データ生成（全コメントをRecord<string, string>で配列化）
   const samples = useMemo(() => {
-    // attributes優先、なければcommentオブジェクトから属性を抽出
     return result.arguments.map((arg) => {
       if (arg.attributes) {
         // すべてstring化
@@ -44,17 +37,6 @@ export function ClientContainer({ result }: Props) {
           rec[k] = v == null ? "" : String(v);
         });
         return rec;
-      }
-      if (arg.comment_id !== undefined) {
-        const commentId = arg.comment_id.toString();
-        const comment = result.comments[commentId] as CommentWithAttributes | undefined;
-        if (comment) {
-          const rec: Record<string, string> = {};
-          Object.entries(comment).forEach(([k, v]) => {
-            if (k !== "comment") rec[k] = v == null ? "" : String(v);
-          });
-          return rec;
-        }
       }
       return {};
     });
@@ -73,7 +55,7 @@ export function ClientContainer({ result }: Props) {
 
     // 全ての意見から属性を抽出
     result.arguments.forEach((arg) => {
-      // 1. まず attributes フィールドからデータを抽出
+      // attributes フィールドからデータを抽出
       if (arg.attributes) {
         Object.entries(arg.attributes).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
@@ -83,23 +65,6 @@ export function ClientContainer({ result }: Props) {
             attributes[key].add(String(value));
           }
         });
-      }
-      // 2. 後方互換性のため、commentオブジェクトからも属性を抽出
-      else if (arg.comment_id !== undefined) {
-        const commentId = arg.comment_id.toString();
-        const comment = result.comments[commentId] as CommentWithAttributes | undefined;
-
-        if (comment) {
-          // commentオブジェクトから属性を抽出（commentとid以外のプロパティ）
-          Object.entries(comment).forEach(([key, value]) => {
-            if (key !== "comment" && value !== undefined && value !== null) {
-              if (!attributes[key]) {
-                attributes[key] = new Set<string>();
-              }
-              attributes[key].add(String(value));
-            }
-          });
-        }
       }
     });
 
@@ -176,7 +141,7 @@ export function ClientContainer({ result }: Props) {
     if (hasActiveFilters) {
       // フィルター条件を満たす引数を抽出
       filteredArgs = result.arguments.filter((arg) => {
-        // 1. まず attributes フィールドを確認
+        // attributes フィールドを確認
         if (arg.attributes) {
           // カテゴリーフィルター条件をチェック
           const passesAttributeFilters = Object.entries(attrFilters).every(([attrName, selectedValues]) => {
@@ -215,32 +180,6 @@ export function ClientContainer({ result }: Props) {
           });
 
           return passesAttributeFilters && passesNumericRanges;
-        }
-        // 2. 後方互換性のため、commentオブジェクトからも確認
-        if (arg.comment_id !== undefined) {
-          const commentId = arg.comment_id.toString();
-          const comment = result.comments[commentId] as CommentWithAttributes | undefined;
-
-          if (!comment) return false;
-
-          // すべてのフィルタ条件を満たすか確認
-          return Object.entries(attrFilters).every(([attrName, selectedValues]) => {
-            const commentValue = comment[attrName];
-            const values = selectedValues as string[];
-
-            // 数値範囲フィルターの処理
-            if (values.length === 1 && values[0].startsWith("range:")) {
-              const [_, minStr, maxStr] = values[0].split(":");
-              const min = Number(minStr);
-              const max = Number(maxStr);
-              const numValue = Number(commentValue);
-
-              return !Number.isNaN(numValue) && numValue >= min && numValue <= max;
-            }
-
-            // 通常のチェックボックスフィルターの処理
-            return values.includes(String(commentValue));
-          });
         }
 
         return false;

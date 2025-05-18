@@ -378,16 +378,3 @@ def _build_property_map(
             property_map[prop][str_arg_id] = value
 
     return property_map
-
-
-def json_serialize_numpy(data):
-    if isinstance(data, dict):
-        return {key: json_serialize_numpy(value) for key, value in data.items()}
-    elif isinstance(data, list):
-        return [json_serialize_numpy(element) for element in data]
-    elif isinstance(data, int | float | str | bool) or data is None:
-        return data
-    elif isinstance(data, np.integer | np.floating):
-        return data.item()
-    else:
-        raise TypeError(f"Type {type(data)} not serializable")
