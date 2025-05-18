@@ -279,6 +279,10 @@ function ReportCard({
                   })}
                 </Text>
               )}
+              {/* トークン使用量の表示を追加 */}
+              <Text fontSize="xs" color="gray.500" mb={1}>
+                トークン使用量: {report.tokenUsage !== undefined ? report.tokenUsage.toLocaleString() : "情報なし"}
+              </Text>
               {report.status !== "ready" && (
                 <Box mt={2}>
                   <Steps.Root defaultStep={currentStepIndex} count={steps.length}>

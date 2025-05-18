@@ -43,8 +43,9 @@ def request_to_openai(
     model: str = "gpt-4",
     is_json: bool = False,
     json_schema: dict | type[BaseModel] | None = None,
-) -> str:
+) -> tuple[str, int]:  # 戻り値を文字列とトークン使用量のタプルに変更
     openai.api_type = "openai"
+    token_usage = 0  # トークン使用量を追跡する変数
 
     try:
         if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
@@ -58,7 +59,9 @@ def request_to_openai(
                 response_format=json_schema,
                 timeout=30,
             )
-            return response.choices[0].message.content
+            if hasattr(response, 'usage') and response.usage:
+                token_usage = response.usage.total_tokens or 0
+            return response.choices[0].message.content, token_usage
 
         else:
             response_format = None
@@ -79,8 +82,11 @@ def request_to_openai(
                 payload["response_format"] = response_format
 
             response = openai.chat.completions.create(**payload)
+            
+            if hasattr(response, 'usage') and response.usage:
+                token_usage = response.usage.total_tokens or 0
 
-            return response.choices[0].message.content
+            return response.choices[0].message.content, token_usage
     except openai.RateLimitError as e:
         logging.warning(f"OpenAI API rate limit hit: {e}")
         raise
@@ -102,11 +108,12 @@ def request_to_azure_chatcompletion(
     messages: list[dict],
     is_json: bool = False,
     json_schema: dict | type[BaseModel] | None = None,
-) -> str:
+) -> tuple[str, int]:  # 戻り値を文字列とトークン使用量のタプルに変更
     azure_endpoint = os.getenv("AZURE_CHATCOMPLETION_ENDPOINT")
     deployment = os.getenv("AZURE_CHATCOMPLETION_DEPLOYMENT_NAME")
     api_key = os.getenv("AZURE_CHATCOMPLETION_API_KEY")
     api_version = os.getenv("AZURE_CHATCOMPLETION_VERSION")
+    token_usage = 0  # トークン使用量を追跡する変数
 
     client = AzureOpenAI(
         api_version=api_version,
@@ -127,7 +134,9 @@ def request_to_azure_chatcompletion(
                 response_format=json_schema,
                 timeout=30,
             )
-            return response.choices[0].message.parsed.model_dump()
+            if hasattr(response, 'usage') and response.usage:
+                token_usage = response.usage.total_tokens or 0
+            return response.choices[0].message.parsed.model_dump(), token_usage
         else:
             response_format = None
             if is_json:
@@ -147,8 +156,11 @@ def request_to_azure_chatcompletion(
                 payload["response_format"] = response_format
 
             response = client.chat.completions.create(**payload)
+            
+            if hasattr(response, 'usage') and response.usage:
+                token_usage = response.usage.total_tokens or 0
 
-            return response.choices[0].message.content
+            return response.choices[0].message.content, token_usage
     except openai.RateLimitError as e:
         logging.warning(f"OpenAI API rate limit hit: {e}")
         raise
@@ -166,7 +178,7 @@ def request_to_local_llm(
     is_json: bool = False,
     json_schema: dict | type[BaseModel] | None = None,
     address: str = "localhost:11434",
-) -> str:
+) -> tuple[str, int]:  # 戻り値を文字列とトークン使用量のタプルに変更
     """ローカルLLM（OllamaやLM Studio）にリクエストを送信する関数
 
     OpenAI互換APIを使用して、指定されたアドレスのローカルLLMにリクエストを送信します。
@@ -179,8 +191,9 @@ def request_to_local_llm(
         address: ローカルLLMのアドレス（例: 127.0.0.1:1234）
 
     Returns:
-        LLMからのレスポンス
+        LLMからのレスポンスとトークン使用量のタプル
     """
+    token_usage = 0  # トークン使用量を追跡する変数
     try:
         if ":" in address:
             host, port_str = address.split(":")
@@ -229,8 +242,11 @@ def request_to_local_llm(
             payload["response_format"] = response_format
 
         response = client.chat.completions.create(**payload)
+        
+        if hasattr(response, 'usage') and response.usage:
+            token_usage = response.usage.total_tokens or 0
 
-        return response.choices[0].message.content
+        return response.choices[0].message.content, token_usage
     except Exception as e:
         logging.error(
             f"LocalLLM API error: {e}, model:{model}, address:{address}, is_json:{is_json}, json_schema:{json_schema}, response_format:{response_format}"
@@ -245,7 +261,7 @@ def request_to_chat_openai(
     json_schema: dict | type[BaseModel] | None = None,
     provider: str = "openai",
     local_llm_address: str | None = None,
-) -> str:
+) -> tuple[str, int]:  # 戻り値を文字列とトークン使用量のタプルに変更
     if provider == "azure":
         return request_to_azure_chatcompletion(messages, is_json, json_schema)
     elif provider == "openai":

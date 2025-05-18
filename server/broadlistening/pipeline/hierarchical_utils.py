@@ -189,6 +189,7 @@ def initialization(sysargv):
             "status": "running",
             "start_time": datetime.now().isoformat(),
             "completed_jobs": [],
+            "total_token_usage": 0,  # トークン使用量の累積を初期化
         },
     )
     return config
@@ -230,7 +231,10 @@ def run_step(step, func, config):
     )
     print("Running step:", step)
     # run the step...
+    token_usage_before = config.get("total_token_usage", 0)
     func(config)
+    token_usage_after = config.get("total_token_usage", token_usage_before)
+    token_usage_step = token_usage_after - token_usage_before
     # update status after running...
     update_status(
         config,
@@ -247,6 +251,7 @@ def run_step(step, func, config):
                         - datetime.fromisoformat(config["current_job_started"])
                     ).total_seconds(),
                     "params": config[step],
+                    "token_usage": token_usage_step,  # ステップ毎のトークン使用量を追加
                 }
             ],
         },

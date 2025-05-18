@@ -82,6 +82,7 @@ def add_new_report_to_status(report_input: ReportInput) -> None:
             "is_pubcom": report_input.is_pubcom,
             "visibility": ReportVisibility.UNLISTED.value,
             "created_at": datetime.now(UTC).isoformat(),  # タイムゾーン付きISO形式で追加
+            "token_usage": 0,  # トークン使用量を初期化
         }
         save_status()
 

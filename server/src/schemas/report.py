@@ -24,6 +24,7 @@ class Report(SchemaBaseModel):
     visibility: ReportVisibility
     is_pubcom: bool = False
     created_at: str | None = None  # 作成日時
+    token_usage: int | None = None  # トークン使用量
 
     @property
     def is_publicly_visible(self) -> bool:
