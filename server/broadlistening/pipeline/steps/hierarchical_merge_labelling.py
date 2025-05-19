@@ -270,7 +270,7 @@ def process_merge_labelling(
         },
     ]
     try:
-        response_text, token_usage = request_to_chat_openai(
+        response_text, token_input, token_output, token_total = request_to_chat_openai(
             messages=messages,
             model=config["hierarchical_merge_labelling"]["model"],
             json_schema=LabellingFromat,
@@ -278,7 +278,10 @@ def process_merge_labelling(
             local_llm_address=config.get("local_llm_address"),
         )
         
-        config["total_token_usage"] = config.get("total_token_usage", 0) + token_usage
+        config["total_token_usage"] = config.get("total_token_usage", 0) + token_total
+        config["token_usage_input"] = config.get("token_usage_input", 0) + token_input
+        config["token_usage_output"] = config.get("token_usage_output", 0) + token_output
+        print(f"Merge labelling: input={token_input}, output={token_output}, total={token_total} tokens")
         
         response_json = json.loads(response_text) if isinstance(response_text, str) else response_text
         return {

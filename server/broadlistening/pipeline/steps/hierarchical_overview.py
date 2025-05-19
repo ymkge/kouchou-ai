@@ -36,7 +36,7 @@ def hierarchical_overview(config):
         input_text += descriptions[i] + "\n\n"
 
     messages = [{"role": "system", "content": prompt}, {"role": "user", "content": input_text}]
-    response_text, token_usage = request_to_chat_openai(
+    response_text, token_input, token_output, token_total = request_to_chat_openai(
         messages=messages,
         model=model,
         provider=config["provider"],
@@ -45,7 +45,10 @@ def hierarchical_overview(config):
     )
     
     # トークン使用量を累積
-    config["total_token_usage"] = config.get("total_token_usage", 0) + token_usage
+    config["total_token_usage"] = config.get("total_token_usage", 0) + token_total
+    config["token_usage_input"] = config.get("token_usage_input", 0) + token_input
+    config["token_usage_output"] = config.get("token_usage_output", 0) + token_output
+    print(f"Hierarchical overview: input={token_input}, output={token_output}, total={token_total} tokens")
 
     try:
         # structured outputとしてパースできるなら処理する

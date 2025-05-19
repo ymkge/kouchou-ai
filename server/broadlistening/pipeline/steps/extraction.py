@@ -106,6 +106,8 @@ def extract_batch(batch, prompt, model, workers, provider="openai", local_llm_ad
 
         done, not_done = concurrent.futures.wait([f for _, f in futures_with_index], timeout=30)
         results = [[] for _ in range(len(batch))]
+        total_token_input = 0
+        total_token_output = 0
         total_token_usage = 0
 
         for _, future in futures_with_index:
@@ -116,10 +118,12 @@ def extract_batch(batch, prompt, model, workers, provider="openai", local_llm_ad
             if future in done:
                 try:
                     result = future.result()
-                    if isinstance(result, tuple) and len(result) == 2:
-                        items, token_usage = result
+                    if isinstance(result, tuple) and len(result) == 4:
+                        items, token_input, token_output, token_total = result
                         results[i] = items
-                        total_token_usage += token_usage
+                        total_token_input += token_input
+                        total_token_output += token_output
+                        total_token_usage += token_total
                     else:
                         results[i] = result
                 except Exception as e:
@@ -128,6 +132,9 @@ def extract_batch(batch, prompt, model, workers, provider="openai", local_llm_ad
         
         if config is not None:
             config["total_token_usage"] = config.get("total_token_usage", 0) + total_token_usage
+            config["token_usage_input"] = config.get("token_usage_input", 0) + total_token_input
+            config["token_usage_output"] = config.get("token_usage_output", 0) + total_token_output
+            print(f"Extraction batch: input={total_token_input}, output={total_token_output}, total={total_token_usage} tokens")
         
         return results
 
@@ -138,7 +145,7 @@ def extract_arguments(input, prompt, model, provider="openai", local_llm_address
         {"role": "user", "content": input},
     ]
     try:
-        response, token_usage = request_to_chat_openai(
+        response, token_input, token_output, token_total = request_to_chat_openai(
             messages=messages,
             model=model,
             is_json=False,
@@ -148,7 +155,7 @@ def extract_arguments(input, prompt, model, provider="openai", local_llm_address
         )
         items = parse_extraction_response(response)
         items = list(filter(None, items))  # omit empty strings
-        return items, token_usage
+        return items, token_input, token_output, token_total
     except json.decoder.JSONDecodeError as e:
         print("JSON error:", e)
         print("Input was:", input)

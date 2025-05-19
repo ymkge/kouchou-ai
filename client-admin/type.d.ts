@@ -22,7 +22,9 @@ export type Report = {
   isPubcom: boolean;
   visibility: ReportVisibility;
   createdAt?: string; // 作成日時（ISO形式の文字列）
-  tokenUsage?: number; // トークン使用量
+  tokenUsage?: number; // トークン使用量（合計）
+  tokenUsageInput?: number; // 入力トークン使用量
+  tokenUsageOutput?: number; // 出力トークン使用量
 };
 
 export type Result = {
