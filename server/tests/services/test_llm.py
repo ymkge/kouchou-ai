@@ -286,6 +286,10 @@ class TestLLMService:
         # AzureOpenAIクライアントをモック化
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = mock_openai_response
+        
+        mock_openai_response.usage.prompt_tokens = 10
+        mock_openai_response.usage.completion_tokens = 5
+        mock_openai_response.usage.total_tokens = 15
 
         # 環境変数をモック化
         env_vars = {
@@ -297,9 +301,12 @@ class TestLLMService:
 
         with patch.dict(os.environ, env_vars):
             with patch("broadlistening.pipeline.services.llm.AzureOpenAI", return_value=mock_client):
-                response = request_to_azure_chatcompletion(messages, is_json=True)
+                response, token_input, token_output, token_total = request_to_azure_chatcompletion(messages, is_json=True)
 
         assert response == "This is a test response"
+        assert token_input == 10
+        assert token_output == 5
+        assert token_total == 15
         # JSON形式のレスポンスを要求していることを確認
         mock_client.chat.completions.create.assert_called_once()
         args, kwargs = mock_client.chat.completions.create.call_args
@@ -315,6 +322,10 @@ class TestLLMService:
         # AzureOpenAIクライアントをモック化
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = mock_openai_response
+        
+        mock_openai_response.usage.prompt_tokens = 10
+        mock_openai_response.usage.completion_tokens = 5
+        mock_openai_response.usage.total_tokens = 15
 
         # 環境変数をモック化
         env_vars = {
@@ -341,9 +352,12 @@ class TestLLMService:
 
         with patch.dict(os.environ, env_vars):
             with patch("broadlistening.pipeline.services.llm.AzureOpenAI", return_value=mock_client):
-                response = request_to_azure_chatcompletion(messages, json_schema=json_schema)
+                response, token_input, token_output, token_total = request_to_azure_chatcompletion(messages, json_schema=json_schema)
 
         assert response == "This is a test response"
+        assert token_input == 10
+        assert token_output == 5
+        assert token_total == 15
         # JSON Schemaを指定していることを確認
         mock_client.chat.completions.create.assert_called_once()
         args, kwargs = mock_client.chat.completions.create.call_args
@@ -372,6 +386,10 @@ class TestLLMService:
         mock_choice.message = mock_message
         mock_parse_response.choices = [mock_choice]
         mock_client.beta.chat.completions.parse.return_value = mock_parse_response
+        
+        mock_parse_response.usage.prompt_tokens = 10
+        mock_parse_response.usage.completion_tokens = 5
+        mock_parse_response.usage.total_tokens = 15
 
         # 環境変数をモック化
         env_vars = {
@@ -383,9 +401,12 @@ class TestLLMService:
 
         with patch.dict(os.environ, env_vars):
             with patch("broadlistening.pipeline.services.llm.AzureOpenAI", return_value=mock_client):
-                response = request_to_azure_chatcompletion(messages, json_schema=TestModel)
+                response, token_input, token_output, token_total = request_to_azure_chatcompletion(messages, json_schema=TestModel)
 
         assert response == {"test": "This is a test response"}
+        assert token_input == 10
+        assert token_output == 5
+        assert token_total == 15
         # Pydantic BaseModelを指定していることを確認
         mock_client.beta.chat.completions.parse.assert_called_once()
         args, kwargs = mock_client.beta.chat.completions.parse.call_args
@@ -455,8 +476,11 @@ class TestLLMService:
         with patch.dict(os.environ, env_vars):
             with patch("broadlistening.pipeline.services.llm.AzureOpenAI", return_value=mock_client):
                 # リトライ後に正常なレスポンスが返されることを確認
-                response = request_to_azure_chatcompletion(messages)
+                response, token_input, token_output, token_total = request_to_azure_chatcompletion(messages)
                 assert response == "This is a test response after retry"
+                assert token_input == 10
+                assert token_output == 5
+                assert token_total == 15
 
     def test_request_to_azure_chatcompletion_rate_limit_error_max_retries(self):
         """request_to_azure_chatcompletion: レート制限エラーが4回発生した場合は例外を再発生させる"""
