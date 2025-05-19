@@ -270,14 +270,17 @@ def process_merge_labelling(
         },
     ]
     try:
-        response = request_to_chat_openai(
+        response_text, token_usage = request_to_chat_openai(
             messages=messages,
             model=config["hierarchical_merge_labelling"]["model"],
             json_schema=LabellingFromat,
             provider=config["provider"],
             local_llm_address=config.get("local_llm_address"),
         )
-        response_json = json.loads(response) if isinstance(response, str) else response
+        
+        config["total_token_usage"] = config.get("total_token_usage", 0) + token_usage
+        
+        response_json = json.loads(response_text) if isinstance(response_text, str) else response_text
         return {
             current_columns.id: target_cluster_id,
             current_columns.label: response_json.get("label", "エラーでラベル名が取得できませんでした"),

@@ -36,20 +36,23 @@ def hierarchical_overview(config):
         input_text += descriptions[i] + "\n\n"
 
     messages = [{"role": "system", "content": prompt}, {"role": "user", "content": input_text}]
-    response = request_to_chat_openai(
+    response_text, token_usage = request_to_chat_openai(
         messages=messages,
         model=model,
         provider=config["provider"],
         local_llm_address=config.get("local_llm_address"),
         json_schema=OverviewResponse,
     )
+    
+    # トークン使用量を累積
+    config["total_token_usage"] = config.get("total_token_usage", 0) + token_usage
 
     try:
         # structured outputとしてパースできるなら処理する
-        if isinstance(response, dict):
-            parsed_response = response
+        if isinstance(response_text, dict):
+            parsed_response = response_text
         else:
-            parsed_response = json.loads(response)
+            parsed_response = json.loads(response_text)
 
         with open(path, "w") as file:
             file.write(parsed_response["summary"])
@@ -59,7 +62,7 @@ def hierarchical_overview(config):
         thinking_removed = re.sub(
             r"<think\b[^>]*>.*?</think>",
             "",
-            response,
+            response_text,
             flags=re.DOTALL,
         )
 

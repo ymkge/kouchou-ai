@@ -459,11 +459,12 @@ class TestLLMService:
 
         # request_to_openaiをモック化
         with patch(
-            "broadlistening.pipeline.services.llm.request_to_openai", return_value="OpenAI response"
+            "broadlistening.pipeline.services.llm.request_to_openai", return_value=("OpenAI response", 100)
         ) as mock_request_to_openai:
-            response = request_to_chat_openai(messages, model="gpt-4o", provider="openai")
+            response, token_usage = request_to_chat_openai(messages, model="gpt-4o", provider="openai")
 
         assert response == "OpenAI response"
+        assert token_usage == 100
         mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, None)
 
     def test_request_to_chat_openai_use_azure(self, mock_openai_response):
@@ -475,11 +476,12 @@ class TestLLMService:
 
         # request_to_azure_chatcompletionをモック化
         with patch(
-            "broadlistening.pipeline.services.llm.request_to_azure_chatcompletion", return_value="Azure response"
+            "broadlistening.pipeline.services.llm.request_to_azure_chatcompletion", return_value=("Azure response", 150)
         ) as mock_request_to_azure:
-            response = request_to_chat_openai(messages, model="gpt-4o", is_json=True, provider="azure")
+            response, token_usage = request_to_chat_openai(messages, model="gpt-4o", is_json=True, provider="azure")
 
         assert response == "Azure response"
+        assert token_usage == 150
         mock_request_to_azure.assert_called_once_with(messages, True, None)
 
     def test_request_to_chat_openai_with_json_schema(self, mock_openai_response):
@@ -506,11 +508,12 @@ class TestLLMService:
 
         # request_to_openaiをモック化
         with patch(
-            "broadlistening.pipeline.services.llm.request_to_openai", return_value="OpenAI response"
+            "broadlistening.pipeline.services.llm.request_to_openai", return_value=("OpenAI response", 200)
         ) as mock_request_to_openai:
-            response = request_to_chat_openai(messages, model="gpt-4o", json_schema=json_schema, provider="openai")
+            response, token_usage = request_to_chat_openai(messages, model="gpt-4o", json_schema=json_schema, provider="openai")
 
         assert response == "OpenAI response"
+        assert token_usage == 200
         mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, json_schema)
 
     def test_request_to_chat_openai_with_pydantic_model(self, mock_openai_response):
@@ -526,11 +529,12 @@ class TestLLMService:
 
         # request_to_openaiをモック化
         with patch(
-            "broadlistening.pipeline.services.llm.request_to_openai", return_value="OpenAI response"
+            "broadlistening.pipeline.services.llm.request_to_openai", return_value=("OpenAI response", 250)
         ) as mock_request_to_openai:
-            response = request_to_chat_openai(messages, model="gpt-4o", json_schema=TestModel, provider="openai")
+            response, token_usage = request_to_chat_openai(messages, model="gpt-4o", json_schema=TestModel, provider="openai")
 
         assert response == "OpenAI response"
+        assert token_usage == 250
         mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, TestModel)
 
     def test_validate_model_valid(self):
