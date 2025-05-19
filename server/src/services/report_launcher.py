@@ -110,9 +110,11 @@ def _monitor_process(process: subprocess.Popen, slug: str) -> None:
                 with open(status_file) as f:
                     status_data = json.load(f)
                     total_token_usage = status_data.get("total_token_usage", 0)
+                    logger.info(f"Found token usage in status file for {slug}: {total_token_usage}")
                     with _lock:
                         if slug in _report_status:
                             _report_status[slug]["token_usage"] = total_token_usage
+                            logger.info(f"Updated token usage for {slug} in report status: {total_token_usage}")
                             save_status()
         except Exception as e:
             logger.error(f"Error updating token usage for {slug}: {e}")

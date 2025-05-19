@@ -269,6 +269,7 @@ def termination(config, error=None):
         # now we can drop previous key (we don't want to store infinite history)
         del config["previous"]
     if error is None:
+        print(f"Total token usage: {config.get('total_token_usage', 0)}")
         update_status(
             config,
             {
