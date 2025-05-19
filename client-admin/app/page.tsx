@@ -281,10 +281,9 @@ function ReportCard({
               )}
               {/* トークン使用量の表示を追加 */}
               <Text fontSize="xs" color="gray.500" mb={1}>
-                トークン使用量: {report.tokenUsage != null ? report.tokenUsage.toLocaleString() : "情報なし"}
-                {report.tokenUsageInput != null && report.tokenUsageOutput != null && (
-                  <>（入力: {report.tokenUsageInput.toLocaleString()}, 出力: {report.tokenUsageOutput.toLocaleString()}）</>
-                )}
+                トークン使用量: {report.tokenUsageInput != null && report.tokenUsageOutput != null ? 
+                  `入力: ${report.tokenUsageInput.toLocaleString()}, 出力: ${report.tokenUsageOutput.toLocaleString()}` : 
+                  (report.tokenUsage != null ? `${report.tokenUsage.toLocaleString()} (詳細なし)` : "情報なし")}
               </Text>
               {report.status !== "ready" && (
                 <Box mt={2}>
