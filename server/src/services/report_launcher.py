@@ -9,11 +9,9 @@ import pandas as pd
 from src.config import settings
 from src.schemas.admin_report import ReportInput
 from src.services.report_status import (
-    _lock,
-    _report_status,
     add_new_report_to_status,
-    save_status,
     set_status,
+    update_token_usage,
 )
 from src.services.report_sync import ReportSyncService
 from src.utils.logger import setup_logger
@@ -111,11 +109,7 @@ def _monitor_process(process: subprocess.Popen, slug: str) -> None:
                     status_data = json.load(f)
                     total_token_usage = status_data.get("total_token_usage", 0)
                     logger.info(f"Found token usage in status file for {slug}: {total_token_usage}")
-                    with _lock:
-                        if slug in _report_status:
-                            _report_status[slug]["token_usage"] = total_token_usage
-                            logger.info(f"Updated token usage for {slug} in report status: {total_token_usage}")
-                            save_status()
+                    update_token_usage(slug, total_token_usage)
         except Exception as e:
             logger.error(f"Error updating token usage for {slug}: {e}")
         

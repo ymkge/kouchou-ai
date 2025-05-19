@@ -138,6 +138,26 @@ def update_report_visibility_state(slug: str, new_visibility: ReportVisibility) 
     return _report_status[slug]["visibility"]
 
 
+def update_token_usage(slug: str, token_usage: int) -> None:
+    """レポートのトークン使用量を更新する
+
+    Args:
+        slug: レポートのスラッグ
+        token_usage: トークン使用量
+
+    Raises:
+        ValueError: 指定されたスラッグのレポートが存在しない場合
+    """
+    with _lock:
+        if slug not in _report_status:
+            logger.warning(f"slug {slug} not found in report status when updating token usage")
+            return
+        
+        _report_status[slug]["token_usage"] = token_usage
+        logger.info(f"Updated token usage for {slug} in report status: {token_usage}")
+        save_status()
+
+
 def update_report_metadata(slug: str, title: str = None, description: str = None) -> dict:
     """レポートのメタデータ（タイトル、説明）を更新する
 
