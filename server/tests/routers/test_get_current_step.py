@@ -1,10 +1,10 @@
 import json
-import os
 from unittest.mock import mock_open, patch
 
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
+
 from src.routers.admin_report import router, verify_admin_api_key
 
 
@@ -12,6 +12,7 @@ from src.routers.admin_report import router, verify_admin_api_key
 def test_slug():
     """テスト用のスラグを提供するフィクスチャ"""
     return "test-slug"
+
 
 @pytest.fixture
 async def app():
@@ -25,6 +26,7 @@ async def app():
 
     app.dependency_overrides[verify_admin_api_key] = override_verify_admin_api_key
     return app
+
 
 @pytest.fixture
 async def async_client(app):
