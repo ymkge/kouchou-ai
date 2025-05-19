@@ -12,9 +12,9 @@ async def test_get_current_step_with_token_usage(async_client, test_slug):
         "current_job": "extraction",
         "total_token_usage": 1500,
         "token_usage_input": 1000,
-        "token_usage_output": 500
+        "token_usage_output": 500,
     }
-    
+
     with patch("builtins.open", mock_open(read_data=json.dumps(status_data))):
         with patch("os.path.exists", return_value=True):
             response = await async_client.get(f"/admin/reports/{test_slug}/status/step-json")
@@ -29,11 +29,8 @@ async def test_get_current_step_with_token_usage(async_client, test_slug):
 @pytest.mark.asyncio
 async def test_get_current_step_with_no_token_usage(async_client, test_slug):
     """get_current_stepエンドポイントがトークン使用量情報がない場合でも適切に動作することをテスト"""
-    status_data = {
-        "status": "in_progress",
-        "current_job": "extraction"
-    }
-    
+    status_data = {"status": "in_progress", "current_job": "extraction"}
+
     with patch("builtins.open", mock_open(read_data=json.dumps(status_data))):
         with patch("os.path.exists", return_value=True):
             response = await async_client.get(f"/admin/reports/{test_slug}/status/step-json")
@@ -53,9 +50,9 @@ async def test_get_current_step_with_error(async_client, test_slug):
         "error": "Test error",
         "total_token_usage": 100,
         "token_usage_input": 70,
-        "token_usage_output": 30
+        "token_usage_output": 30,
     }
-    
+
     with patch("builtins.open", mock_open(read_data=json.dumps(status_data))):
         with patch("os.path.exists", return_value=True):
             response = await async_client.get(f"/admin/reports/{test_slug}/status/step-json")

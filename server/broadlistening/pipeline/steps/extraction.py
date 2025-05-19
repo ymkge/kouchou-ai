@@ -55,7 +55,9 @@ def extraction(config):
     for i in tqdm(range(0, len(comment_ids), workers)):
         batch = comment_ids[i : i + workers]
         batch_inputs = [comments.loc[id]["comment-body"] for id in batch]
-        batch_results = extract_batch(batch_inputs, prompt, model, workers, provider, config.get("local_llm_address"), config)
+        batch_results = extract_batch(
+            batch_inputs, prompt, model, workers, provider, config.get("local_llm_address"), config
+        )
 
         for comment_id, extracted_args in zip(batch, batch_results, strict=False):
             for j, arg in enumerate(extracted_args):
@@ -129,13 +131,15 @@ def extract_batch(batch, prompt, model, workers, provider="openai", local_llm_ad
                 except Exception as e:
                     logging.error(f"Task {future} failed with error: {e}")
                     results[i] = []
-        
+
         if config is not None:
             config["total_token_usage"] = config.get("total_token_usage", 0) + total_token_usage
             config["token_usage_input"] = config.get("token_usage_input", 0) + total_token_input
             config["token_usage_output"] = config.get("token_usage_output", 0) + total_token_output
-            print(f"Extraction batch: input={total_token_input}, output={total_token_output}, total={total_token_usage} tokens")
-        
+            print(
+                f"Extraction batch: input={total_token_input}, output={total_token_output}, total={total_token_usage} tokens"
+            )
+
         return results
 
 

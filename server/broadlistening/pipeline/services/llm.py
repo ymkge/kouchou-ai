@@ -62,7 +62,7 @@ def request_to_openai(
                 response_format=json_schema,
                 timeout=30,
             )
-            if hasattr(response, 'usage') and response.usage:
+            if hasattr(response, "usage") and response.usage:
                 token_usage_input = response.usage.prompt_tokens or 0
                 token_usage_output = response.usage.completion_tokens or 0
                 token_usage_total = response.usage.total_tokens or 0
@@ -87,8 +87,8 @@ def request_to_openai(
                 payload["response_format"] = response_format
 
             response = openai.chat.completions.create(**payload)
-            
-            if hasattr(response, 'usage') and response.usage:
+
+            if hasattr(response, "usage") and response.usage:
                 token_usage_input = response.usage.prompt_tokens or 0
                 token_usage_output = response.usage.completion_tokens or 0
                 token_usage_total = response.usage.total_tokens or 0
@@ -143,11 +143,16 @@ def request_to_azure_chatcompletion(
                 response_format=json_schema,
                 timeout=30,
             )
-            if hasattr(response, 'usage') and response.usage:
+            if hasattr(response, "usage") and response.usage:
                 token_usage_input = response.usage.prompt_tokens or 0
                 token_usage_output = response.usage.completion_tokens or 0
                 token_usage_total = response.usage.total_tokens or 0
-            return response.choices[0].message.parsed.model_dump(), token_usage_input, token_usage_output, token_usage_total
+            return (
+                response.choices[0].message.parsed.model_dump(),
+                token_usage_input,
+                token_usage_output,
+                token_usage_total,
+            )
         else:
             response_format = None
             if is_json:
@@ -168,7 +173,7 @@ def request_to_azure_chatcompletion(
 
             response = client.chat.completions.create(**payload)
 
-            if hasattr(response, 'usage') and response.usage:
+            if hasattr(response, "usage") and response.usage:
                 token_usage_input = response.usage.prompt_tokens or 0
                 token_usage_output = response.usage.completion_tokens or 0
                 token_usage_total = response.usage.total_tokens or 0
@@ -257,8 +262,8 @@ def request_to_local_llm(
             payload["response_format"] = response_format
 
         response = client.chat.completions.create(**payload)
-        
-        if hasattr(response, 'usage') and response.usage:
+
+        if hasattr(response, "usage") and response.usage:
             token_usage_input = response.usage.prompt_tokens or 0
             token_usage_output = response.usage.completion_tokens or 0
             token_usage_total = response.usage.total_tokens or 0
@@ -559,7 +564,7 @@ def request_to_openrouter_chatcompletion(
                 response_format=json_schema,
                 timeout=30,
             )
-            if hasattr(response, 'usage') and response.usage:
+            if hasattr(response, "usage") and response.usage:
                 token_usage_input = response.usage.prompt_tokens or 0
                 token_usage_output = response.usage.completion_tokens or 0
                 token_usage_total = response.usage.total_tokens or 0
@@ -580,7 +585,7 @@ def request_to_openrouter_chatcompletion(
                 payload["response_format"] = json_schema
 
             response = client.chat.completions.create(**payload)
-            if hasattr(response, 'usage') and response.usage:
+            if hasattr(response, "usage") and response.usage:
                 token_usage_input = response.usage.prompt_tokens or 0
                 token_usage_output = response.usage.completion_tokens or 0
                 token_usage_total = response.usage.total_tokens or 0

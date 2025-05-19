@@ -43,7 +43,7 @@ def hierarchical_overview(config):
         local_llm_address=config.get("local_llm_address"),
         json_schema=OverviewResponse,
     )
-    
+
     # トークン使用量を累積
     config["total_token_usage"] = config.get("total_token_usage", 0) + token_total
     config["token_usage_input"] = config.get("token_usage_input", 0) + token_input

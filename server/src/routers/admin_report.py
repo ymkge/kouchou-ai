@@ -78,7 +78,7 @@ async def get_current_step(slug: str) -> dict:
             "current_step": "loading",
             "token_usage": status.get("total_token_usage", 0),
             "token_usage_input": status.get("token_usage_input", 0),
-            "token_usage_output": status.get("token_usage_output", 0)
+            "token_usage_output": status.get("token_usage_output", 0),
         }
 
         # error キーが存在する場合はエラーとみなす

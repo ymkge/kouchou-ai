@@ -43,7 +43,7 @@ def hierarchical_initial_labelling(config: dict) -> None:
 
     # トークン使用量を追跡するための変数を初期化
     config["total_token_usage"] = config.get("total_token_usage", 0)
-    
+
     initial_label_df = initial_labelling(
         initial_labelling_prompt,
         clusters_argument_df,
@@ -164,13 +164,13 @@ def process_initial_labelling(
             json_schema=LabellingFromat,
             local_llm_address=local_llm_address,
         )
-        
+
         # トークン使用量を累積（configが渡されている場合）
         if config is not None:
             config["total_token_usage"] = config.get("total_token_usage", 0) + token_total
             config["token_usage_input"] = config.get("token_usage_input", 0) + token_input
             config["token_usage_output"] = config.get("token_usage_output", 0) + token_output
-            
+
         response_json = json.loads(response_text) if isinstance(response_text, str) else response_text
         return LabellingResult(
             cluster_id=cluster_id,

@@ -3,12 +3,12 @@ from unittest.mock import MagicMock, patch
 
 import openai
 import pytest
+from broadlistening.pipeline.services.llm import request_to_azure_embed  # noqa: F401
+from broadlistening.pipeline.services.llm import request_to_embed  # noqa: F401
 from broadlistening.pipeline.services.llm import (
     _validate_model,
     request_to_azure_chatcompletion,
-    request_to_azure_embed,  # noqa: F401
     request_to_chat_ai,
-    request_to_embed,  # noqa: F401
     request_to_openai,
 )
 from openai import AzureOpenAI  # noqa: F401
@@ -55,7 +55,9 @@ class TestLLMService:
             {"role": "user", "content": "Hello, world!"},
         ]
 
-        mock_openai_response.configure_mock(**{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15})
+        mock_openai_response.configure_mock(
+            **{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15}
+        )
 
         # openai.chat.completions.createをモック化
         with patch("openai.chat.completions.create", return_value=mock_openai_response):
@@ -73,19 +75,19 @@ class TestLLMService:
             {"role": "user", "content": "Hello, world!"},
         ]
 
-        mock_openai_response.configure_mock(**{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15})
+        mock_openai_response.configure_mock(
+            **{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15}
+        )
 
         # openai.chat.completions.createをモック化
         with patch("openai.chat.completions.create", return_value=mock_openai_response):
-            response, token_input, token_output, token_total = request_to_openai(
-                messages, model="gpt-4", is_json=True
-            )
+            response, token_input, token_output, token_total = request_to_openai(messages, model="gpt-4", is_json=True)
 
         assert response == "This is a test response"
         assert token_input == 10
         assert token_output == 5
         assert token_total == 15
-        
+
         # JSON形式のレスポンスを要求していることを確認
         with patch("openai.chat.completions.create", return_value=mock_openai_response) as mock_create:
             request_to_openai(messages, model="gpt-4", is_json=True)
@@ -114,7 +116,9 @@ class TestLLMService:
             },
         }
 
-        mock_openai_response.configure_mock(**{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15})
+        mock_openai_response.configure_mock(
+            **{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15}
+        )
 
         # openai.chat.completions.createをモック化
         with patch("openai.chat.completions.create", return_value=mock_openai_response) as mock_create:
@@ -126,7 +130,7 @@ class TestLLMService:
         assert token_input == 10
         assert token_output == 5
         assert token_total == 15
-        
+
         # JSON Schemaを指定していることを確認
         args, kwargs = mock_create.call_args
         assert kwargs["response_format"] == json_schema
@@ -142,7 +146,9 @@ class TestLLMService:
         class TestModel(BaseModel):
             test: str = Field(..., description="テスト用フィールド")
 
-        mock_openai_parse_response.configure_mock(**{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15})
+        mock_openai_parse_response.configure_mock(
+            **{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15}
+        )
 
         # openai.beta.chat.completions.parseをモック化
         with patch("openai.beta.chat.completions.parse", return_value=mock_openai_parse_response) as mock_parse:
@@ -154,7 +160,7 @@ class TestLLMService:
         assert token_input == 10
         assert token_output == 5
         assert token_total == 15
-        
+
         # Pydantic BaseModelを指定していることを確認
         args, kwargs = mock_parse.call_args
         assert kwargs["response_format"] == TestModel
@@ -255,8 +261,10 @@ class TestLLMService:
         # AzureOpenAIクライアントをモック化
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = mock_openai_response
-        
-        mock_openai_response.configure_mock(**{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15})
+
+        mock_openai_response.configure_mock(
+            **{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15}
+        )
 
         # 環境変数をモック化
         env_vars = {
@@ -286,7 +294,7 @@ class TestLLMService:
         # AzureOpenAIクライアントをモック化
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = mock_openai_response
-        
+
         mock_openai_response.usage.prompt_tokens = 10
         mock_openai_response.usage.completion_tokens = 5
         mock_openai_response.usage.total_tokens = 15
@@ -301,7 +309,9 @@ class TestLLMService:
 
         with patch.dict(os.environ, env_vars):
             with patch("broadlistening.pipeline.services.llm.AzureOpenAI", return_value=mock_client):
-                response, token_input, token_output, token_total = request_to_azure_chatcompletion(messages, is_json=True)
+                response, token_input, token_output, token_total = request_to_azure_chatcompletion(
+                    messages, is_json=True
+                )
 
         assert response == "This is a test response"
         assert token_input == 10
@@ -322,7 +332,7 @@ class TestLLMService:
         # AzureOpenAIクライアントをモック化
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = mock_openai_response
-        
+
         mock_openai_response.usage.prompt_tokens = 10
         mock_openai_response.usage.completion_tokens = 5
         mock_openai_response.usage.total_tokens = 15
@@ -352,7 +362,9 @@ class TestLLMService:
 
         with patch.dict(os.environ, env_vars):
             with patch("broadlistening.pipeline.services.llm.AzureOpenAI", return_value=mock_client):
-                response, token_input, token_output, token_total = request_to_azure_chatcompletion(messages, json_schema=json_schema)
+                response, token_input, token_output, token_total = request_to_azure_chatcompletion(
+                    messages, json_schema=json_schema
+                )
 
         assert response == "This is a test response"
         assert token_input == 10
@@ -386,7 +398,7 @@ class TestLLMService:
         mock_choice.message = mock_message
         mock_parse_response.choices = [mock_choice]
         mock_client.beta.chat.completions.parse.return_value = mock_parse_response
-        
+
         mock_parse_response.usage.prompt_tokens = 10
         mock_parse_response.usage.completion_tokens = 5
         mock_parse_response.usage.total_tokens = 15
@@ -401,7 +413,9 @@ class TestLLMService:
 
         with patch.dict(os.environ, env_vars):
             with patch("broadlistening.pipeline.services.llm.AzureOpenAI", return_value=mock_client):
-                response, token_input, token_output, token_total = request_to_azure_chatcompletion(messages, json_schema=TestModel)
+                response, token_input, token_output, token_total = request_to_azure_chatcompletion(
+                    messages, json_schema=TestModel
+                )
 
         assert response == {"test": "This is a test response"}
         assert token_input == 10
@@ -525,7 +539,9 @@ class TestLLMService:
         with patch(
             "broadlistening.pipeline.services.llm.request_to_openai", return_value=("OpenAI response", 50, 50, 100)
         ) as mock_request_to_openai:
-            response, token_input, token_output, token_total = request_to_chat_ai(messages, model="gpt-4o", provider="openai")
+            response, token_input, token_output, token_total = request_to_chat_ai(
+                messages, model="gpt-4o", provider="openai"
+            )
 
         assert response == "OpenAI response"
         assert token_input == 50
@@ -542,9 +558,12 @@ class TestLLMService:
 
         # request_to_azure_chatcompletionをモック化
         with patch(
-            "broadlistening.pipeline.services.llm.request_to_azure_chatcompletion", return_value=("Azure response", 75, 75, 150)
+            "broadlistening.pipeline.services.llm.request_to_azure_chatcompletion",
+            return_value=("Azure response", 75, 75, 150),
         ) as mock_request_to_azure:
-            response, token_input, token_output, token_total = request_to_chat_ai(messages, model="gpt-4o", is_json=True, provider="azure")
+            response, token_input, token_output, token_total = request_to_chat_ai(
+                messages, model="gpt-4o", is_json=True, provider="azure"
+            )
 
         assert response == "Azure response"
         assert token_input == 75
@@ -578,7 +597,9 @@ class TestLLMService:
         with patch(
             "broadlistening.pipeline.services.llm.request_to_openai", return_value=("OpenAI response", 100, 100, 200)
         ) as mock_request_to_openai:
-            response, token_input, token_output, token_total = request_to_chat_ai(messages, model="gpt-4o", json_schema=json_schema, provider="openai")
+            response, token_input, token_output, token_total = request_to_chat_ai(
+                messages, model="gpt-4o", json_schema=json_schema, provider="openai"
+            )
 
         assert response == "OpenAI response"
         assert token_input == 100
@@ -601,7 +622,9 @@ class TestLLMService:
         with patch(
             "broadlistening.pipeline.services.llm.request_to_openai", return_value=("OpenAI response", 125, 125, 250)
         ) as mock_request_to_openai:
-            response, token_input, token_output, token_total = request_to_chat_ai(messages, model="gpt-4o", json_schema=TestModel, provider="openai")
+            response, token_input, token_output, token_total = request_to_chat_ai(
+                messages, model="gpt-4o", json_schema=TestModel, provider="openai"
+            )
 
         assert response == "OpenAI response"
         assert token_input == 125
