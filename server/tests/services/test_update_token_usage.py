@@ -1,12 +1,7 @@
-import json
-from unittest.mock import patch, mock_open
-
-import pytest
+from unittest.mock import patch
 
 from src.schemas.report import ReportStatus, ReportVisibility
-from src.services.report_status import (
-    _report_status, _lock, update_token_usage, save_status
-)
+from src.services.report_status import _report_status, update_token_usage
 
 
 class TestUpdateTokenUsage:

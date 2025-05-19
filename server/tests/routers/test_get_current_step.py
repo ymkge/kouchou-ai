@@ -1,9 +1,6 @@
 import json
-from unittest.mock import patch, mock_open
-
 import pytest
-
-from src.routers.admin_report import get_current_step
+from unittest.mock import patch, mock_open
 
 
 @pytest.mark.asyncio
