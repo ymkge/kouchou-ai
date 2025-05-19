@@ -192,8 +192,6 @@ def _build_cluster_value(melted_labels: pd.DataFrame, total_num: int) -> list[Cl
     ]
 
     for _, melted_label in melted_labels.iterrows():
-        print("melted_label")
-        print(melted_label)
         cluster_value = Cluster(
             level=melted_label["level"],
             id=melted_label["id"],

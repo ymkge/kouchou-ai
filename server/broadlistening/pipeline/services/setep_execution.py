@@ -1,9 +1,9 @@
 from src.config import settings
 from broadlistening.pipeline.steps.hierarchical_aggregation import hierarchical_aggregation
-from broadlistening.pipeline.hierarchical_utils import initialization, run_step
+from broadlistening.pipeline.hierarchical_utils import initialization
 
 
-def execute_aggregation(slug: str):
+def execute_aggregation(slug: str) -> bool:
     config_path = settings.CONFIG_DIR / f"{slug}.json"
     print(str(config_path))
     config = initialization([str(config_path), str(config_path), "-skip-interaction", "--without-html", "-f"])
