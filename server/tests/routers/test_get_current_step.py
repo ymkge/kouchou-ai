@@ -1,7 +1,36 @@
 import json
+import os
 from unittest.mock import mock_open, patch
 
 import pytest
+from fastapi import FastAPI
+from httpx import AsyncClient
+from src.routers.admin_report import router, verify_admin_api_key
+
+
+@pytest.fixture
+def test_slug():
+    """テスト用のスラグを提供するフィクスチャ"""
+    return "test-slug"
+
+@pytest.fixture
+async def app():
+    """テスト用のFastAPIアプリケーションを作成するフィクスチャ"""
+    app = FastAPI()
+    app.include_router(router)
+
+    # 認証をバイパスするためのオーバーライド
+    async def override_verify_admin_api_key():
+        return "test-api-key"
+
+    app.dependency_overrides[verify_admin_api_key] = override_verify_admin_api_key
+    return app
+
+@pytest.fixture
+async def async_client(app):
+    """非同期テスト用のクライアントを作成するフィクスチャ"""
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        yield client
 
 
 @pytest.mark.asyncio

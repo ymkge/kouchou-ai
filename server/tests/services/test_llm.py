@@ -3,14 +3,12 @@ from unittest.mock import MagicMock, patch
 
 import openai
 import pytest
+from broadlistening.pipeline.services.llm import \
+    request_to_azure_embed  # noqa: F401
+from broadlistening.pipeline.services.llm import request_to_embed  # noqa: F401
 from broadlistening.pipeline.services.llm import (
-    _validate_model,
-    request_to_azure_chatcompletion,
-    request_to_azure_embed,  # noqa: F401
-    request_to_chat_ai,
-    request_to_embed,  # noqa: F401
-    request_to_openai,
-)
+    _validate_model, request_to_azure_chatcompletion, request_to_chat_ai,
+    request_to_openai)
 from openai import AzureOpenAI  # noqa: F401
 from pydantic import BaseModel, Field
 
@@ -467,6 +465,12 @@ class TestLLMService:
         mock_choice = MagicMock()
         mock_choice.message.content = "This is a test response after retry"
         mock_response.choices = [mock_choice]
+        
+        # usageプロパティを設定
+        mock_response.usage = MagicMock()
+        mock_response.usage.prompt_tokens = 10
+        mock_response.usage.completion_tokens = 5
+        mock_response.usage.total_tokens = 15
 
         rate_limit_error = openai.RateLimitError(
             message="Rate limit exceeded",
