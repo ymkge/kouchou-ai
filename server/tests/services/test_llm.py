@@ -467,6 +467,9 @@ class TestLLMService:
         mock_choice = MagicMock()
         mock_choice.message.content = "This is a test response after retry"
         mock_response.choices = [mock_choice]
+        mock_response.usage.prompt_tokens = 10
+        mock_response.usage.completion_tokens = 5
+        mock_response.usage.total_tokens = 15
 
         # usageプロパティを設定
         mock_response.usage = MagicMock()
@@ -501,6 +504,7 @@ class TestLLMService:
                 assert token_input == 10
                 assert token_output == 5
                 assert token_total == 15
+                assert mock_client.chat.completions.create.call_count == 3
 
     def test_request_to_azure_chatcompletion_rate_limit_error_max_retries(self):
         """request_to_azure_chatcompletion: レート制限エラーが4回発生した場合は例外を再発生させる"""
