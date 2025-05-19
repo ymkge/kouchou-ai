@@ -6,7 +6,7 @@ from typing import TypedDict
 import pandas as pd
 from pydantic import BaseModel, Field
 
-from services.llm import request_to_chat_openai
+from services.llm import request_to_chat_ai
 
 
 class LabellingResult(TypedDict):
@@ -157,7 +157,7 @@ def process_initial_labelling(
         {"role": "user", "content": input},
     ]
     try:
-        response_text, token_input, token_output, token_total = request_to_chat_openai(
+        response_text, token_input, token_output, token_total = request_to_chat_ai(
             messages=messages,
             model=model,
             provider=provider,

@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from tqdm import tqdm
 
 from services.category_classification import classify_args
-from services.llm import request_to_chat_openai
+from services.llm import request_to_chat_ai
 from services.parse_json_list import parse_extraction_response
 from utils import update_progress
 
@@ -145,7 +145,7 @@ def extract_arguments(input, prompt, model, provider="openai", local_llm_address
         {"role": "user", "content": input},
     ]
     try:
-        response, token_input, token_output, token_total = request_to_chat_openai(
+        response, token_input, token_output, token_total = request_to_chat_ai(
             messages=messages,
             model=model,
             is_json=False,

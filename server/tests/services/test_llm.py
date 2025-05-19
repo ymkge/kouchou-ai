@@ -7,7 +7,7 @@ from broadlistening.pipeline.services.llm import (
     _validate_model,
     request_to_azure_chatcompletion,
     request_to_azure_embed,  # noqa: F401
-    request_to_chat_openai,
+    request_to_chat_ai,
     request_to_embed,  # noqa: F401
     request_to_openai,
 )
@@ -459,12 +459,14 @@ class TestLLMService:
 
         # request_to_openaiをモック化
         with patch(
-            "broadlistening.pipeline.services.llm.request_to_openai", return_value=("OpenAI response", 100)
+            "broadlistening.pipeline.services.llm.request_to_openai", return_value=("OpenAI response", 50, 50, 100)
         ) as mock_request_to_openai:
-            response, token_usage = request_to_chat_openai(messages, model="gpt-4o", provider="openai")
+            response, token_input, token_output, token_total = request_to_chat_ai(messages, model="gpt-4o", provider="openai")
 
         assert response == "OpenAI response"
-        assert token_usage == 100
+        assert token_input == 50
+        assert token_output == 50
+        assert token_total == 100
         mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, None)
 
     def test_request_to_chat_openai_use_azure(self, mock_openai_response):
@@ -476,12 +478,14 @@ class TestLLMService:
 
         # request_to_azure_chatcompletionをモック化
         with patch(
-            "broadlistening.pipeline.services.llm.request_to_azure_chatcompletion", return_value=("Azure response", 150)
+            "broadlistening.pipeline.services.llm.request_to_azure_chatcompletion", return_value=("Azure response", 75, 75, 150)
         ) as mock_request_to_azure:
-            response, token_usage = request_to_chat_openai(messages, model="gpt-4o", is_json=True, provider="azure")
+            response, token_input, token_output, token_total = request_to_chat_ai(messages, model="gpt-4o", is_json=True, provider="azure")
 
         assert response == "Azure response"
-        assert token_usage == 150
+        assert token_input == 75
+        assert token_output == 75
+        assert token_total == 150
         mock_request_to_azure.assert_called_once_with(messages, True, None)
 
     def test_request_to_chat_openai_with_json_schema(self, mock_openai_response):
@@ -508,12 +512,14 @@ class TestLLMService:
 
         # request_to_openaiをモック化
         with patch(
-            "broadlistening.pipeline.services.llm.request_to_openai", return_value=("OpenAI response", 200)
+            "broadlistening.pipeline.services.llm.request_to_openai", return_value=("OpenAI response", 100, 100, 200)
         ) as mock_request_to_openai:
-            response, token_usage = request_to_chat_openai(messages, model="gpt-4o", json_schema=json_schema, provider="openai")
+            response, token_input, token_output, token_total = request_to_chat_ai(messages, model="gpt-4o", json_schema=json_schema, provider="openai")
 
         assert response == "OpenAI response"
-        assert token_usage == 200
+        assert token_input == 100
+        assert token_output == 100
+        assert token_total == 200
         mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, json_schema)
 
     def test_request_to_chat_openai_with_pydantic_model(self, mock_openai_response):
@@ -529,12 +535,14 @@ class TestLLMService:
 
         # request_to_openaiをモック化
         with patch(
-            "broadlistening.pipeline.services.llm.request_to_openai", return_value=("OpenAI response", 250)
+            "broadlistening.pipeline.services.llm.request_to_openai", return_value=("OpenAI response", 125, 125, 250)
         ) as mock_request_to_openai:
-            response, token_usage = request_to_chat_openai(messages, model="gpt-4o", json_schema=TestModel, provider="openai")
+            response, token_input, token_output, token_total = request_to_chat_ai(messages, model="gpt-4o", json_schema=TestModel, provider="openai")
 
         assert response == "OpenAI response"
-        assert token_usage == 250
+        assert token_input == 125
+        assert token_output == 125
+        assert token_total == 250
         mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, TestModel)
 
     def test_validate_model_valid(self):
@@ -549,3 +557,82 @@ class TestLLMService:
         with pytest.raises(RuntimeError) as excinfo:
             _validate_model("invalid-model")
         assert "Invalid embedding model" in str(excinfo.value)
+
+    def test_request_to_chat_ai_use_openrouter(self):
+        """OpenRouterを使用するテストケース"""
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello!"},
+        ]
+        model = "openai/gpt-4o-2024-08-06"
+
+        # OpenRouterのクライアントをモック化
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        mock_choice = MagicMock()
+        mock_choice.message.content = "Hi! How can I help you today?"
+        mock_response.choices = [mock_choice]
+        mock_client.chat.completions.create.return_value = mock_response
+
+        # 環境変数をモック化
+        env_vars = {
+            "OPENROUTER_API_KEY": "test-api-key",
+        }
+
+        with patch.dict(os.environ, env_vars):
+            with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
+                response = request_to_chat_ai(
+                    messages=messages,
+                    model=model,
+                    provider="openrouter",
+                )
+
+        assert response == "Hi! How can I help you today?"
+        mock_client.chat.completions.create.assert_called_once_with(
+            model=model,
+            messages=messages,
+            temperature=0,
+            n=1,
+            seed=0,
+            timeout=30,
+        )
+
+    def test_request_to_chat_ai_use_openrouter_without_env(self):
+        """OpenRouterの環境変数が設定されていない場合のテスト"""
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello!"},
+        ]
+        model = "openai/gpt-4o-2024-08-06"
+
+        # 環境変数をクリア
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(RuntimeError) as excinfo:
+                request_to_chat_ai(messages=messages, model=model, provider="openrouter")
+            assert "OPENROUTER_API_KEY environment variable is not set" in str(excinfo.value)
+
+    def test_request_to_chat_ai_use_openrouter_rate_limit(self):
+        """OpenRouterのレート制限エラーのテスト"""
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello!"},
+        ]
+        model = "openai/gpt-4o-2024-08-06"
+
+        # レート制限エラーの場合
+        mock_client = MagicMock()
+        rate_limit_error = openai.RateLimitError(
+            message="Rate limit exceeded",
+            response=MagicMock(),
+            body=MagicMock(),
+        )
+        mock_client.chat.completions.create.side_effect = rate_limit_error
+
+        env_vars = {
+            "OPENROUTER_API_KEY": "test-api-key",
+        }
+
+        with patch.dict(os.environ, env_vars):
+            with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
+                with pytest.raises(openai.RateLimitError):
+                    request_to_chat_ai(messages=messages, model=model, provider="openrouter")
