@@ -75,6 +75,7 @@ export function SelectChartButton({
           onChange={handleChange}
           size="md"
           justifySelf={["center", null, "left", "center"]}
+          ml={[0, null, null, "104px"]}
           w={["100%", null, "auto"]}
           h={["80px", null, "56px"]}
         >
