@@ -98,6 +98,7 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
   const [tokenUsage, setTokenUsage] = useState<number>(0);
   const [tokenUsageInput, setTokenUsageInput] = useState<number>(0);
   const [tokenUsageOutput, setTokenUsageOutput] = useState<number>(0);
+  const [estimatedCost, setEstimatedCost] = useState<number>(0);
 
   // hasReloaded のデフォルト値を false に設定
   const [hasReloaded, setHasReloaded] = useState<boolean>(false);
@@ -134,6 +135,9 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
           }
           if (data.token_usage_output !== undefined) {
             setTokenUsageOutput(data.token_usage_output);
+          }
+          if (data.estimated_cost !== undefined) {
+            setEstimatedCost(data.estimated_cost);
           }
 
           if (!data.current_step || data.current_step === "loading") {
@@ -203,7 +207,7 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
     }
   }, [progress, hasReloaded]);
 
-  return { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput };
+  return { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost };
 }
 
 // 個々のレポートカードコンポーネント
@@ -217,7 +221,7 @@ function ReportCard({
   setReports?: (reports: Report[] | undefined) => void;
 }) {
   const statusDisplay = getStatusDisplay(report.status);
-  const { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput } = useReportProgressPoll(report.slug, report.status !== "ready");
+  const { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost } = useReportProgressPoll(report.slug, report.status !== "ready");
 
   const currentStepIndex =
     progress === "completed" ? steps.length : stepKeys.indexOf(progress) === -1 ? 0 : stepKeys.indexOf(progress);
@@ -234,6 +238,7 @@ function ReportCard({
 
   const displayTokenUsageInput = report.status === "processing" ? tokenUsageInput : report.tokenUsageInput;
   const displayTokenUsageOutput = report.status === "processing" ? tokenUsageOutput : report.tokenUsageOutput;
+  const displayEstimatedCost = report.status === "processing" ? estimatedCost : report.estimatedCost;
   const displayTokenUsage = report.status === "processing" ? tokenUsage : report.tokenUsage;
 
   // progress が変更されたときにレポート状態を更新
@@ -247,7 +252,8 @@ function ReportCard({
           status: "ready",
           tokenUsage: tokenUsage || r.tokenUsage,
           tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
-          tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput
+          tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput,
+          estimatedCost: estimatedCost || r.estimatedCost
         } : r));
         setReports(updatedReports);
       } else if (progress === "error" && setReports) {
@@ -256,12 +262,13 @@ function ReportCard({
           status: "error",
           tokenUsage: tokenUsage || r.tokenUsage,
           tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
-          tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput
+          tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput,
+          estimatedCost: estimatedCost || r.estimatedCost
         } : r));
         setReports(updatedReports);
       }
     }
-  }, [progress, lastProgress, reports, setReports, report.slug, tokenUsage, tokenUsageInput, tokenUsageOutput]);
+  }, [progress, lastProgress, reports, setReports, report.slug, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost]);
   return (
     <LinkBox
       as={Card.Root}
@@ -318,6 +325,14 @@ function ReportCard({
                     (report.tokenUsageInput != null && report.tokenUsageOutput != null ? 
                       `入力: ${report.tokenUsageInput.toLocaleString()}, 出力: ${report.tokenUsageOutput.toLocaleString()}` : 
                       (report.tokenUsage != null ? `${report.tokenUsage.toLocaleString()} (詳細なし)` : "情報なし"))
+                }
+              </Text>
+              {/* 推定コストの表示を追加 */}
+              <Text fontSize="xs" color="gray.500" mb={1}>
+                推定コスト: {
+                  displayEstimatedCost != null ? 
+                    `$${displayEstimatedCost.toFixed(4)}` : 
+                    "情報なし"
                 }
               </Text>
               {report.status !== "ready" && (

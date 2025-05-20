@@ -25,6 +25,7 @@ export type Report = {
   tokenUsage?: number; // トークン使用量（合計）
   tokenUsageInput?: number; // 入力トークン使用量
   tokenUsageOutput?: number; // 出力トークン使用量
+  estimatedCost?: number; // 推定コスト（USD）
 };
 
 export type Result = {

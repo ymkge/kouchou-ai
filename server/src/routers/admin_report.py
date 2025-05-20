@@ -79,6 +79,7 @@ async def get_current_step(slug: str) -> dict:
             "token_usage": status.get("total_token_usage", 0),
             "token_usage_input": status.get("token_usage_input", 0),
             "token_usage_output": status.get("token_usage_output", 0),
+            "estimated_cost": status.get("estimated_cost", 0.0),
         }
 
         # error キーが存在する場合はエラーとみなす
@@ -104,7 +105,7 @@ async def get_current_step(slug: str) -> dict:
         return response
     except Exception as e:
         slogger.error(f"Error in get_current_step: {e}")
-        return {"current_step": "error", "token_usage": 0, "token_usage_input": 0, "token_usage_output": 0}
+        return {"current_step": "error", "token_usage": 0, "token_usage_input": 0, "token_usage_output": 0, "estimated_cost": 0.0}
 
 
 @router.delete("/admin/reports/{slug}")
