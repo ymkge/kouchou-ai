@@ -71,8 +71,6 @@ def hierarchical_aggregation(config) -> bool:
 
         with open(PIPELINE_DIR / f"outputs/{config['output_dir']}/hierarchical_overview.txt") as f:
             overview = f.read()
-        print("overview")
-        print(overview)
         results["overview"] = overview
 
         with open(path, "w") as file:
