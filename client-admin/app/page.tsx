@@ -101,25 +101,39 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
   const [estimatedCost, setEstimatedCost] = useState<number>(0);
   const [provider, setProvider] = useState<string | null>(null);
   const [model, setModel] = useState<string | null>(null);
+  const [pricingData, setPricingData] = useState<Record<string, Record<string, { input: number; output: number }>>>({});
+  const [isPricingLoaded, setIsPricingLoaded] = useState<boolean>(false);
 
-  // LLMの価格情報
-  const PRICING: Record<string, Record<string, { input: number; output: number }>> = {
-    openai: {
-      "gpt-4o-mini": { input: 0.15, output: 0.60 },
-      "gpt-4o": { input: 2.50, output: 10.00 },
-      "o3-mini": { input: 1.10, output: 4.40 },
-    },
-    azure: {
-      "gpt-4o-mini": { input: 0.15, output: 0.60 },
-      "gpt-4o": { input: 2.50, output: 10.00 },
-      "o3-mini": { input: 1.10, output: 4.40 },
-    },
-    openrouter: {
-      "openai/gpt-4o-mini-2024-07-18": { input: 0.15, output: 0.60 },
-      "openai/gpt-4o-2024-08-06": { input: 2.50, output: 10.00 },
-      "google/gemini-2.5-pro-preview": { input: 1.25, output: 10.00 },
-    },
-  };
+  // LLM価格情報を取得する
+  useEffect(() => {
+    async function fetchPricingData() {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/llm-pricing`, {
+          headers: {
+            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setPricingData(data);
+        } else {
+          console.error("Failed to fetch LLM pricing data");
+          // APIから取得できない場合は空のオブジェクトを設定（情報なし）
+          setPricingData({});
+        }
+        setIsPricingLoaded(true);
+      } catch (error) {
+        console.error("Error fetching LLM pricing data:", error);
+        setIsPricingLoaded(true);
+      }
+    }
+
+    fetchPricingData();
+  }, []);
 
 
   // トークン使用量から推定コストを計算する関数
@@ -129,9 +143,9 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
     tokenUsageInput: number,
     tokenUsageOutput: number
   ): number => {
-    if (!provider || !model) return 0;
+    if (!provider || !model || !isPricingLoaded) return 0;
     
-    const price = PRICING[provider]?.[model];
+    const price = pricingData[provider]?.[model];
     if (!price) return 0; // 不明なモデルの場合は 0 を返す
     
     const inputCost = (tokenUsageInput / 1_000_000) * price.input;

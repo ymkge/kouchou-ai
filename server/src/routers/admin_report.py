@@ -5,18 +5,16 @@ import openai
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from fastapi.responses import FileResponse, ORJSONResponse
 from fastapi.security.api_key import APIKeyHeader
-
 from src.config import settings
-from src.schemas.admin_report import ReportInput, ReportMetadataUpdate, ReportVisibilityUpdate
+from src.schemas.admin_report import (ReportInput, ReportMetadataUpdate,
+                                      ReportVisibilityUpdate)
 from src.schemas.report import Report, ReportStatus
 from src.services.llm_models import get_models_by_provider
+from src.services.llm_pricing import LLMPricing
 from src.services.report_launcher import launch_report_generation
-from src.services.report_status import (
-    load_status_as_reports,
-    set_status,
-    update_report_metadata,
-    update_report_visibility_state,
-)
+from src.services.report_status import (load_status_as_reports, set_status,
+                                        update_report_metadata,
+                                        update_report_visibility_state)
 from src.utils.logger import setup_logger
 
 slogger = setup_logger()
@@ -278,3 +276,17 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
             "error_type": "unknown_error",
             "use_azure": use_azure,
         }
+
+
+@router.get("/admin/llm-pricing")
+async def get_llm_pricing(api_key: str = Depends(verify_admin_api_key)) -> dict:
+    """LLMの価格情報を取得するエンドポイント
+
+    Returns:
+        dict: プロバイダーとモデルごとの価格情報
+    """
+    try:
+        return LLMPricing.PRICING
+    except Exception as e:
+        slogger.error(f"Exception in get_llm_pricing: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error") from e
