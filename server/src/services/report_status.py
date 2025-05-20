@@ -82,6 +82,9 @@ def add_new_report_to_status(report_input: ReportInput) -> None:
             "is_pubcom": report_input.is_pubcom,
             "visibility": ReportVisibility.UNLISTED.value,
             "created_at": datetime.now(UTC).isoformat(),  # タイムゾーン付きISO形式で追加
+            "token_usage": 0,  # トークン使用量を初期化
+            "token_usage_input": 0,  # 入力トークン使用量を初期化
+            "token_usage_output": 0,  # 出力トークン使用量を初期化
         }
         save_status()
 
@@ -135,6 +138,39 @@ def update_report_visibility_state(slug: str, new_visibility: ReportVisibility) 
         save_status()
     invalidate_report_cache(slug)
     return _report_status[slug]["visibility"]
+
+
+def update_token_usage(
+    slug: str, token_usage: int, token_usage_input: int = None, token_usage_output: int = None
+) -> None:
+    """レポートのトークン使用量を更新する
+
+    Args:
+        slug: レポートのスラッグ
+        token_usage: トークン使用量（合計）
+        token_usage_input: 入力トークン使用量（オプション）
+        token_usage_output: 出力トークン使用量（オプション）
+
+    Raises:
+        ValueError: 指定されたスラッグのレポートが存在しない場合
+    """
+    with _lock:
+        if slug not in _report_status:
+            logger.warning(f"slug {slug} not found in report status when updating token usage")
+            return
+
+        _report_status[slug]["token_usage"] = token_usage
+
+        if token_usage_input is not None:
+            _report_status[slug]["token_usage_input"] = token_usage_input
+
+        if token_usage_output is not None:
+            _report_status[slug]["token_usage_output"] = token_usage_output
+
+        logger.info(
+            f"Updated token usage for {slug} in report status: total={token_usage}, input={token_usage_input}, output={token_usage_output}"
+        )
+        save_status()
 
 
 def update_report_metadata(slug: str, title: str = None, description: str = None) -> dict:
