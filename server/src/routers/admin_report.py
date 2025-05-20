@@ -197,7 +197,6 @@ async def get_clusters(slug: str, api_key: str = Depends(verify_admin_api_key)) 
 async def update_cluster_label(
     slug: str, updated_cluster: ClusterUpdate, api_key: str = Depends(verify_admin_api_key)
 ) -> dict[str, bool]:
-
     # FIXME: error handlingを共通化するタイミングで、error handlingを切り出す
     # issue: https://github.com/digitaldemocracy2030/kouchou-ai/issues/546
     repo = ClusterRepository(slug)
