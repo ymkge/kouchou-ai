@@ -62,3 +62,39 @@ class TestUpdateTokenUsage:
         assert _report_status["test-slug"]["token_usage"] == 500
         assert _report_status["test-slug"]["token_usage_input"] == 50
         assert _report_status["test-slug"]["token_usage_output"] == 70
+
+    def test_update_token_usage_with_provider_and_model(self):
+        """providerとmodelを指定した場合のテスト"""
+        update_token_usage("test-slug", 600, 200, 400, "openai", "gpt-4o")
+
+        assert _report_status["test-slug"]["token_usage"] == 600
+        assert _report_status["test-slug"]["token_usage_input"] == 200
+        assert _report_status["test-slug"]["token_usage_output"] == 400
+        assert _report_status["test-slug"]["provider"] == "openai"
+        assert _report_status["test-slug"]["model"] == "gpt-4o"
+
+    @patch("src.services.report_status.LLMPricing.calculate_cost", return_value=0.123)
+    def test_update_token_usage_with_cost_calculation(self, mock_calculate_cost):
+        """providerとmodelを指定した場合に推定コストが計算されることをテスト"""
+        update_token_usage("test-slug", 700, 300, 400, "azure", "gpt-4o-mini")
+
+        assert _report_status["test-slug"]["provider"] == "azure"
+        assert _report_status["test-slug"]["model"] == "gpt-4o-mini"
+        assert _report_status["test-slug"]["estimated_cost"] == 0.123
+        mock_calculate_cost.assert_called_once_with("azure", "gpt-4o-mini", 300, 400)
+
+    def test_update_token_usage_with_none_provider_model(self):
+        """providerとmodelにNoneを指定した場合のテスト"""
+        # 初期値を設定
+        _report_status["test-slug"]["provider"] = "openai"
+        _report_status["test-slug"]["model"] = "gpt-4o"
+
+        # Noneを指定して更新
+        update_token_usage("test-slug", 800, 350, 450, None, None)
+
+        # providerとmodelは変更されないこと
+        assert _report_status["test-slug"]["token_usage"] == 800
+        assert _report_status["test-slug"]["token_usage_input"] == 350
+        assert _report_status["test-slug"]["token_usage_output"] == 450
+        assert _report_status["test-slug"]["provider"] == "openai"
+        assert _report_status["test-slug"]["model"] == "gpt-4o"

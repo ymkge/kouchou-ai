@@ -4,7 +4,6 @@ import threading
 from datetime import UTC, datetime
 
 import requests
-
 from src.config import settings
 from src.schemas.admin_report import ReportInput
 from src.schemas.report import Report, ReportStatus, ReportVisibility
@@ -177,6 +176,14 @@ def update_token_usage(
 
         if token_usage_output is not None:
             _report_status[slug]["token_usage_output"] = token_usage_output
+
+        if provider is not None:
+            _report_status[slug]["provider"] = provider
+            logger.info(f"Updated provider for {slug}: {provider}")
+
+        if model is not None:
+            _report_status[slug]["model"] = model
+            logger.info(f"Updated model for {slug}: {model}")
 
         if (
             token_usage_input is not None
