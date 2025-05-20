@@ -66,25 +66,25 @@ class TestLLMPricing:
         assert cost == pytest.approx(expected_cost)
 
     def test_calculate_cost_unknown_provider(self):
-        """不明なプロバイダーの場合はデフォルト価格で計算される"""
+        """不明なプロバイダーの場合は0"""
         provider = "unknown_provider"
         model = "gpt-4o-mini"
         token_usage_input = 1_000_000  # 1M tokens
         token_usage_output = 500_000  # 0.5M tokens
 
-        expected_cost = 0.025
+        expected_cost = 0
 
         cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
         assert cost == pytest.approx(expected_cost)
 
     def test_calculate_cost_unknown_model(self):
-        """不明なモデルの場合はデフォルト価格で計算される"""
+        """不明なモデルの場合は0"""
         provider = "openai"
         model = "unknown_model"
         token_usage_input = 1_000_000  # 1M tokens
         token_usage_output = 500_000  # 0.5M tokens
 
-        expected_cost = 0.025
+        expected_cost = 0
 
         cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
         assert cost == pytest.approx(expected_cost)
