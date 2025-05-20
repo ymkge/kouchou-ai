@@ -74,26 +74,37 @@ async def get_current_step(slug: str) -> dict:
         with open(status_file) as f:
             status = json.load(f)
 
+        response = {
+            "current_step": "loading",
+            "token_usage": status.get("total_token_usage", 0),
+            "token_usage_input": status.get("token_usage_input", 0),
+            "token_usage_output": status.get("token_usage_output", 0),
+        }
+
         # error キーが存在する場合はエラーとみなす
         if "error" in status:
-            return {"current_step": "error"}
+            response["current_step"] = "error"
+            return response
 
         # 全体のステータスが "completed" なら、current_step も "completed" とする
         if status.get("status") == "completed":
-            return {"current_step": "completed"}
+            response["current_step"] = "completed"
+            return response
 
         # current_job キーが存在しない場合も "loading" とみなす
         if "current_job" not in status:
-            return {"current_step": "loading"}
+            return response
 
         # current_job が空文字列の場合も "loading" とする
         if not status.get("current_job"):
-            return {"current_step": "loading"}
+            return response
 
         # 有効な current_job を返す
-        return {"current_step": status.get("current_job", "unknown")}
-    except Exception:
-        return {"current_step": "error"}
+        response["current_step"] = status.get("current_job", "unknown")
+        return response
+    except Exception as e:
+        slogger.error(f"Error in get_current_step: {e}")
+        return {"current_step": "error", "token_usage": 0, "token_usage_input": 0, "token_usage_output": 0}
 
 
 @router.delete("/admin/reports/{slug}")

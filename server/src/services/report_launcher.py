@@ -8,7 +8,11 @@ import pandas as pd
 
 from src.config import settings
 from src.schemas.admin_report import ReportInput
-from src.services.report_status import add_new_report_to_status, set_status
+from src.services.report_status import (
+    add_new_report_to_status,
+    set_status,
+    update_token_usage,
+)
 from src.services.report_sync import ReportSyncService
 from src.utils.logger import setup_logger
 
@@ -98,6 +102,21 @@ def _monitor_process(process: subprocess.Popen, slug: str) -> None:
     retcode = process.wait()
     if retcode == 0:
         # レポート生成成功時、ステータスを更新
+        try:
+            status_file = settings.REPORT_DIR / slug / "hierarchical_status.json"
+            if status_file.exists():
+                with open(status_file) as f:
+                    status_data = json.load(f)
+                    total_token_usage = status_data.get("total_token_usage", 0)
+                    token_usage_input = status_data.get("token_usage_input", 0)
+                    token_usage_output = status_data.get("token_usage_output", 0)
+                    logger.info(
+                        f"Found token usage in status file for {slug}: total={total_token_usage}, input={token_usage_input}, output={token_usage_output}"
+                    )
+                    update_token_usage(slug, total_token_usage, token_usage_input, token_usage_output)
+        except Exception as e:
+            logger.error(f"Error updating token usage for {slug}: {e}")
+
         set_status(slug, "ready")
 
         logger.info(f"Syncing files for {slug} to storage")
