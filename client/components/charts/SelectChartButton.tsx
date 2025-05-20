@@ -81,20 +81,20 @@ export function SelectChartButton({
           <SegmentGroup.Indicator bg="white" border="1px solid #E4E4E7" boxShadow="0 4px 6px 0 rgba(0, 0, 0, 0.1)" />
           <SegmentGroup.Items items={items} w={["calc(100% / 3)", null, "162px"]} />
         </SegmentGroup.Root>
-      </Box>
 
-      <HStack gap={1} justifySelf={["end"]} alignSelf={"center"}>
-        <Tooltip content={"表示設定"} openDelay={0} closeDelay={0}>
-          <Button onClick={onClickDensitySetting} variant={"outline"} h={"50px"} w={"50px"} p={0}>
-            <Icon as={CogIcon} boxSize={5} />
-          </Button>
-        </Tooltip>
-        <Tooltip content={"全画面表示"} openDelay={0} closeDelay={0}>
-          <Button onClick={onClickFullscreen} variant={"outline"} h={"50px"} w={"50px"} p={0}>
-            <Icon as={FullscreenIcon} boxSize={5} />
-          </Button>
-        </Tooltip>
-      </HStack>
+        <HStack gap={1} justifySelf={["end"]} alignSelf={"center"}>
+          <Tooltip content={"表示設定"} openDelay={0} closeDelay={0}>
+            <Button onClick={onClickDensitySetting} variant={"outline"} h={"50px"} w={"50px"} p={0}>
+              <Icon as={CogIcon} boxSize={5} />
+            </Button>
+          </Tooltip>
+          <Tooltip content={"全画面表示"} openDelay={0} closeDelay={0}>
+            <Button onClick={onClickFullscreen} variant={"outline"} h={"50px"} w={"50px"} p={0}>
+              <Icon as={FullscreenIcon} boxSize={5} />
+            </Button>
+          </Tooltip>
+        </HStack>
+      </Box>
     </Box>
   );
 }
