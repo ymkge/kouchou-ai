@@ -28,6 +28,7 @@ import {
   VStack,
   createListCollection,
 } from "@chakra-ui/react";
+import { ClusterEditDialog } from "@/components/dialogs/ClusterEditDialog";
 import {
   CircleAlertIcon,
   CircleCheckIcon,
@@ -581,7 +582,7 @@ function ReportCard({
                     }
                   }}
                 >
-                  分析結果を編集する
+                  意見グループを編集する
                 </MenuItem>
                 <MenuItem
                   value="delete"
@@ -739,179 +740,19 @@ function ReportCard({
       </Dialog.Root>
 
       {/* クラスタ編集ダイアログ */}
-      <Dialog.Root
-        open={isClusterEditDialogOpen}
-        onOpenChange={({ open }) => setIsClusterEditDialogOpen(open)}
-        modal={true}
-        closeOnInteractOutside={true}
-        trapFocus={true}
-      >
-        <Portal>
-          <Dialog.Backdrop
-            zIndex={1000}
-            position="fixed"
-            inset={0}
-            backgroundColor="blackAlpha.100"
-            backdropFilter="blur(2px)"
-          />
-          <Dialog.Positioner>
-            <Dialog.Content
-              ref={clusterDialogContentRef}
-              pointerEvents="auto"
-              position="relative"
-              zIndex={1001}
-              boxShadow="md"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Dialog.CloseTrigger position="absolute" top={3} right={3} />
-              <Dialog.Header>
-                <Dialog.Title>分析結果を編集</Dialog.Title>
-              </Dialog.Header>
-              <Dialog.Body>
-                <VStack gap={4} align="stretch">
-                  <Box>
-                    <Text mb={2} fontWeight="bold">
-                      編集対象のクラスタタイトル
-                    </Text>
-                    <Select.Root
-                      collection={createListCollection({
-                        items: clusters.map((c) => ({ label: c.label, value: c.id })),
-                      })}
-                      defaultValue={selectedClusterId ? [selectedClusterId] : []}
-                      onValueChange={(item) => {
-                        if (item?.value) {
-                          const selectedId = Array.isArray(item.value) ? item.value[0] : item.value;
-                          setSelectedClusterId(selectedId);
-                          const selected = clusters.find((c) => c.id === selectedId);
-                          if (selected) {
-                            setEditClusterTitle(selected.label);
-                            setEditClusterDescription(selected.description);
-                          }
-                        }
-                      }}
-                    >
-                      <Select.HiddenSelect />
-                      <Select.Control>
-                        <Select.Trigger>
-                          <Select.ValueText placeholder="クラスタを選択" />
-                        </Select.Trigger>
-                        <Select.IndicatorGroup>
-                          <Select.Indicator />
-                        </Select.IndicatorGroup>
-                      </Select.Control>
-                      <Portal container={clusterDialogContentRef}>
-                        <Select.Positioner zIndex={2500}>
-                          <Select.Content>
-                            {clusters.map((c) => (
-                              <Select.Item item={{ label: c.label, value: c.id }} key={c.id}>
-                                {c.label}
-                                <Select.ItemIndicator />
-                              </Select.Item>
-                            ))}
-                          </Select.Content>
-                        </Select.Positioner>
-                      </Portal>
-                    </Select.Root>
-                  </Box>
-                  {selectedClusterId && (
-                    <>
-                      <Box>
-                        <Text mb={2} fontWeight="bold">
-                          クラスタタイトル
-                        </Text>
-                        <Input
-                          value={editClusterTitle}
-                          onChange={(e) => setEditClusterTitle(e.target.value)}
-                          placeholder="クラスタのタイトルを入力"
-                        />
-                      </Box>
-                      <Box>
-                        <Text mb={2} fontWeight="bold">
-                          クラスタ説明
-                        </Text>
-                        <Textarea
-                          value={editClusterDescription}
-                          onChange={(e) => setEditClusterDescription(e.target.value)}
-                          placeholder="クラスタの説明を入力"
-                        />
-                      </Box>
-                    </>
-                  )}
-                </VStack>
-              </Dialog.Body>
-              <Dialog.Footer>
-                <Button variant="outline" onClick={() => setIsClusterEditDialogOpen(false)}>
-                  キャンセル
-                </Button>
-                <Button
-                  ml={3}
-                  disabled={!selectedClusterId}
-                  onClick={async () => {
-                    if (!selectedClusterId) return;
-                    try {
-                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-label`, {
-                        method: "PATCH",
-                        headers: {
-                          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                          id: selectedClusterId,
-                          label: editClusterTitle,
-                          description: editClusterDescription,
-                        }),
-                      });
-
-                      if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.detail || "クラスタ情報の更新に失敗しました");
-                      }
-                      // クラスタ一覧を再取得して更新
-                      const clusterResponse = await fetch(
-                        `${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`,
-                        {
-                          headers: {
-                            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                          },
-                        },
-                      );
-                      if (clusterResponse.ok) {
-                        const clusterData = await clusterResponse.json();
-                        setClusters(clusterData.clusters);
-                        // 更新されたクラスタ情報をフォームに再設定
-                        const updatedSelectedCluster = clusterData.clusters.find(
-                          (c: ClusterResponse) => c.id === selectedClusterId,
-                        );
-                        if (updatedSelectedCluster) {
-                          setEditClusterTitle(updatedSelectedCluster.label);
-                          setEditClusterDescription(updatedSelectedCluster.description);
-                        }
-                      }
-
-                      toaster.create({
-                        type: "success",
-                        title: "更新完了",
-                        description: "クラスタ情報が更新されました",
-                      });
-                      // ダイアログを閉じるかは検討（連続編集の可能性）
-                      // setIsClusterEditDialogOpen(false);
-                    } catch (error) {
-                      console.error("クラスタ情報の更新に失敗しました:", error);
-                      toaster.create({
-                        type: "error",
-                        title: "更新エラー",
-                        description: "クラスタ情報の更新に失敗しました",
-                      });
-                    }
-                  }}
-                >
-                  保存
-                </Button>
-              </Dialog.Footer>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Portal>
-      </Dialog.Root>
+      <ClusterEditDialog
+        report={report}
+        isOpen={isClusterEditDialogOpen}
+        onClose={() => setIsClusterEditDialogOpen(false)}
+        clusters={clusters}
+        setClusters={setClusters}
+        selectedClusterId={selectedClusterId}
+        setSelectedClusterId={setSelectedClusterId}
+        editClusterTitle={editClusterTitle}
+        setEditClusterTitle={setEditClusterTitle}
+        editClusterDescription={editClusterDescription}
+        setEditClusterDescription={setEditClusterDescription}
+      />
     </LinkBox>
   );
 }
