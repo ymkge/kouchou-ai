@@ -43,7 +43,6 @@ export function SelectChartButton({
   onClickFullscreen,
   isDenseGroupEnabled,
 }: Props) {
-  const isVertical = useBreakpointValue({ base: true, sm: true, md: false }) ?? false;
   const isMobile = useBreakpointValue({ base: true, sm: true, md: false }) ?? false;
 
   const items = [
@@ -83,7 +82,6 @@ export function SelectChartButton({
         <SegmentGroup.Root
           value={selected}
           onChange={handleChange}
-          orientation={isVertical ? "vertical" : "horizontal"}
           size="md"
           bg="gray.100"
         >
