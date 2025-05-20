@@ -99,6 +99,8 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
   const [tokenUsageInput, setTokenUsageInput] = useState<number>(0);
   const [tokenUsageOutput, setTokenUsageOutput] = useState<number>(0);
   const [estimatedCost, setEstimatedCost] = useState<number>(0);
+  const [provider, setProvider] = useState<string | null>(null);
+  const [model, setModel] = useState<string | null>(null);
 
   // hasReloaded のデフォルト値を false に設定
   const [hasReloaded, setHasReloaded] = useState<boolean>(false);
@@ -138,6 +140,12 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
           }
           if (data.estimated_cost !== undefined) {
             setEstimatedCost(data.estimated_cost);
+          }
+          if (data.provider !== undefined) {
+            setProvider(data.provider);
+          }
+          if (data.model !== undefined) {
+            setModel(data.model);
           }
 
           if (!data.current_step || data.current_step === "loading") {
@@ -207,7 +215,7 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
     }
   }, [progress, hasReloaded]);
 
-  return { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost };
+  return { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost, provider, model };
 }
 
 // 個々のレポートカードコンポーネント
@@ -221,7 +229,7 @@ function ReportCard({
   setReports?: (reports: Report[] | undefined) => void;
 }) {
   const statusDisplay = getStatusDisplay(report.status);
-  const { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost } = useReportProgressPoll(report.slug, report.status !== "ready");
+  const { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost, provider, model } = useReportProgressPoll(report.slug, report.status !== "ready");
 
   const currentStepIndex =
     progress === "completed" ? steps.length : stepKeys.indexOf(progress) === -1 ? 0 : stepKeys.indexOf(progress);
@@ -240,6 +248,8 @@ function ReportCard({
   const displayTokenUsageOutput = report.status === "processing" ? tokenUsageOutput : report.tokenUsageOutput;
   const displayEstimatedCost = report.status === "processing" ? estimatedCost : report.estimatedCost;
   const displayTokenUsage = report.status === "processing" ? tokenUsage : report.tokenUsage;
+  const displayProvider = report.status === "processing" ? provider : report.provider;
+  const displayModel = report.status === "processing" ? model : report.model;
 
   // progress が変更されたときにレポート状態を更新
   useEffect(() => {
@@ -253,7 +263,9 @@ function ReportCard({
           tokenUsage: tokenUsage || r.tokenUsage,
           tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
           tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput,
-          estimatedCost: estimatedCost || r.estimatedCost
+          estimatedCost: estimatedCost || r.estimatedCost,
+          provider: provider || r.provider,
+          model: model || r.model
         } : r));
         setReports(updatedReports);
       } else if (progress === "error" && setReports) {
@@ -263,12 +275,14 @@ function ReportCard({
           tokenUsage: tokenUsage || r.tokenUsage,
           tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
           tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput,
-          estimatedCost: estimatedCost || r.estimatedCost
+          estimatedCost: estimatedCost || r.estimatedCost,
+          provider: provider || r.provider,
+          model: model || r.model
         } : r));
         setReports(updatedReports);
       }
     }
-  }, [progress, lastProgress, reports, setReports, report.slug, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost]);
+  }, [progress, lastProgress, reports, setReports, report.slug, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost, provider, model]);
   return (
     <LinkBox
       as={Card.Root}
@@ -331,7 +345,7 @@ function ReportCard({
               <Text fontSize="xs" color="gray.500" mb={1}>
                 推定コスト: {
                   displayEstimatedCost != null ? 
-                    `$${displayEstimatedCost.toFixed(4)}` : 
+                    `$${displayEstimatedCost.toFixed(4)}${(displayProvider && displayModel) ? ` (${displayProvider} ${displayModel})` : ''}` : 
                     "情報なし"
                 }
               </Text>

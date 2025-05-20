@@ -1,7 +1,7 @@
 import json
 import logging
 import threading
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 import requests
 
@@ -82,11 +82,13 @@ def add_new_report_to_status(report_input: ReportInput) -> None:
             "description": report_input.intro,
             "is_pubcom": report_input.is_pubcom,
             "visibility": ReportVisibility.UNLISTED.value,
-            "created_at": datetime.now(UTC).isoformat(),  # タイムゾーン付きISO形式で追加
+            "created_at": datetime.now(timezone.utc).isoformat(),  # タイムゾーン付きISO形式で追加
             "token_usage": 0,  # トークン使用量を初期化
             "token_usage_input": 0,  # 入力トークン使用量を初期化
             "token_usage_output": 0,  # 出力トークン使用量を初期化
             "estimated_cost": 0.0,  # 推定コストを初期化
+            "provider": None,  # LLMプロバイダーを初期化
+            "model": None,  # LLMモデルを初期化
         }
         save_status()
 
@@ -143,7 +145,12 @@ def update_report_visibility_state(slug: str, new_visibility: ReportVisibility) 
 
 
 def update_token_usage(
-    slug: str, token_usage: int, token_usage_input: int = None, token_usage_output: int = None, provider: str = None, model: str = None
+    slug: str,
+    token_usage: int,
+    token_usage_input: int | None = None,
+    token_usage_output: int | None = None,
+    provider: str | None = None,
+    model: str | None = None,
 ) -> None:
     """レポートのトークン使用量と推定コストを更新する
 
@@ -171,7 +178,12 @@ def update_token_usage(
         if token_usage_output is not None:
             _report_status[slug]["token_usage_output"] = token_usage_output
 
-        if token_usage_input is not None and token_usage_output is not None and provider is not None and model is not None:
+        if (
+            token_usage_input is not None
+            and token_usage_output is not None
+            and provider is not None
+            and model is not None
+        ):
             estimated_cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
             _report_status[slug]["estimated_cost"] = estimated_cost
             logger.info(f"Updated estimated cost for {slug}: ${estimated_cost:.4f}")
@@ -182,7 +194,7 @@ def update_token_usage(
         save_status()
 
 
-def update_report_metadata(slug: str, title: str = None, description: str = None) -> dict:
+def update_report_metadata(slug: str, title: str | None = None, description: str | None = None) -> dict:
     """レポートのメタデータ（タイトル、説明）を更新する
 
     Args:

@@ -2,8 +2,6 @@
 LLMモデルの価格計算サービス
 """
 
-
-
 class LLMPricing:
     """LLMモデルの価格計算クラス"""
 
@@ -28,13 +26,7 @@ class LLMPricing:
     DEFAULT_PRICE = {"input": 0.01, "output": 0.03}  # デフォルト価格（不明なモデル用）
 
     @classmethod
-    def calculate_cost(
-        cls,
-        provider: str,
-        model: str,
-        token_usage_input: int,
-        token_usage_output: int,
-    ) -> float:
+    def calculate_cost(cls, provider: str, model: str, token_usage_input: int, token_usage_output: int) -> float:
         """
         トークン使用量から推定コストを計算する
 
@@ -48,22 +40,16 @@ class LLMPricing:
             float: 推定コスト（USD）
         """
         if provider not in cls.PRICING:
-            return cls._calculate_with_price(
-                cls.DEFAULT_PRICE, token_usage_input, token_usage_output
-            )
+            return cls._calculate_with_price(cls.DEFAULT_PRICE, token_usage_input, token_usage_output)
 
         if model not in cls.PRICING[provider]:
-            return cls._calculate_with_price(
-                cls.DEFAULT_PRICE, token_usage_input, token_usage_output
-            )
+            return cls._calculate_with_price(cls.DEFAULT_PRICE, token_usage_input, token_usage_output)
 
         price = cls.PRICING[provider][model]
         return cls._calculate_with_price(price, token_usage_input, token_usage_output)
 
     @staticmethod
-    def _calculate_with_price(
-        price: dict[str, float], token_usage_input: int, token_usage_output: int
-    ) -> float:
+    def _calculate_with_price(price: dict[str, float], token_usage_input: int, token_usage_output: int) -> float:
         """
         価格情報とトークン使用量から推定コストを計算する
 
