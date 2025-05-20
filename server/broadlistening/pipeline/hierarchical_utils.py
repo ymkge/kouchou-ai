@@ -236,45 +236,35 @@ def run_step(step, func, config):
     print("Running step:", step)
     # run the step...
     token_usage_before = config.get("total_token_usage", 0)
-    token_usage_input_before = config.get("token_usage_input", 0)
-    token_usage_output_before = config.get("token_usage_output", 0)
     func(config)
     token_usage_after = config.get("total_token_usage", token_usage_before)
-    token_usage_input_after = config.get("token_usage_input", token_usage_input_before)
-    token_usage_output_after = config.get("token_usage_output", token_usage_output_before)
     token_usage_step = token_usage_after - token_usage_before
-    token_usage_input_step = token_usage_input_after - token_usage_input_before
-    token_usage_output_step = token_usage_output_after - token_usage_output_before
-    
+
     estimated_cost = 0.0
     provider = config.get("provider")
     model = config.get("model")
     token_usage_input = config.get("token_usage_input", 0)
     token_usage_output = config.get("token_usage_output", 0)
-    
+
     if provider and model and token_usage_input > 0 and token_usage_output > 0:
-        import sys
         import os
-        
+        import sys
+
         current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         server_dir = os.path.dirname(current_dir)
-        
+
         if server_dir not in sys.path:
             sys.path.insert(0, server_dir)
-            
+
         try:
             from src.services.llm_pricing import LLMPricing
-            estimated_cost = LLMPricing.calculate_cost(
-                provider, 
-                model, 
-                token_usage_input, 
-                token_usage_output
-            )
+
+            estimated_cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
             print(f"Estimated cost: ${estimated_cost:.4f} ({provider} {model})")
         except ImportError as e:
             print(f"Warning: Could not import LLMPricing: {e}")
             estimated_cost = 0.0
-    
+
     # update status after running...
     update_status(
         config,
