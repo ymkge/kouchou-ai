@@ -2,6 +2,7 @@
 
 import { getApiBaseUrl } from "@/app/utils/api";
 import { Header } from "@/components/Header";
+import { ClusterEditDialog } from "@/components/dialogs/ClusterEditDialog";
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -28,7 +29,6 @@ import {
   VStack,
   createListCollection,
 } from "@chakra-ui/react";
-import { ClusterEditDialog } from "@/components/dialogs/ClusterEditDialog";
 import {
   CircleAlertIcon,
   CircleCheckIcon,

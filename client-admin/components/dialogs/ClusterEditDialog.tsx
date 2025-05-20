@@ -17,7 +17,7 @@ import {
   VStack,
   createListCollection,
 } from "@chakra-ui/react";
-import { useRef, useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface ClusterEditDialogProps {
   report: {
@@ -53,13 +53,13 @@ export function ClusterEditDialog({
 
   // 利用可能な階層レベルを取得
   const availableLevels = useMemo(() => {
-    const levels = [...new Set(clusters.map(c => c.level))].sort((a, b) => a - b);
+    const levels = [...new Set(clusters.map((c) => c.level))].sort((a, b) => a - b);
     return levels.length > 0 ? levels : [1];
   }, [clusters]);
 
   // 選択された階層の意見グループのみをフィルタリング
   const filteredClusters = useMemo(() => {
-    return clusters.filter(c => c.level === selectedLevel);
+    return clusters.filter((c) => c.level === selectedLevel);
   }, [clusters, selectedLevel]);
 
   // 階層が変更されたら意見グループの先頭を自動選択
@@ -116,7 +116,7 @@ export function ClusterEditDialog({
                   </Text>
                   <Select.Root
                     collection={createListCollection({
-                      items: availableLevels.map(level => ({ label: `第${level}階層`, value: level })),
+                      items: availableLevels.map((level) => ({ label: `第${level}階層`, value: level })),
                     })}
                     value={[String(selectedLevel)]}
                     onValueChange={(item) => {
@@ -129,9 +129,7 @@ export function ClusterEditDialog({
                     <Select.HiddenSelect />
                     <Select.Control>
                       <Select.Trigger>
-                        <Select.ValueText>
-                          {`第${selectedLevel}階層`}
-                        </Select.ValueText>
+                        <Select.ValueText>{`第${selectedLevel}階層`}</Select.ValueText>
                       </Select.Trigger>
                       <Select.IndicatorGroup>
                         <Select.Indicator />
@@ -176,8 +174,8 @@ export function ClusterEditDialog({
                     <Select.Control>
                       <Select.Trigger>
                         <Select.ValueText>
-                          {selectedClusterId 
-                            ? clusters.find(c => c.id === selectedClusterId)?.label || "意見グループを選択" 
+                          {selectedClusterId
+                            ? clusters.find((c) => c.id === selectedClusterId)?.label || "意見グループを選択"
                             : "意見グループを選択"}
                         </Select.ValueText>
                       </Select.Trigger>
