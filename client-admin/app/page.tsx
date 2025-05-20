@@ -102,6 +102,41 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
   const [provider, setProvider] = useState<string | null>(null);
   const [model, setModel] = useState<string | null>(null);
 
+  // LLMの価格情報
+  const PRICING: Record<string, Record<string, { input: number; output: number }>> = {
+    openai: {
+      "gpt-4o-mini": { input: 0.15, output: 0.60 },
+      "gpt-4o": { input: 2.50, output: 10.00 },
+      "o3-mini": { input: 1.10, output: 4.40 },
+    },
+    azure: {
+      "gpt-4o-mini": { input: 0.15, output: 0.60 },
+      "gpt-4o": { input: 2.50, output: 10.00 },
+      "o3-mini": { input: 1.10, output: 4.40 },
+    },
+    openrouter: {
+      "gpt-4o-mini": { input: 0.15, output: 0.60 },
+      "gpt-4o": { input: 2.50, output: 10.00 },
+      "o3-mini": { input: 1.10, output: 4.40 },
+    },
+  };
+  const DEFAULT_PRICE = { input: 0.01, output: 0.03 };  // デフォルト価格（不明なモデル用）
+
+  // トークン使用量から推定コストを計算する関数
+  const calculateCost = (
+    provider: string | null,
+    model: string | null,
+    tokenUsageInput: number,
+    tokenUsageOutput: number
+  ): number => {
+    if (!provider || !model) return 0;
+    
+    const price = PRICING[provider]?.[model] || DEFAULT_PRICE;
+    const inputCost = (tokenUsageInput / 1_000_000) * price.input;
+    const outputCost = (tokenUsageOutput / 1_000_000) * price.output;
+    return inputCost + outputCost;
+  };
+
   // hasReloaded のデフォルト値を false に設定
   const [hasReloaded, setHasReloaded] = useState<boolean>(false);
 
@@ -146,6 +181,23 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
           }
           if (data.model !== undefined) {
             setModel(data.model);
+          }
+          
+          // トークン使用量が更新されたら、推定コストも計算して更新
+          if (
+            (data.token_usage_input !== undefined || data.token_usage_output !== undefined) &&
+            data.provider !== undefined &&
+            data.model !== undefined
+          ) {
+            const newTokenUsageInput = data.token_usage_input !== undefined ? data.token_usage_input : tokenUsageInput;
+            const newTokenUsageOutput = data.token_usage_output !== undefined ? data.token_usage_output : tokenUsageOutput;
+            const newEstimatedCost = calculateCost(
+              data.provider,
+              data.model,
+              newTokenUsageInput,
+              newTokenUsageOutput
+            );
+            setEstimatedCost(newEstimatedCost);
           }
 
           if (!data.current_step || data.current_step === "loading") {
