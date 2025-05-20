@@ -13,7 +13,7 @@ type Props = {
   isDenseGroupEnabled: boolean;
 };
 
-const SegmentIcon = (type: string, icon: ComponentType, text: string, selected: boolean) => {
+const SegmentItemWithIcon = (icon: ComponentType, text: string, selected: boolean) => {
   return (
     <Stack
       direction={["column", null, "row"]}
@@ -46,18 +46,18 @@ export function SelectChartButton({
   const items = [
     {
       value: "scatterAll",
-      label: SegmentIcon("scatterAll", AllViewIcon, "全体", selected === "scatterAll"),
+      label: SegmentItemWithIcon(AllViewIcon, "全体", selected === "scatterAll"),
       isDisabled: false,
     },
     {
       value: "scatterDensity",
-      label: SegmentIcon("scatterDensity", DenseViewIcon, "濃い意見", selected === "scatterDensity"),
+      label: SegmentItemWithIcon(DenseViewIcon, "濃い意見", selected === "scatterDensity"),
       isDisabled: !isDenseGroupEnabled,
       tooltip: !isDenseGroupEnabled ? "この設定条件では抽出できませんでした" : undefined,
     },
     {
       value: "treemap",
-      label: SegmentIcon("treemap", HierarchyViewIcon, "階層", selected === "treemap"),
+      label: SegmentItemWithIcon(HierarchyViewIcon, "階層", selected === "treemap"),
       isDisabled: false,
     },
   ];
