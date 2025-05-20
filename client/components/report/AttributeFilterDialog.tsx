@@ -4,7 +4,8 @@ import { Box, Button, Flex, Heading, Input, Text, Wrap, WrapItem } from "@chakra
 import { useCallback, useMemo, useState } from "react";
 
 export type AttributeFilters = Record<string, string[]>;
-type NumericRangeFilters = Record<string, [number, number]>;
+type NumericRange = [number, number];
+type NumericRangeFilters = Record<string, NumericRange>;
 type AttributeTypes = Record<string, "numeric" | "categorical">;
 
 type Props = {
@@ -15,8 +16,7 @@ type Props = {
     includeEmpty: Record<string, boolean>,
     enabledRanges: Record<string, boolean>,
   ) => void;
-  samples: Array<Record<string, string>>; // 全標本
-  // 現在のフィルター状態
+  samples: Array<Record<string, string>>;
   initialFilters?: AttributeFilters;
   initialNumericRanges?: NumericRangeFilters;
   initialEnabledRanges?: Record<string, boolean>;
@@ -33,16 +33,12 @@ export function AttributeFilterDialog({
   initialIncludeEmptyValues = {},
 }: Props) {
   // 属性名リスト
-  const attributeNames = useMemo(() => {
-    if (samples.length === 0) return [];
-    return Object.keys(samples[0]);
-  }, [samples]);
+  const attributeNames = useMemo(() => (samples[0] ? Object.keys(samples[0]) : []), [samples]);
 
   // 属性ごとの値リスト
   const availableAttributes = useMemo(() => {
     const result: Record<string, string[]> = {};
     for (const attr of attributeNames) {
-      // 空文字を除外し、値を昇順ソート
       result[attr] = Array.from(new Set(samples.map((s) => s[attr] ?? "")))
         .filter((v) => v !== "")
         .sort((a, b) => a.localeCompare(b, "ja"));
@@ -55,7 +51,6 @@ export function AttributeFilterDialog({
     const typeMap: AttributeTypes = {};
     for (const attr of attributeNames) {
       const values = availableAttributes[attr];
-      // 空文字は除外して型判定
       const isNumeric = values.filter((v) => v.trim() !== "").every((v) => !Number.isNaN(Number(v)));
       typeMap[attr] = isNumeric && values.length > 0 ? "numeric" : "categorical";
     }
@@ -67,67 +62,50 @@ export function AttributeFilterDialog({
     const ranges: NumericRangeFilters = {};
     for (const attr of attributeNames) {
       if (attributeTypes[attr] === "numeric") {
-        // 空文字を除外して数値化
         const nums = availableAttributes[attr].filter((v) => v.trim() !== "").map(Number);
-        if (nums.length > 0) {
-          ranges[attr] = [Math.min(...nums), Math.max(...nums)];
-        } else {
-          ranges[attr] = [0, 0];
-        }
+        ranges[attr] = nums.length > 0 ? [Math.min(...nums), Math.max(...nums)] : [0, 0];
       }
     }
     return ranges;
   }, [attributeNames, attributeTypes, availableAttributes]);
 
   // --- 状態 ---
-  // カテゴリ属性: 選択値 (初期値を反映)
   const [categoricalFilters, setCategoricalFilters] = useState<AttributeFilters>(initialFilters);
-  // 数値属性: レンジ (初期値を反映、ない場合は全体の範囲)
   const [numericRanges, setNumericRanges] = useState<NumericRangeFilters>(
     Object.keys(initialNumericRanges).length > 0 ? initialNumericRanges : numericRangesAll,
   );
-  // 数値属性: 有効/無効 (初期値を反映)
   const [enabledRanges, setEnabledRanges] = useState<Record<string, boolean>>(initialEnabledRanges);
-  // 空値含める (初期値を反映)
   const [includeEmptyValues, setIncludeEmptyValues] = useState<Record<string, boolean>>(initialIncludeEmptyValues);
 
   // --- ハンドラ ---
   const handleCheckboxChange = useCallback((attr: string, value: string) => {
     setCategoricalFilters((prev) => {
       const arr = prev[attr] ?? [];
-      if (arr.includes(value)) {
-        const filtered = arr.filter((v) => v !== value);
-        const next = { ...prev };
-        if (filtered.length === 0) delete next[attr];
-        else next[attr] = filtered;
-        return next;
-      }
-      return { ...prev, [attr]: [...arr, value] };
+      const nextArr = arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
+      const next = { ...prev };
+      if (nextArr.length === 0) delete next[attr];
+      else next[attr] = nextArr;
+      return next;
     });
   }, []);
 
-  const handleMinRangeChange = useCallback(
-    (attr: string, minValue: number) => {
+  const handleRangeChange = useCallback(
+    (attr: string, idx: 0 | 1, value: number) => {
       setNumericRanges((prev) => {
-        const max = prev[attr]?.[1] ?? numericRangesAll[attr]?.[1] ?? 0;
-        return { ...prev, [attr]: [Math.min(minValue, max), max] };
+        const [min, max] = prev[attr] ?? numericRangesAll[attr] ?? [0, 0];
+        const next: NumericRange = idx === 0 ? [Math.min(value, max), max] : [min, Math.max(value, min)];
+        return { ...prev, [attr]: next };
       });
     },
     [numericRangesAll],
   );
 
-  const handleMaxRangeChange = useCallback(
-    (attr: string, maxValue: number) => {
-      setNumericRanges((prev) => {
-        const min = prev[attr]?.[0] ?? numericRangesAll[attr]?.[0] ?? 0;
-        return { ...prev, [attr]: [min, Math.max(maxValue, min)] };
-      });
-    },
-    [numericRangesAll],
-  );
+  const toggleRangeFilter = useCallback((attr: string) => {
+    setEnabledRanges((prev) => ({ ...prev, [attr]: !prev[attr] }));
+  }, []);
 
-  const toggleRangeFilter = useCallback((attr: string, isEnabled: boolean) => {
-    setEnabledRanges((prev) => ({ ...prev, [attr]: isEnabled }));
+  const handleIncludeEmptyToggle = useCallback((attr: string) => {
+    setIncludeEmptyValues((prev) => ({ ...prev, [attr]: !prev[attr] }));
   }, []);
 
   const handleClearFilters = useCallback(() => {
@@ -145,7 +123,7 @@ export function AttributeFilterDialog({
 
   // --- UI ---
   return (
-    <DialogRoot lazyMount open={true} onOpenChange={onClose}>
+    <DialogRoot lazyMount open onOpenChange={onClose}>
       <DialogContent width="80vw" maxWidth="1200px">
         <DialogBody>
           <Box mb={6} mt={4}>
@@ -153,7 +131,7 @@ export function AttributeFilterDialog({
               属性フィルター
             </Heading>
             <Text fontSize="sm" mb={5} color="gray.600">
-              表示する意見グループを属性で絞り込みます。
+              表示する意見グループを属性で絞り込みます。各項目のフィルタはAND結合されます。
             </Text>
             {attributeNames.length === 0 ? (
               <Text fontSize="sm" color="gray.500">
@@ -170,10 +148,7 @@ export function AttributeFilterDialog({
                         {attr}
                       </Heading>
                       {isNumeric && values.length > 0 && (
-                        <Checkbox
-                          checked={!!enabledRanges[attr]}
-                          onChange={() => toggleRangeFilter(attr, !enabledRanges[attr])}
-                        >
+                        <Checkbox checked={!!enabledRanges[attr]} onChange={() => toggleRangeFilter(attr)}>
                           フィルター有効化
                         </Checkbox>
                       )}
@@ -182,8 +157,8 @@ export function AttributeFilterDialog({
                       <Box pl={2} pr={4} borderWidth={1} borderRadius="md" p={2}>
                         <Flex align="center">
                           <Checkbox
-                            checked={includeEmptyValues[attr] || false}
-                            onChange={() => setIncludeEmptyValues((prev) => ({ ...prev, [attr]: !prev[attr] }))}
+                            checked={!!includeEmptyValues[attr]}
+                            onChange={() => handleIncludeEmptyToggle(attr)}
                             disabled={!enabledRanges[attr]}
                             mr={4}
                           >
@@ -195,7 +170,7 @@ export function AttributeFilterDialog({
                           <Input
                             type="number"
                             value={numericRanges[attr]?.[0] ?? ""}
-                            onChange={(e) => handleMinRangeChange(attr, Number(e.target.value))}
+                            onChange={(e) => handleRangeChange(attr, 0, Number(e.target.value))}
                             size="sm"
                             width="100px"
                             disabled={!enabledRanges[attr]}
@@ -204,7 +179,7 @@ export function AttributeFilterDialog({
                           <Input
                             type="number"
                             value={numericRanges[attr]?.[1] ?? ""}
-                            onChange={(e) => handleMaxRangeChange(attr, Number(e.target.value))}
+                            onChange={(e) => handleRangeChange(attr, 1, Number(e.target.value))}
                             size="sm"
                             width="100px"
                             disabled={!enabledRanges[attr]}
