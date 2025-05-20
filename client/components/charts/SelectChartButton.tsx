@@ -85,12 +85,12 @@ export function SelectChartButton({
         <HStack gap={1} justifySelf={["end"]} alignSelf={"center"}>
           <Tooltip content={"表示設定"} openDelay={0} closeDelay={0}>
             <Button onClick={onClickDensitySetting} variant={"outline"} h={"50px"} w={"50px"} p={0}>
-              <Icon as={CogIcon} boxSize={5} />
+              <Icon as={CogIcon} />
             </Button>
           </Tooltip>
           <Tooltip content={"全画面表示"} openDelay={0} closeDelay={0}>
             <Button onClick={onClickFullscreen} variant={"outline"} h={"50px"} w={"50px"} p={0}>
-              <Icon as={FullscreenIcon} boxSize={5} />
+              <Icon as={FullscreenIcon} />
             </Button>
           </Tooltip>
         </HStack>
