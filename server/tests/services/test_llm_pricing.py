@@ -15,7 +15,7 @@ class TestLLMPricing:
         expected_cost = 0.45
 
         cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
-        assert cost == expected_cost
+        assert abs(cost - expected_cost) < 1e-6
 
     def test_calculate_cost_openai_gpt4o(self):
         """OpenAIのGPT-4oモデルの料金計算が正しく行われる"""
@@ -27,7 +27,7 @@ class TestLLMPricing:
         expected_cost = 7.50
 
         cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
-        assert cost == expected_cost
+        assert abs(cost - expected_cost) < 1e-6
 
     def test_calculate_cost_openai_o3_mini(self):
         """OpenAIのo3-miniモデルの料金計算が正しく行われる"""
@@ -39,7 +39,7 @@ class TestLLMPricing:
         expected_cost = 3.30
 
         cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
-        assert cost == expected_cost
+        assert abs(cost - expected_cost) < 1e-6
 
     def test_calculate_cost_azure_gpt4o_mini(self):
         """AzureのGPT-4o-miniモデルの料金計算が正しく行われる"""
@@ -51,7 +51,7 @@ class TestLLMPricing:
         expected_cost = 0.45
 
         cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
-        assert cost == expected_cost
+        assert abs(cost - expected_cost) < 1e-6
 
     def test_calculate_cost_openrouter_gpt4o(self):
         """OpenRouterのGPT-4oモデルの料金計算が正しく行われる"""
@@ -63,7 +63,7 @@ class TestLLMPricing:
         expected_cost = 7.50
 
         cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
-        assert cost == expected_cost
+        assert abs(cost - expected_cost) < 1e-6
 
     def test_calculate_cost_unknown_provider(self):
         """不明なプロバイダーの場合はデフォルト価格で計算される"""
@@ -75,7 +75,7 @@ class TestLLMPricing:
         expected_cost = 0.025
 
         cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
-        assert cost == expected_cost
+        assert abs(cost - expected_cost) < 1e-6
 
     def test_calculate_cost_unknown_model(self):
         """不明なモデルの場合はデフォルト価格で計算される"""
@@ -87,7 +87,7 @@ class TestLLMPricing:
         expected_cost = 0.025
 
         cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
-        assert cost == expected_cost
+        assert abs(cost - expected_cost) < 1e-6
 
     def test_calculate_cost_small_tokens(self):
         """少量のトークンでも正しく計算される"""
@@ -99,7 +99,7 @@ class TestLLMPricing:
         expected_cost = 0.00045
 
         cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
-        assert cost == expected_cost
+        assert abs(cost - expected_cost) < 1e-6
 
     def test_calculate_cost_zero_tokens(self):
         """トークン使用量が0の場合は0が返される"""
@@ -111,7 +111,7 @@ class TestLLMPricing:
         expected_cost = 0.0
 
         cost = LLMPricing.calculate_cost(provider, model, token_usage_input, token_usage_output)
-        assert cost == expected_cost
+        assert abs(cost - expected_cost) < 1e-6
 
     def test_format_cost(self):
         """コストが正しくフォーマットされる"""
