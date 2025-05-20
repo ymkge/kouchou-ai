@@ -92,13 +92,13 @@ export default function Page() {
           };
 
           // 選択された属性カラムの値を直接追加（"attribute" プレフィックス付き）
-          inputData.selectedAttributeColumns.forEach((attrCol) => {
+          for (const attrCol of inputData.selectedAttributeColumns) {
             if (rowData[attrCol] !== undefined && rowData[attrCol] !== null) {
               // 属性カラムの名前に "attribute" プレフィックスを追加
               const attributeKey = `attribute_${attrCol}`;
               comment[attributeKey] = rowData[attrCol] as string;
             }
-          });
+          }
 
           return comment;
         });
@@ -127,13 +127,13 @@ export default function Page() {
           };
 
           // 選択された属性カラムの値を直接追加（"attribute" プレフィックス付き）
-          inputData.selectedAttributeColumns.forEach((attrCol) => {
+          for (const attrCol of inputData.selectedAttributeColumns) {
             if (rowData[attrCol] !== undefined && rowData[attrCol] !== null) {
               // 属性カラムの名前に "attribute" プレフィックスを追加
               const attributeKey = `attribute_${attrCol}`;
               comment[attributeKey] = rowData[attrCol] as string;
             }
-          });
+          }
 
           return comment;
         });
