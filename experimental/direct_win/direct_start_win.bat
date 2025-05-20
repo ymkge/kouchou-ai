@@ -83,18 +83,24 @@ for /f "tokens=1,* delims==" %%A in (.env) do (
     )
 )
 
-rem --- Check if Python executable exists ---
+rem --- Save current directory and move to server folder ---
+set CURRENT_DIR=%cd%
+cd server
+
+rem --- Check if Python executable exists (relative to server) ---
 if not exist "%PYTHON_EXECUTABLE%" (
     echo [ERROR] Python executable %PYTHON_EXECUTABLE% not found.
     echo Please check:
-    echo  1. Did you run `pdm install` in the server folder?
-    echo  2. If PYTHON_EXECUTABLE is set in .env, is the path correct?
     echo.
+    cd "%CURRENT_DIR%"
     pause
     exit /b 1
 )
 
 echo [INFO] Using Python: %PYTHON_EXECUTABLE%
+
+rem --- Return to original directory ---
+cd "%CURRENT_DIR%"
 
 rem --- Start API server ---
 echo [STEP 2] Starting FastAPI server in a new window...
