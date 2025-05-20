@@ -7,9 +7,6 @@ from typing import TypedDict
 
 import pandas as pd
 
-from broadlistening.pipeline.hierarchical_utils import initialization
-
-
 ROOT_DIR = Path(__file__).parent.parent.parent.parent
 CONFIG_DIR = ROOT_DIR / "scatter" / "pipeline" / "configs"
 PIPELINE_DIR = ROOT_DIR / "broadlistening" / "pipeline"
@@ -51,7 +48,7 @@ def hierarchical_aggregation(config) -> bool:
         arguments = pd.read_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/args.csv")
         arguments.set_index("arg-id", inplace=True)
         arg_num = len(arguments)
-        
+
         relation_df = pd.read_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/relations.csv")
         comments = pd.read_csv(PIPELINE_DIR / f"inputs/{config['input']}.csv")
         clusters = pd.read_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/hierarchical_clusters.csv")
@@ -66,7 +63,7 @@ def hierarchical_aggregation(config) -> bool:
         # results["comments"] = _build_comments_value(
         #     comments, arguments, hidden_properties_map
         # )
-        
+
         results["comment_num"] = len(comments)
         results["translations"] = _build_translations(config)
         # 属性情報のカラムは、元データに対して指定したカラムとclassificationするカテゴリを合わせたもの
@@ -255,10 +252,3 @@ def _build_property_map(
             # LLMによるcategory classificationがうまく行かず、NaNの場合はNoneにする
             property_map[prop][arg_id] = row[prop] if not pd.isna(row[prop]) else None
     return property_map
-
-
-def execute_aggregation(config_path: Path) -> bool:
-    """コンフィグを読んでaggregationステップを実行する。apiサーバーから呼び出される。"""
-    config = initialization([str(config_path), str(config_path), "-skip-interaction", "--without-html", "-f"])
-    is_aggregation_executed = hierarchical_aggregation(config)
-    return is_aggregation_executed

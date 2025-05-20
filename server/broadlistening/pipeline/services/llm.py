@@ -335,15 +335,12 @@ def request_to_local_llm_embed(args, model, address="localhost:11434"):
 
 def request_to_embed(args, model, is_embedded_at_local=False, provider="openai", local_llm_address: str | None = None):
     if is_embedded_at_local:
-        logging.info("request_to_local_embed")
         return request_to_local_embed(args)
 
     if provider == "azure":
         logging.info("request_to_azure_embed")
-        print("hoge")
         return request_to_azure_embed(args, model)
     elif provider == "openai":
-        print("fuga")
         logging.info("request_to_openai_embed")
         _validate_model(model)
         client = OpenAI()
@@ -364,7 +361,6 @@ def request_to_azure_embed(args, model):
     api_key = os.getenv("AZURE_EMBEDDING_API_KEY")
     api_version = os.getenv("AZURE_EMBEDDING_VERSION")
     deployment = os.getenv("AZURE_EMBEDDING_DEPLOYMENT_NAME")
-    print("azure embed")
 
     client = AzureOpenAI(
         api_version=api_version,

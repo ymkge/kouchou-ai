@@ -1,20 +1,27 @@
 import csv
-from enum import Enum
 
 from src.config import settings
+from src.core.exceptions import ClusterCSVParseError, ClusterFileNotFound
 from src.schemas.cluster import ClusterResponse, ClusterUpdate
 from src.utils.logger import setup_logger
 
 slogger = setup_logger()
 
-class ClusterError(Enum):
-    FILE_NOT_FOUND = 1
-    CSV_READ_ERROR = 2
-    CSV_WRITE_ERROR = 3
-
 
 class ClusterRepository:
-    FIELDS = ["level", "id", "label", "description", "value", "parent", "density", "density_rank", "density_rank_percentile"]
+    """クラスタの中間ファイル（csvファイル）を読み書きするrepository"""
+
+    FIELDS = [
+        "level",
+        "id",
+        "label",
+        "description",
+        "value",
+        "parent",
+        "density",
+        "density_rank",
+        "density_rank_percentile",
+    ]
 
     def __init__(self, slug: str):
         self.slug = slug
@@ -24,10 +31,11 @@ class ClusterRepository:
         """中間ファイル（CSVファイル）からクラスタのラベル・説明を読み込む"""
 
         clusters = []
-        try:
-            if not self.labels_path.exists():
-                return []
+        # ファイルが存在しない場合は、ClusterFileNotFound例外を発生させる
+        if not self.labels_path.exists():
+            raise ClusterFileNotFound(f"File not found: {self.labels_path}")
 
+        try:
             with open(self.labels_path, encoding="utf-8") as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
@@ -53,10 +61,10 @@ class ClusterRepository:
             return clusters
         except FileNotFoundError:
             slogger.warning(f"File not found: {self.labels_path}")
-            return []
+            raise ClusterFileNotFound(f"File not found: {self.labels_path}") from None
         except Exception as e:
             slogger.error(f"Error reading CSV file: {e}")
-            return []
+            raise ClusterCSVParseError(f"Error reading CSV file: {e}") from e
 
     def update_csv(self, updated_cluster: ClusterUpdate) -> bool:
         """中間ファイル（CSVファイル）を更新する"""
@@ -78,11 +86,7 @@ class ClusterRepository:
 
                 writer.writeheader()
                 for cluster in merged_clusters:
-                    writer.writerow(
-                        {
-                            field: cluster[field] for field in self.FIELDS
-                        }
-                    )
+                    writer.writerow({field: cluster[field] for field in self.FIELDS})
             return True
         except Exception as e:
             slogger.error(f"Error writing CSV file: {e}")

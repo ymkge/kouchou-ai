@@ -136,7 +136,7 @@ export function ClusterEditDialog({
                       </Select.IndicatorGroup>
                     </Select.Control>
                     <Portal container={clusterDialogContentRef}>
-                      <Select.Positioner zIndex={2500}>
+                      <Select.Positioner zIndex={1002}>
                         <Select.Content>
                           {availableLevels.map((level) => (
                             <Select.Item item={{ label: `第${level}階層`, value: level }} key={level}>
@@ -200,7 +200,7 @@ export function ClusterEditDialog({
                 {selectedClusterId && (
                   <>
                     <Separator my={4} />
-                    <Heading size="md">新しい意見グループ</Heading>
+                    <Heading size="md">意見グループの編集</Heading>
                     <Box>
                       <Text mb={2} fontWeight="bold">
                         タイトル

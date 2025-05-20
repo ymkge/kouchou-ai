@@ -641,7 +641,7 @@ function ReportCard({
             <Dialog.Content
               pointerEvents="auto"
               position="relative"
-              zIndex={2000}
+              zIndex={1001}
               boxShadow="md"
               onClick={(e) => e.stopPropagation()}
             >

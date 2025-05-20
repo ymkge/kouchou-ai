@@ -40,6 +40,7 @@ def extraction(config):
     # カラム名だけを読み込み、必要なカラムが含まれているか確認する
     comments = pd.read_csv(f"inputs/{config['input']}.csv", nrows=0)
     _validate_property_columns(property_columns, comments)
+    print("validate property columns")
     # エラーが出なかった場合、すべての行を読み込む
     comments = pd.read_csv(
         f"inputs/{config['input']}.csv", usecols=["comment-id", "comment-body"] + config["extraction"]["properties"]

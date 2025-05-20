@@ -131,3 +131,27 @@ def launch_report_generation(report_input: ReportInput) -> None:
         set_status(report_input.input, "error")
         logger.error(f"Error launching report generation: {e}")
         raise e
+
+
+def execute_aggregation(slug: str) -> bool:
+    """
+    外部ツールの main.py を subprocess で呼び出してレポート生成処理を開始する関数。
+    """
+    try:
+        config_path = settings.CONFIG_DIR / f"{slug}.json"
+        cmd = [
+            "python",
+            "hierarchical_main.py",
+            config_path,
+            "--skip-interaction",
+            "--without-html",
+            "-o",
+            "hierarchical_aggregation",
+        ]
+        execution_dir = settings.TOOL_DIR / "pipeline"
+        process = subprocess.Popen(cmd, cwd=execution_dir)
+        threading.Thread(target=_monitor_process, args=(process, slug), daemon=True).start()
+        return True
+    except Exception as e:
+        logger.error(f"Error executing aggregation: {e}")
+        return False
