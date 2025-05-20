@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from tqdm import tqdm
 
 from services.category_classification import classify_args
-from services.llm import request_to_chat_openai
+from services.llm import request_to_chat_ai
 from services.parse_json_list import parse_extraction_response
 from utils import update_progress
 
@@ -32,7 +32,10 @@ def extraction(config):
     workers = config["extraction"]["workers"]
     limit = config["extraction"]["limit"]
     property_columns = config["extraction"]["properties"]
-    provider = config.get("provider", "openai")  # デフォルトはopenai
+
+    if "provider" not in config:
+        raise RuntimeError("provider is not set")
+    provider = config["provider"]
 
     # カラム名だけを読み込み、必要なカラムが含まれているか確認する
     comments = pd.read_csv(f"inputs/{config['input']}.csv", nrows=0)
@@ -125,7 +128,7 @@ def extract_arguments(input, prompt, model, provider="openai", local_llm_address
         {"role": "user", "content": input},
     ]
     try:
-        response = request_to_chat_openai(
+        response = request_to_chat_ai(
             messages=messages,
             model=model,
             is_json=False,

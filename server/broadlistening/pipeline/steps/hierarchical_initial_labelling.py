@@ -6,7 +6,7 @@ from typing import TypedDict
 import pandas as pd
 from pydantic import BaseModel, Field
 
-from services.llm import request_to_chat_openai
+from services.llm import request_to_chat_ai
 
 
 class LabellingResult(TypedDict):
@@ -40,7 +40,6 @@ def hierarchical_initial_labelling(config: dict) -> None:
     initial_labelling_prompt = config["hierarchical_initial_labelling"]["prompt"]
     model = config["hierarchical_initial_labelling"]["model"]
     workers = config["hierarchical_initial_labelling"]["workers"]
-    provider = config.get("provider", "openai")  # デフォルトはopenai
 
     initial_label_df = initial_labelling(
         initial_labelling_prompt,
@@ -48,7 +47,7 @@ def hierarchical_initial_labelling(config: dict) -> None:
         sampling_num,
         model,
         workers,
-        provider,
+        config["provider"],
         config.get("local_llm_address"),
     )
     print("start initial labelling")
@@ -145,7 +144,7 @@ def process_initial_labelling(
         {"role": "user", "content": input},
     ]
     try:
-        response = request_to_chat_openai(
+        response = request_to_chat_ai(
             messages=messages,
             model=model,
             provider=provider,

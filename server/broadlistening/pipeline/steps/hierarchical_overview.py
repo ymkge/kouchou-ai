@@ -6,7 +6,7 @@ import re
 import pandas as pd
 from pydantic import BaseModel, Field
 
-from services.llm import request_to_chat_openai
+from services.llm import request_to_chat_ai
 
 
 class OverviewResponse(BaseModel):
@@ -21,7 +21,6 @@ def hierarchical_overview(config):
 
     prompt = config["hierarchical_overview"]["prompt"]
     model = config["hierarchical_overview"]["model"]
-    provider = config.get("provider", "openai")  # デフォルトはopenai
 
     # TODO: level1で固定にしているが、設定で変えられるようにする
     target_level = 1
@@ -37,10 +36,10 @@ def hierarchical_overview(config):
         input_text += descriptions[i] + "\n\n"
 
     messages = [{"role": "system", "content": prompt}, {"role": "user", "content": input_text}]
-    response = request_to_chat_openai(
+    response = request_to_chat_ai(
         messages=messages,
         model=model,
-        provider=provider,
+        provider=config["provider"],
         local_llm_address=config.get("local_llm_address"),
         json_schema=OverviewResponse,
     )

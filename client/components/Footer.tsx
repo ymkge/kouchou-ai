@@ -57,7 +57,15 @@ export function Footer({ meta }: Props) {
               <DrawerBody textAlign={"center"}>
                 <Box mb={8} maxW={"700px"} mx={"auto"}>
                   <Heading size={"lg"} mb={2} textAlign={"center"}>
-                    プロジェクトについて
+                    広聴AIについて
+                  </Heading>
+                  <Text>
+                    広聴AIは、デジタル民主主義2030プロジェクトから生まれたオープンソース（OSS）アプリケーションです。本ページは、そのOSS成果物を活用して構築されています。
+                  </Text>
+                </Box>
+                <Box mb={8} maxW={"700px"} mx={"auto"}>
+                  <Heading size={"lg"} mb={2} textAlign={"center"}>
+                    デジタル民主主義2030プロジェクトについて
                   </Heading>
                   <Text>
                     2030年には、情報技術により民主主義のあり方はアップデートされており、一人ひとりの声が政治・行政に届き、適切に合意形成・政策反映されていくような社会が当たり前になる──そんな未来を目指して立ち上げられたのがデジタル民主主義2030プロジェクトです。

@@ -8,7 +8,7 @@ import pandas as pd
 from pydantic import BaseModel, Field
 from tqdm import tqdm
 
-from services.llm import request_to_chat_openai
+from services.llm import request_to_chat_ai
 
 
 @dataclass
@@ -270,11 +270,11 @@ def process_merge_labelling(
         },
     ]
     try:
-        response = request_to_chat_openai(
+        response = request_to_chat_ai(
             messages=messages,
             model=config["hierarchical_merge_labelling"]["model"],
             json_schema=LabellingFromat,
-            provider=config.get("provider", "openai"),
+            provider=config["provider"],
             local_llm_address=config.get("local_llm_address"),
         )
         response_json = json.loads(response) if isinstance(response, str) else response
