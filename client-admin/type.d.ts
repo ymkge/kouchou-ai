@@ -148,6 +148,7 @@ export type ClusterResponse = {
   id: string;
   label: string;
   description: string;
+  value: number;
   parent: string | null;
   density: number | null;
   density_rank: number | null;

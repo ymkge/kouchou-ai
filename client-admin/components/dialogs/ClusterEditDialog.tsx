@@ -251,7 +251,13 @@ export function ClusterEditDialog({
 
                     if (!response.ok) {
                       const errorData = await response.json();
-                      throw new Error(errorData.detail || "意見グループ情報の更新に失敗しました");
+                      let errorMessage = errorData.detail || "意見グループ情報の更新に失敗しました";
+                      if (response.status === 400) {
+                        errorMessage = `入力データが不正です: ${errorMessage}`;
+                      } else if (response.status === 404) {
+                        errorMessage = "指定されたレポートの意見グループが見つかりません";
+                      } 
+                      throw new Error(errorMessage);
                     }
                     // 意見グループ一覧を再取得して更新
                     const clusterResponse = await fetch(
@@ -272,6 +278,15 @@ export function ClusterEditDialog({
                       if (updatedSelectedCluster) {
                         setEditClusterTitle(updatedSelectedCluster.label);
                         setEditClusterDescription(updatedSelectedCluster.description);
+                      } else {
+                        // クラスター一覧取得のエラーを処理
+                        const errorData = await clusterResponse.json().catch(() => ({}));
+                        console.error("意見グループ一覧の取得に失敗しました:", errorData);
+                        toaster.create({
+                          type: "warning",
+                          title: "一部データの取得に失敗",
+                          description: "最新の意見グループ一覧の取得に失敗しましたが、変更は保存されています",
+                        });
                       }
                     }
 

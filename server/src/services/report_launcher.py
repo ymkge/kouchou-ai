@@ -154,7 +154,7 @@ def launch_report_generation(report_input: ReportInput) -> None:
 
 def execute_aggregation(slug: str) -> bool:
     """
-    外部ツールの main.py を subprocess で呼び出してレポート生成処理を開始する関数。
+    broadlistenigの集約処理のみ実行する関数
     """
     try:
         config_path = settings.CONFIG_DIR / f"{slug}.json"
