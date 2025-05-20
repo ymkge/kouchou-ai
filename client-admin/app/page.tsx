@@ -311,27 +311,27 @@ function ReportCard({
       setLastProgress(progress);
 
       if (progress === "completed" && setReports) {
-        const updatedReports = reports?.map((r) => (r.slug === report.slug ? { 
-          ...r, 
+        const updatedReports = reports?.map((r) => (r.slug === report.slug ? {
+          ...r,
           status: "ready",
           tokenUsage: tokenUsage || r.tokenUsage,
           tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
           tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput,
           estimatedCost: estimatedCost || r.estimatedCost,
-          provider: provider || r.provider,
-          model: model || r.model
+          provider: provider !== null ? provider : r.provider,
+          model: model !== null ? model : r.model
         } : r));
         setReports(updatedReports);
       } else if (progress === "error" && setReports) {
-        const updatedReports = reports?.map((r) => (r.slug === report.slug ? { 
-          ...r, 
+        const updatedReports = reports?.map((r) => (r.slug === report.slug ? {
+          ...r,
           status: "error",
           tokenUsage: tokenUsage || r.tokenUsage,
           tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
           tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput,
           estimatedCost: estimatedCost || r.estimatedCost,
-          provider: provider || r.provider,
-          model: model || r.model
+          provider: provider !== null ? provider : r.provider,
+          model: model !== null ? model : r.model
         } : r));
         setReports(updatedReports);
       }
