@@ -3,6 +3,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { Box, Button, HStack, Icon, SegmentGroup, Stack, useBreakpointValue } from "@chakra-ui/react";
 import { CogIcon, FullscreenIcon } from "lucide-react";
 import type React from "react";
+import { ComponentType } from "react";
 
 type Props = {
   selected: string;
@@ -10,6 +11,29 @@ type Props = {
   onClickDensitySetting: () => void;
   onClickFullscreen: () => void;
   isDenseGroupEnabled: boolean;
+};
+
+const SegmentIcon = (type: string, icon: ComponentType, text: string, selected: boolean) => {
+  return (
+    <Stack
+      direction={["column", null, "row"]}
+      gap={2}
+      alignItems="center"
+      justifyContent="center"
+      px={4}
+      py={2}
+      position="absolute"
+      top={0}
+      left={0}
+      right={0}
+      bottom={0}
+    >
+      <Icon as={icon} />
+      <Box color="gray.500" fontSize="16px" fontWeight={selected ? "bold" : "normal"} lineHeight="1" textWrap="nowrap">
+        {text}
+      </Box>
+    </Stack>
+  );
 };
 
 export function SelectChartButton({
@@ -25,70 +49,18 @@ export function SelectChartButton({
   const items = [
     {
       value: "scatterAll",
-      label: isVertical ? (
-        <Stack direction="column" gap={1} alignItems="center" px={4} py={2}>
-          <Icon as={AllViewIcon} w="1.5" h="1.5" />
-          <Box
-            color="gray.500"
-            fontWeight={selected === "scatterAll" ? "bold" : "normal"}
-            fontSize="2xs"
-            lineHeight="1"
-          >
-            全体
-          </Box>
-        </Stack>
-      ) : (
-        <HStack>
-          <Icon as={AllViewIcon} w="6" mr={3} />
-          <Box color="gray.500" fontWeight={selected === "scatterAll" ? "bold" : "normal"} px={4} py={2}>
-            全体
-          </Box>
-        </HStack>
-      ),
+      label: SegmentIcon("scatterAll", AllViewIcon, "全体", selected === "scatterAll"),
       isDisabled: false,
     },
     {
       value: "scatterDensity",
-      label: isVertical ? (
-        <Stack direction="column" gap={1} alignItems="center" px={4} py={2}>
-          <Icon as={DenseViewIcon} w="1.5" h="1.5" />
-          <Box
-            color="gray.500"
-            fontWeight={selected === "scatterDensity" ? "bold" : "normal"}
-            fontSize="2xs"
-            lineHeight="1"
-          >
-            濃い意見
-          </Box>
-        </Stack>
-      ) : (
-        <HStack>
-          <Icon as={DenseViewIcon} w="6" mr={3} />
-          <Box color="gray.500" fontWeight={selected === "scatterDensity" ? "bold" : "normal"} px={4} py={2}>
-            濃い意見
-          </Box>
-        </HStack>
-      ),
+      label: SegmentIcon("scatterDensity", DenseViewIcon, "濃い意見", selected === "scatterDensity"),
       isDisabled: !isDenseGroupEnabled,
       tooltip: !isDenseGroupEnabled ? "この設定条件では抽出できませんでした" : undefined,
     },
     {
       value: "treemap",
-      label: isVertical ? (
-        <Stack direction="column" gap={1} alignItems="center" px={4} py={2}>
-          <Icon as={HierarchyViewIcon} w="1.5" h="1.5" />
-          <Box color="gray.500" fontWeight={selected === "treemap" ? "bold" : "normal"} fontSize="2xs" lineHeight="1">
-            階層
-          </Box>
-        </Stack>
-      ) : (
-        <HStack>
-          <Icon as={HierarchyViewIcon} w="6" mr={3} />
-          <Box color="gray.500" fontWeight={selected === "treemap" ? "bold" : "normal"} px={4} py={2}>
-            階層
-          </Box>
-        </HStack>
-      ),
+      label: SegmentIcon("treemap", HierarchyViewIcon, "階層", selected === "treemap"),
       isDisabled: false,
     },
   ];
