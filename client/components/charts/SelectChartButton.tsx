@@ -27,9 +27,10 @@ const SegmentItemWithIcon = (icon: ComponentType, text: string, selected: boolea
       left={0}
       right={0}
       bottom={0}
+      color="gray.500"
     >
       <Icon as={icon} />
-      <Box color="gray.500" fontSize="16px" fontWeight={selected ? "bold" : "normal"} lineHeight="1" textWrap="nowrap">
+      <Box fontSize={["14px", null, "16px"]} fontWeight={selected ? "bold" : "normal"} lineHeight="1" textWrap="nowrap">
         {text}
       </Box>
     </Stack>
