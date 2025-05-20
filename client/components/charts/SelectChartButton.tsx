@@ -69,11 +69,17 @@ export function SelectChartButton({
 
   return (
     <Box maxW="1200px" mx="auto" mb={2}>
-      {/* セグメントグループを中央に配置 */}
-      <Box w="100%" display="flex" justifyContent="center">
-        <SegmentGroup.Root value={selected} onChange={handleChange} size="md" bg="gray.100">
+      <Box display="grid" gridTemplateColumns={["1fr", null, "1fr auto"]} gap="3">
+        <SegmentGroup.Root
+          value={selected}
+          onChange={handleChange}
+          size="md"
+          justifySelf={["center", null, "left", "center"]}
+          w={["100%", null, "auto"]}
+          h={["80px", null, "56px"]}
+        >
           <SegmentGroup.Indicator bg="white" border="1px solid #E4E4E7" boxShadow="0 4px 6px 0 rgba(0, 0, 0, 0.1)" />
-          <SegmentGroup.Items items={items} />
+          <SegmentGroup.Items items={items} w={["calc(100% / 3)", null, "162px"]} />
         </SegmentGroup.Root>
       </Box>
 
