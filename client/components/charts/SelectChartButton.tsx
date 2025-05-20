@@ -19,8 +19,8 @@ export function SelectChartButton({
   onClickFullscreen,
   isDenseGroupEnabled,
 }: Props) {
-  const isVertical = useBreakpointValue({ base: true, sm: true, md: false });
-  const isMobile = useBreakpointValue({ base: true, sm: true, md: false });
+  const isVertical = useBreakpointValue({ base: true, sm: true, md: false }) ?? false;
+  const isMobile = useBreakpointValue({ base: true, sm: true, md: false }) ?? false;
 
   const items = [
     {
