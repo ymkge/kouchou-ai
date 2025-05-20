@@ -18,9 +18,9 @@ class LLMPricing:
             "o3-mini": {"input": 1.10, "output": 4.40},
         },
         "openrouter": {
-            "gpt-4o-mini": {"input": 0.15, "output": 0.60},
-            "gpt-4o": {"input": 2.50, "output": 10.00},
-            "o3-mini": {"input": 1.10, "output": 4.40},
+            "openai/gpt-4o-mini-2024-07-18": {"input": 0.15, "output": 0.60},
+            "openai/gpt-4o-2024-08-06": {"input": 2.50, "output": 10.00},
+            "google/gemini-2.5-pro-preview": {"input": 1.25, "output": 10.00},
         },
     }
 

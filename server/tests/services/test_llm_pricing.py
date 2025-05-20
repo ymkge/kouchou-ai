@@ -56,7 +56,7 @@ class TestLLMPricing:
     def test_calculate_cost_openrouter_gpt4o(self):
         """OpenRouterのGPT-4oモデルの料金計算が正しく行われる"""
         provider = "openrouter"
-        model = "gpt-4o"
+        model = "openai/gpt-4o-2024-08-06"
         token_usage_input = 1_000_000  # 1M tokens
         token_usage_output = 500_000  # 0.5M tokens
 
