@@ -20,7 +20,7 @@ from src.services.report_status import (
     update_report_visibility_state,
 )
 from src.utils.logger import setup_logger
-from broadlistening.pipeline.services.setep_execution import execute_aggregation
+from broadlistening.pipeline.steps.hierarchical_aggregation import execute_aggregation
 
 
 
@@ -187,7 +187,8 @@ async def update_cluster_label(slug: str, updated_cluster: ClusterUpdate, api_ke
 
     if is_csv_updated:
         # aggregation を実行
-        is_aggregation_executed = execute_aggregation(slug)
+        config_path = settings.CONFIG_DIR / f"{slug}.json"
+        is_aggregation_executed = execute_aggregation(config_path)
         return {"success": is_aggregation_executed}
     
     return {"success": False}

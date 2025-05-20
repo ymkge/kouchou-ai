@@ -7,6 +7,9 @@ from typing import TypedDict
 
 import pandas as pd
 
+from broadlistening.pipeline.hierarchical_utils import initialization
+
+
 ROOT_DIR = Path(__file__).parent.parent.parent.parent
 CONFIG_DIR = ROOT_DIR / "scatter" / "pipeline" / "configs"
 PIPELINE_DIR = ROOT_DIR / "broadlistening" / "pipeline"
@@ -252,3 +255,10 @@ def _build_property_map(
             # LLMによるcategory classificationがうまく行かず、NaNの場合はNoneにする
             property_map[prop][arg_id] = row[prop] if not pd.isna(row[prop]) else None
     return property_map
+
+
+def execute_aggregation(config_path: Path) -> bool:
+    """コンフィグを読んでaggregationステップを実行する。apiサーバーから呼び出される。"""
+    config = initialization([str(config_path), str(config_path), "-skip-interaction", "--without-html", "-f"])
+    is_aggregation_executed = hierarchical_aggregation(config)
+    return is_aggregation_executed
