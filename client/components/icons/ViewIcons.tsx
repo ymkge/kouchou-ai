@@ -1,4 +1,6 @@
-export const AllViewIcon: React.FC = () => (
+import type { FC } from "react";
+
+export const AllViewIcon: FC = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <title>All View</title>
     <path
@@ -36,7 +38,7 @@ export const AllViewIcon: React.FC = () => (
   </svg>
 );
 
-export const DenseViewIcon: React.FC = () => (
+export const DenseViewIcon: FC = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <title>Dense View</title>
     <path
@@ -54,7 +56,7 @@ export const DenseViewIcon: React.FC = () => (
   </svg>
 );
 
-export const HierarchyViewIcon: React.FC = () => (
+export const HierarchyViewIcon: FC = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <title>Hierarchy View</title>
     <rect
