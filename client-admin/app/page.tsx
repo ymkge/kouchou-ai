@@ -131,7 +131,9 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
   ): number => {
     if (!provider || !model) return 0;
     
-    const price = PRICING[provider]?.[model] || DEFAULT_PRICE;
+    const price = PRICING[provider]?.[model];
+    if (!price) return 0; // 不明なモデルの場合は 0 を返す
+    
     const inputCost = (tokenUsageInput / 1_000_000) * price.input;
     const outputCost = (tokenUsageOutput / 1_000_000) * price.output;
     return inputCost + outputCost;
@@ -396,8 +398,8 @@ function ReportCard({
               {/* 推定コストの表示を追加 */}
               <Text fontSize="xs" color="gray.500" mb={1}>
                 推定コスト: {
-                  displayEstimatedCost != null ? 
-                    `$${displayEstimatedCost.toFixed(4)}${(displayProvider && displayModel) ? ` (${displayProvider} ${displayModel})` : ''}` : 
+                  displayEstimatedCost != null && displayEstimatedCost !== 0 ?
+                    `$${displayEstimatedCost.toFixed(4)}${(displayProvider && displayModel) ? ` (${displayProvider} ${displayModel})` : ''}` :
                     "情報なし"
                 }
               </Text>
