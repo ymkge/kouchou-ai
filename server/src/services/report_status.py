@@ -1,7 +1,7 @@
 import json
 import logging
 import threading
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import requests
 
@@ -82,7 +82,7 @@ def add_new_report_to_status(report_input: ReportInput) -> None:
             "description": report_input.intro,
             "is_pubcom": report_input.is_pubcom,
             "visibility": ReportVisibility.UNLISTED.value,
-            "created_at": datetime.now(timezone.utc).isoformat(),  # タイムゾーン付きISO形式で追加
+            "created_at": datetime.now(UTC).isoformat(),  # タイムゾーン付きISO形式で追加
             "token_usage": 0,  # トークン使用量を初期化
             "token_usage_input": 0,  # 入力トークン使用量を初期化
             "token_usage_output": 0,  # 出力トークン使用量を初期化

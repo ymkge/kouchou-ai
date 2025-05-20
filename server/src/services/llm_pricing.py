@@ -2,6 +2,7 @@
 LLMモデルの価格計算サービス
 """
 
+
 class LLMPricing:
     """LLMモデルの価格計算クラス"""
 
