@@ -218,7 +218,10 @@ function ReportCard({
   setReports?: (reports: Report[] | undefined) => void;
 }) {
   const statusDisplay = getStatusDisplay(report.status);
-  const { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput } = useReportProgressPoll(report.slug, report.status !== "ready");
+  const { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput } = useReportProgressPoll(
+    report.slug,
+    report.status !== "ready",
+  );
 
   const currentStepIndex =
     progress === "completed" ? steps.length : stepKeys.indexOf(progress) === -1 ? 0 : stepKeys.indexOf(progress);
@@ -251,22 +254,30 @@ function ReportCard({
       setLastProgress(progress);
 
       if (progress === "completed" && setReports) {
-        const updatedReports = reports?.map((r) => (r.slug === report.slug ? { 
-          ...r, 
-          status: "ready",
-          tokenUsage: tokenUsage || r.tokenUsage,
-          tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
-          tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput
-        } : r));
+        const updatedReports = reports?.map((r) =>
+          r.slug === report.slug
+            ? {
+                ...r,
+                status: "ready",
+                tokenUsage: tokenUsage || r.tokenUsage,
+                tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
+                tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput,
+              }
+            : r,
+        );
         setReports(updatedReports);
       } else if (progress === "error" && setReports) {
-        const updatedReports = reports?.map((r) => (r.slug === report.slug ? { 
-          ...r, 
-          status: "error",
-          tokenUsage: tokenUsage || r.tokenUsage,
-          tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
-          tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput
-        } : r));
+        const updatedReports = reports?.map((r) =>
+          r.slug === report.slug
+            ? {
+                ...r,
+                status: "error",
+                tokenUsage: tokenUsage || r.tokenUsage,
+                tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
+                tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput,
+              }
+            : r,
+        );
         setReports(updatedReports);
       }
     }
@@ -319,15 +330,18 @@ function ReportCard({
               )}
               {/* トークン使用量の表示を追加 */}
               <Text fontSize="xs" color="gray.500" mb={1}>
-                トークン使用量: {
-                  report.status === "processing" ? 
-                    (tokenUsageInput > 0 || tokenUsageOutput > 0 ? 
-                      `入力: ${tokenUsageInput.toLocaleString()}, 出力: ${tokenUsageOutput.toLocaleString()}` : 
-                      (tokenUsage > 0 ? `${tokenUsage.toLocaleString()} (詳細なし)` : "情報なし")) :
-                    (report.tokenUsageInput != null && report.tokenUsageOutput != null ? 
-                      `入力: ${report.tokenUsageInput.toLocaleString()}, 出力: ${report.tokenUsageOutput.toLocaleString()}` : 
-                      (report.tokenUsage != null ? `${report.tokenUsage.toLocaleString()} (詳細なし)` : "情報なし"))
-                }
+                トークン使用量:{" "}
+                {report.status === "processing"
+                  ? tokenUsageInput > 0 || tokenUsageOutput > 0
+                    ? `入力: ${tokenUsageInput.toLocaleString()}, 出力: ${tokenUsageOutput.toLocaleString()}`
+                    : tokenUsage > 0
+                      ? `${tokenUsage.toLocaleString()} (詳細なし)`
+                      : "情報なし"
+                  : report.tokenUsageInput != null && report.tokenUsageOutput != null
+                    ? `入力: ${report.tokenUsageInput.toLocaleString()}, 出力: ${report.tokenUsageOutput.toLocaleString()}`
+                    : report.tokenUsage != null
+                      ? `${report.tokenUsage.toLocaleString()} (詳細なし)`
+                      : "情報なし"}
               </Text>
               {report.status !== "ready" && (
                 <Box mt={2}>

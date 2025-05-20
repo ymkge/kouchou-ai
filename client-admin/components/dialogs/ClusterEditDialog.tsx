@@ -62,6 +62,26 @@ export function ClusterEditDialog({
     return clusters.filter((c) => c.level === selectedLevel);
   }, [clusters, selectedLevel]);
 
+  // クラスター一覧を取得する共通関数
+  const fetchClusters = async () => {
+    try {
+      const clusterResponse = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`, {
+        headers: {
+          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+        },
+      });
+      if (clusterResponse.ok) {
+        const clusterData = await clusterResponse.json();
+        setClusters(clusterData.clusters);
+        return clusterData.clusters;
+      }
+      return null;
+    } catch (error) {
+      console.error("意見グループ情報の取得に失敗しました:", error);
+      return null;
+    }
+  };
+
   // 階層が変更されたら意見グループの先頭を自動選択
   useEffect(() => {
     if (filteredClusters.length > 0) {
@@ -256,38 +276,28 @@ export function ClusterEditDialog({
                         errorMessage = `入力データが不正です: ${errorMessage}`;
                       } else if (response.status === 404) {
                         errorMessage = "指定されたレポートの意見グループが見つかりません";
-                      } 
+                      }
                       throw new Error(errorMessage);
                     }
                     // 意見グループ一覧を再取得して更新
-                    const clusterResponse = await fetch(
-                      `${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`,
-                      {
-                        headers: {
-                          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                        },
-                      },
-                    );
-                    if (clusterResponse.ok) {
-                      const clusterData = await clusterResponse.json();
-                      setClusters(clusterData.clusters);
+                    const updatedClusters = await fetchClusters();
+                    if (updatedClusters) {
                       // 更新された意見グループ情報をフォームに再設定
-                      const updatedSelectedCluster = clusterData.clusters.find(
+                      const updatedSelectedCluster = updatedClusters.find(
                         (c: ClusterResponse) => c.id === selectedClusterId,
                       );
                       if (updatedSelectedCluster) {
                         setEditClusterTitle(updatedSelectedCluster.label);
                         setEditClusterDescription(updatedSelectedCluster.description);
-                      } else {
-                        // クラスター一覧取得のエラーを処理
-                        const errorData = await clusterResponse.json().catch(() => ({}));
-                        console.error("意見グループ一覧の取得に失敗しました:", errorData);
-                        toaster.create({
-                          type: "warning",
-                          title: "一部データの取得に失敗",
-                          description: "最新の意見グループ一覧の取得に失敗しましたが、変更は保存されています",
-                        });
                       }
+                    } else {
+                      // クラスター一覧取得のエラーを処理
+                      console.error("意見グループ一覧の取得に失敗しました");
+                      toaster.create({
+                        type: "warning",
+                        title: "一部データの取得に失敗",
+                        description: "最新の意見グループ一覧の取得に失敗しましたが、変更は保存されています",
+                      });
                     }
 
                     toaster.create({
