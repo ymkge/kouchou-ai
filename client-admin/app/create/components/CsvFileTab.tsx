@@ -60,7 +60,8 @@ export function CsvFileTab({
             if (file) {
               const parsed = await parseCsv(file);
               if (parsed.length > 0) {
-                const columns = Object.keys(parsed[0]);
+                // CSVの最初の行をカラム名として使用、IDのカラムは除外
+                const columns = Object.keys(parsed[0]).filter((key) => key !== "id");
                 setCsvColumns(columns);
 
                 // 最適なカラムを自動選択
