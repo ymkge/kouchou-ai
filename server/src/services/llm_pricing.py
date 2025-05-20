@@ -2,13 +2,12 @@
 LLMモデルの価格計算サービス
 """
 
-from typing import Dict, Optional, Tuple
 
 
 class LLMPricing:
     """LLMモデルの価格計算クラス"""
 
-    PRICING: Dict[str, Dict[str, Dict[str, float]]] = {
+    PRICING: dict[str, dict[str, dict[str, float]]] = {
         "openai": {
             "gpt-4o-mini": {"input": 0.15, "output": 0.60},
             "gpt-4o": {"input": 2.50, "output": 10.00},
@@ -63,7 +62,7 @@ class LLMPricing:
 
     @staticmethod
     def _calculate_with_price(
-        price: Dict[str, float], token_usage_input: int, token_usage_output: int
+        price: dict[str, float], token_usage_input: int, token_usage_output: int
     ) -> float:
         """
         価格情報とトークン使用量から推定コストを計算する
