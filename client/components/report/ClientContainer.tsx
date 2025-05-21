@@ -160,9 +160,17 @@ export function ClientContainer({ result }: Props) {
       });
     });
     const { filtered: densityFilteredClusters } = getDenseClusters(result.clusters || [], maxDensity, minValue);
-    const combinedFilteredClusters = densityFilteredClusters.filter(
-      (cluster) => !hasActiveFilters || clusterIdsWithFilteredArgs.has(cluster.id),
-    );
+    
+    // フィルターが適用されていても、すべてのクラスターを表示するが、
+    // フィルター条件に合致する引数がないクラスタは特別なプロパティで区別する
+    const combinedFilteredClusters = densityFilteredClusters.map(cluster => {
+      if (hasActiveFilters && !clusterIdsWithFilteredArgs.has(cluster.id)) {
+        // このクラスターにはフィルター条件に合致する引数が存在しないことを示す
+        return { ...cluster, allFiltered: true };
+      }
+      return cluster;
+    });
+    
     setFilteredResult({
       ...result,
       clusters: combinedFilteredClusters,

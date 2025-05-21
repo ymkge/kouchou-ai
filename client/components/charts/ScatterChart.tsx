@@ -182,27 +182,35 @@ export function ScatterChart({
 
   // 各クラスターのデータを生成（フィルター対象外を背面に、フィルター対象を前面に描画するため分離）
   const clusterDataSets = targetClusters.map((cluster) => {
-    const { matching, notMatching } = separateDataByFilter(cluster);
-
-    // クラスターの中心座標計算用にすべての引数を取得
-    const allClusterArguments = [...notMatching, ...matching];
+    // クラスターに属するすべての引数を取得（フィルター状況に関係なく）
+    const allClusterArguments = allArguments.filter((arg) => arg.cluster_ids.includes(cluster.id));
+    
+    // クラスター中心はフィルター状況に関わらず、すべての要素から計算
     const allXValues = allClusterArguments.map((arg) => arg.x);
     const allYValues = allClusterArguments.map((arg) => arg.y);
 
     const centerX = allXValues.length > 0 ? allXValues.reduce((sum, val) => sum + val, 0) / allXValues.length : 0;
-    const centerY = allYValues.length > 0 ? allYValues.reduce((sum, val) => sum + val, 0) / allYValues.length : 0; // フィルター対象外のアイテム（背面に描画）
-    const notMatchingData =
-      notMatching.length > 0
+    const centerY = allYValues.length > 0 ? allYValues.reduce((sum, val) => sum + val, 0) / allYValues.length : 0;
+    
+    // フィルター適用後の表示用データを分離
+    const { matching, notMatching } = separateDataByFilter(cluster);
+    
+    // フィルターが適用されている場合に、クラスター内の全要素がフィルターされていても表示する
+    // @ts-ignore allFilteredプロパティが存在する前提で処理（TypeScript型定義に追加済み）
+    const allElementsFiltered = filteredArgumentIds && (matching.length === 0 || cluster.allFiltered);
+    
+    const notMatchingData = 
+      (notMatching.length > 0 || allElementsFiltered)
         ? {
-            x: notMatching.map((arg) => arg.x),
-            y: notMatching.map((arg) => arg.y),
+            x: notMatching.length > 0 ? notMatching.map((arg) => arg.x) : allClusterArguments.map((arg) => arg.x),
+            y: notMatching.length > 0 ? notMatching.map((arg) => arg.y) : allClusterArguments.map((arg) => arg.y),
             mode: "markers",
             marker: {
               size: 7,
-              color: Array(notMatching.length).fill("#cccccc"), // グレー表示
-              opacity: Array(notMatching.length).fill(0.5), // 半透明
+              color: Array(notMatching.length > 0 ? notMatching.length : allClusterArguments.length).fill("#cccccc"), // グレー表示
+              opacity: Array(notMatching.length > 0 ? notMatching.length : allClusterArguments.length).fill(0.5), // 半透明
             },
-            text: Array(notMatching.length).fill(""), // ホバーテキストなし
+            text: Array(notMatching.length > 0 ? notMatching.length : allClusterArguments.length).fill(""), // ホバーテキストなし
             type: "scattergl",
             hoverinfo: "skip", // ホバー表示を無効化
             showlegend: false,
@@ -297,21 +305,30 @@ export function ScatterChart({
 
   // アノテーションの設定
   const annotations: Partial<Annotations>[] = showClusterLabels
-    ? clusterDataSets.map((dataSet) => ({
-        x: dataSet.centerX,
-        y: dataSet.centerY,
-        text: wrapLabelText(dataSet.cluster.label), // ラベルを折り返し処理
-        showarrow: false,
-        font: {
-          color: "white",
-          size: annotationFontsize,
-          weight: 700,
-        },
-        bgcolor: clusterColorMapA[dataSet.cluster.id], // 背景はアルファ付き
-        borderpad: 10,
-        width: annotationLabelWidth,
-        align: "left" as const,
-      }))
+    ? clusterDataSets.map((dataSet) => {
+        // フィルターされていても背景色を維持（灰色のクラスターでもラベルは元の色で表示）
+        // @ts-ignore allFilteredプロパティが存在する前提で処理（TypeScript型定義に追加済み）
+        const isAllFiltered = filteredArgumentIds && (separateDataByFilter(dataSet.cluster).matching.length === 0 || dataSet.cluster.allFiltered);
+        const bgColor = isAllFiltered 
+          ? clusterColorMapA[dataSet.cluster.id].replace(/[0-9a-f]{2}$/i, "cc") // クラスター全体がフィルターされた場合も薄くする
+          : clusterColorMapA[dataSet.cluster.id];
+          
+        return {
+          x: dataSet.centerX,
+          y: dataSet.centerY,
+          text: wrapLabelText(dataSet.cluster.label), // ラベルを折り返し処理
+          showarrow: false,
+          font: {
+            color: "white",
+            size: annotationFontsize,
+            weight: 700,
+          },
+          bgcolor: bgColor,
+          borderpad: 10,
+          width: annotationLabelWidth,
+          align: "left" as const,
+        };
+      })
     : [];
 
   return (
