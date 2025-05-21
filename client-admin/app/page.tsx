@@ -297,7 +297,7 @@ function ReportCard({
   setReports?: (reports: Report[] | undefined) => void;
 }) {
   const statusDisplay = getStatusDisplay(report.status);
-  const { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput } = useReportProgressPoll(
+  const { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost, provider, model } = useReportProgressPoll(
     report.slug,
     report.status !== "ready",
   );
