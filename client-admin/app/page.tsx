@@ -15,6 +15,7 @@ import {
   HStack,
   Heading,
   Icon,
+  Image,
   Input,
   LinkBox,
   LinkOverlay,
@@ -803,6 +804,30 @@ function DownloadBuildButton() {
   );
 }
 
+const EmptyState = () => {
+  return (
+    <VStack mt={8} gap={0} lineHeight={2}>
+      <Text fontSize="18px" fontWeight="bold">
+        レポートが0件です
+      </Text>
+      <Text fontSize="14px" textAlign={{ md: "center" }} mt={5}>
+        レポートが作成されるとここに一覧が表示され、
+        <Box as="br" display={{ base: "none", md: "block" }} />
+        公開やダウンロードなどの操作が行えるようになります。
+      </Text>
+      <Text fontSize="12px" color="gray.500" mt={3}>
+        レポート作成が開始済みの場合は、AI分析が完了するまでしばらくお待ちください。
+      </Text>
+      <Image src="images/report-empty.png" mt={8} />
+      <Box mt={8}>
+        <Link href="/create">
+          <Button size="xl">新しいレポートを作成する</Button>
+        </Link>
+      </Box>
+    </VStack>
+  );
+};
+
 export default function Page() {
   const [reports, setReports] = useState<Report[]>();
 
@@ -823,36 +848,34 @@ export default function Page() {
   return (
     <div className="container">
       <Header />
-      <Box mx="auto" maxW="1000px" mb={5}>
+      <Box mx="auto" maxW="1000px">
         <Heading textAlign="left" fontSize="xl" mb={8}>
-          レポート管理
+          レポート一覧
         </Heading>
         {!reports && (
           <VStack>
             <Spinner />
           </VStack>
         )}
-        {reports && reports.length === 0 && (
-          <VStack my={10}>
-            <Text>レポートがありません</Text>
-          </VStack>
+        {reports && reports.length === 0 && <EmptyState />}
+        {reports && reports.length > 0 && (
+          <>
+            {reports.map((report) => (
+              <ReportCard key={report.slug} report={report} reports={reports} setReports={setReports} />
+            ))}
+            <HStack justify="center" mt={10}>
+              <Link href="/create">
+                <Button size="xl">新しいレポートを作成する</Button>
+              </Link>
+              <DownloadBuildButton />
+              <Link href="/environment">
+                <Button size="xl" variant="outline">
+                  環境検証
+                </Button>
+              </Link>
+            </HStack>
+          </>
         )}
-        {reports &&
-          reports.length > 0 &&
-          reports.map((report) => (
-            <ReportCard key={report.slug} report={report} reports={reports} setReports={setReports} />
-          ))}
-        <HStack justify="center" mt={10}>
-          <Link href="/create">
-            <Button size="xl">新しいレポートを作成する</Button>
-          </Link>
-          <DownloadBuildButton />
-          <Link href="/environment">
-            <Button size="xl" variant="outline">
-              環境検証
-            </Button>
-          </Link>
-        </HStack>
       </Box>
     </div>
   );
