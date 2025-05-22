@@ -6,7 +6,6 @@ import { Chart } from "@/components/report/Chart";
 import { ClusterOverview } from "@/components/report/ClusterOverview";
 import { DisplaySettingDialog } from "@/components/report/DisplaySettingDialog";
 import type { Cluster, Result } from "@/type";
-import { Box } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from "react";
 import type { AttributeMeta } from "./AttributeFilterDialog";
 import { type NumericRangeFilters, filterSamples } from "./attributeFilterUtils";
@@ -259,29 +258,27 @@ export function ClientContainer({ result }: Props) {
           initialIncludeEmptyValues={includeEmptyValues}
         />
       )}
-      <Box display="flex" justifyContent="flex-end" gap={2} mb={3}>
-        <SelectChartButton
-          selected={selectedChart}
-          onChange={handleChartChange}
-          onClickDensitySetting={handleClickDensitySetting}
-          onClickFullscreen={handleClickFullscreen}
-          isDenseGroupEnabled={isDenseGroupEnabled}
-          // The following props are for the new AttentionFilter button
-          onClickAttentionFilter={handleOpenAttributeFilter} // Assuming this is the correct handler
-          isAttentionFilterEnabled={attributeMetas.length > 0} // Assuming this is the correct condition
-          showAttentionFilterBadge={
-            (Object.keys(attributeFilters).length > 0 ||
-              Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0)
-          }
-          attentionFilterBadgeCount={(() => {
-            const allFilteredAttributes = new Set([
-              ...Object.keys(attributeFilters),
-              ...Object.keys(enabledRanges).filter((k) => enabledRanges[k]),
-            ]);
-            return allFilteredAttributes.size;
-          })()}
-        />
-      </Box>
+      <SelectChartButton
+        selected={selectedChart}
+        onChange={handleChartChange}
+        onClickDensitySetting={handleClickDensitySetting}
+        onClickFullscreen={handleClickFullscreen}
+        isDenseGroupEnabled={isDenseGroupEnabled}
+        // The following props are for the new AttentionFilter button
+        onClickAttentionFilter={handleOpenAttributeFilter} // Assuming this is the correct handler
+        isAttentionFilterEnabled={attributeMetas.length > 0} // Assuming this is the correct condition
+        showAttentionFilterBadge={
+          (Object.keys(attributeFilters).length > 0 ||
+            Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0)
+        }
+        attentionFilterBadgeCount={(() => {
+          const allFilteredAttributes = new Set([
+            ...Object.keys(attributeFilters),
+            ...Object.keys(enabledRanges).filter((k) => enabledRanges[k]),
+          ]);
+          return allFilteredAttributes.size;
+        })()}
+      />
       <Chart
         result={filteredResult}
         selectedChart={selectedChart}
