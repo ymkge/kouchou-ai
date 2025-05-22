@@ -57,10 +57,10 @@ export function getFilteredArgumentIds(
 ): string[] {
   // フィルター済み標本のインデックスセットを作成
   const filteredIndices = new Set<number>();
-  filteredSamples.forEach((fs) => {
+  for (const fs of filteredSamples) {
     const idx = samples.findIndex((s) => Object.entries(s).every(([k, v]) => fs[k] === v));
     if (idx >= 0) filteredIndices.add(idx);
-  });
+  }
 
   // フィルター済みのインデックスに対応する引数IDを返す
   return Array.from(filteredIndices).map((idx) => argumentIds[idx]);

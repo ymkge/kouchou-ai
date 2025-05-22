@@ -47,13 +47,16 @@ export function ClientContainer({ result }: Props) {
       setAttributeMetas([]);
       return;
     }
-    const attrMap: Record<string, {
-      valueSet: Set<string>;
-      valueCounts: Map<string, number>;
-      isNumeric: boolean;
-      min?: number;
-      max?: number;
-    }> = {};
+    const attrMap: Record<
+      string,
+      {
+        valueSet: Set<string>;
+        valueCounts: Map<string, number>;
+        isNumeric: boolean;
+        min?: number;
+        max?: number;
+      }
+    > = {};
     for (const sample of samples) {
       for (const [name, rawValue] of Object.entries(sample)) {
         const value = typeof rawValue === "string" ? rawValue : String(rawValue ?? "");
@@ -78,7 +81,9 @@ export function ClientContainer({ result }: Props) {
       }
     }
     const result: AttributeMeta[] = Object.entries(attrMap).map(([name, info]) => {
-      const values = Array.from(info.valueSet).filter((v) => v !== "").sort();
+      const values = Array.from(info.valueSet)
+        .filter((v) => v !== "")
+        .sort();
       const valueCounts: Record<string, number> = {};
       for (const v of values) valueCounts[v] = info.valueCounts.get(v) ?? 0;
       let numericRange: [number, number] | undefined = undefined;
@@ -101,6 +106,7 @@ export function ClientContainer({ result }: Props) {
   const [numericRanges, setNumericRanges] = useState<NumericRangeFilters>({});
   const [enabledRanges, setEnabledRanges] = useState<Record<string, boolean>>({});
   const [includeEmptyValues, setIncludeEmptyValues] = useState<Record<string, boolean>>({});
+  const [textSearch, setTextSearch] = useState<string>("");
   const [openAttributeFilter, setOpenAttributeFilter] = useState(false);
 
   // --- 密度フィルタ有効性 ---
@@ -114,14 +120,25 @@ export function ClientContainer({ result }: Props) {
     maxDensity: number,
     minValue: number,
     attrFilters: AttributeFilters = attributeFilters,
+    textSearchString: string = textSearch,
   ) {
     if (!result) return;
     let filteredArgs = result.arguments;
     let filteredArgIds: string[] = [];
     const hasActiveFilters =
-      Object.keys(attrFilters).length > 0 || Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0;
+      Object.keys(attrFilters).length > 0 ||
+      Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0 ||
+      textSearchString.trim() !== "";
     if (hasActiveFilters) {
       filteredArgs = result.arguments.filter((arg) => {
+        if (textSearchString.trim() !== "") {
+          const searchLower = textSearchString.trim().toLowerCase();
+          const argumentLower = arg.argument.toLowerCase();
+          if (!argumentLower.includes(searchLower)) {
+            return false;
+          }
+        }
+
         if (arg.attributes) {
           const passesAttributeFilters = Object.entries(attrFilters).every(([attrName, selectedValues]) => {
             const attrValue = arg.attributes?.[attrName];
@@ -146,28 +163,28 @@ export function ClientContainer({ result }: Props) {
           });
           return passesAttributeFilters && passesNumericRanges;
         }
-        return false;
+        return textSearchString.trim() === "";
       });
       filteredArgIds = filteredArgs.map((arg) => arg.arg_id);
     }
     const clusterIdsWithFilteredArgs = new Set<string>();
-    filteredArgs.forEach((arg) => {
-      arg.cluster_ids.forEach((clusterId) => {
+    for (const arg of filteredArgs) {
+      for (const clusterId of arg.cluster_ids) {
         clusterIdsWithFilteredArgs.add(clusterId);
-      });
-    });
+      }
+    }
     const { filtered: densityFilteredClusters } = getDenseClusters(result.clusters || [], maxDensity, minValue);
-    
+
     // フィルターが適用されていても、すべてのクラスターを表示するが、
     // フィルター条件に合致する引数がないクラスタは特別なプロパティで区別する
-    const combinedFilteredClusters = densityFilteredClusters.map(cluster => {
+    const combinedFilteredClusters = densityFilteredClusters.map((cluster) => {
       if (hasActiveFilters && !clusterIdsWithFilteredArgs.has(cluster.id)) {
         // このクラスターにはフィルター条件に合致する引数が存在しないことを示す
         return { ...cluster, allFiltered: true };
       }
       return cluster;
     });
-    
+
     setFilteredResult({
       ...result,
       clusters: combinedFilteredClusters,
@@ -190,16 +207,19 @@ export function ClientContainer({ result }: Props) {
     numericRanges_: NumericRangeFilters,
     includeEmpty: Record<string, boolean>,
     enabledRanges_: Record<string, boolean>,
+    textSearchString: string,
   ) {
     setAttributeFilters(filters);
     setNumericRanges(numericRanges_);
     setIncludeEmptyValues(includeEmpty);
     setEnabledRanges(enabledRanges_);
+    setTextSearch(textSearchString);
     if (selectedChart === "scatterAll" || selectedChart === "scatterDensity") {
       updateFilteredResult(
         selectedChart === "scatterDensity" ? maxDensity : 1,
         selectedChart === "scatterDensity" ? minValue : 0,
         filters,
+        textSearchString,
       );
     }
   }
@@ -221,12 +241,12 @@ export function ClientContainer({ result }: Props) {
   const handleCloseAttributeFilter = () => setOpenAttributeFilter(false);
   const handleChartChange = (selectedChart: string) => {
     setSelectedChart(selectedChart);
-    if (selectedChart === "scatterAll") updateFilteredResult(1, 0, attributeFilters);
+    if (selectedChart === "scatterAll") updateFilteredResult(1, 0, attributeFilters, textSearch);
     if (selectedChart === "treemap") {
       // 属性フィルターをリセットせずに維持
-      updateFilteredResult(1, 0, attributeFilters);
+      updateFilteredResult(1, 0, attributeFilters, textSearch);
     }
-    if (selectedChart === "scatterDensity") updateFilteredResult(maxDensity, minValue, attributeFilters);
+    if (selectedChart === "scatterDensity") updateFilteredResult(maxDensity, minValue, attributeFilters, textSearch);
   };
   const handleClickDensitySetting = () => setOpenDensityFilterSetting(true);
   const handleClickFullscreen = () => setIsFullscreen(true);
@@ -256,6 +276,7 @@ export function ClientContainer({ result }: Props) {
           initialNumericRanges={numericRanges}
           initialEnabledRanges={enabledRanges}
           initialIncludeEmptyValues={includeEmptyValues}
+          initialTextSearch={textSearch}
         />
       )}
       <SelectChartButton
@@ -264,19 +285,20 @@ export function ClientContainer({ result }: Props) {
         onClickDensitySetting={handleClickDensitySetting}
         onClickFullscreen={handleClickFullscreen}
         isDenseGroupEnabled={isDenseGroupEnabled}
-        // The following props are for the new AttentionFilter button
-        onClickAttentionFilter={handleOpenAttributeFilter} // Assuming this is the correct handler
-        isAttentionFilterEnabled={attributeMetas.length > 0} // Assuming this is the correct condition
+        onClickAttentionFilter={handleOpenAttributeFilter}
+        isAttentionFilterEnabled={attributeMetas.length > 0}
         showAttentionFilterBadge={
-          (Object.keys(attributeFilters).length > 0 ||
-            Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0)
+          Object.keys(attributeFilters).length > 0 ||
+          Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0 ||
+          textSearch.trim() !== ""
         }
         attentionFilterBadgeCount={(() => {
           const allFilteredAttributes = new Set([
             ...Object.keys(attributeFilters),
             ...Object.keys(enabledRanges).filter((k) => enabledRanges[k]),
           ]);
-          return allFilteredAttributes.size;
+          // テキスト検索が有効な場合は+1する
+          return allFilteredAttributes.size + (textSearch.trim() !== "" ? 1 : 0);
         })()}
       />
       <Chart
@@ -293,6 +315,7 @@ export function ClientContainer({ result }: Props) {
           numericRanges,
           enabledRanges,
           includeEmptyValues,
+          textSearch,
         }}
       />
       {clustersToDisplay.map((c) => (
