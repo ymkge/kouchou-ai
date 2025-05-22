@@ -86,10 +86,10 @@ export function SelectChartButton({
           justifySelf={["center", null, "left", "center"]}
           ml={[0, null, null, "104px"]}
           w={["100%", null, "auto"]}
-          h="56px"
+          h={["80px", null, "56px"]}
         >
           <SegmentGroup.Indicator bg="white" border="1px solid #E4E4E7" boxShadow="0 4px 6px 0 rgba(0, 0, 0, 0.1)" />
-          <SegmentGroup.Items items={items} w={["calc(100% / 3)", null, "162px"]} h="56px" cursor="pointer" />
+          <SegmentGroup.Items items={items} w={["calc(100% / 3)", null, "162px"]} h="100%" cursor="pointer" />
         </SegmentGroup.Root>
 
         <HStack gap={1} justifySelf={["end"]} alignSelf={"center"}>
