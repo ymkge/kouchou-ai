@@ -11,8 +11,6 @@ type Props = {
   onClickDensitySetting: () => void;
   onClickFullscreen: () => void;
   isDenseGroupEnabled: boolean;
-  attributeFilterButton?: React.ReactNode;
-  // AttentionFilterボタン用のprops
   onClickAttentionFilter?: () => void;
   isAttentionFilterEnabled?: boolean;
   showAttentionFilterBadge?: boolean;
@@ -49,7 +47,6 @@ export function SelectChartButton({
   onClickDensitySetting,
   onClickFullscreen,
   isDenseGroupEnabled,
-  attributeFilterButton,
   onClickAttentionFilter, 
   isAttentionFilterEnabled, 
   showAttentionFilterBadge, 
@@ -96,10 +93,6 @@ export function SelectChartButton({
         </SegmentGroup.Root>
 
         <HStack gap={1} justifySelf={["end"]} alignSelf={"center"}>
-          {attributeFilterButton && (
-            <Box>{attributeFilterButton}</Box>
-          )}
-
           {isAttentionFilterEnabled && onClickAttentionFilter && (
             <Tooltip content={"属性フィルタ"} openDelay={0} closeDelay={0}>
               <Button onClick={onClickAttentionFilter} variant="outline" h={"50px"}>
