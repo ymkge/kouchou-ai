@@ -57,6 +57,8 @@ export type Cluster = {
   value: number; // クラスタのサイズ・スコア
   parent: string; // 親クラスタの ID（ルートは空文字）
   density_rank_percentile: number; // 密度ランクのパーセンタイル
+  allFiltered?: boolean; // フィルターの結果、すべての要素が除外された場合にtrue
+  filtered?: boolean; // フィルター対象外の場合にtrue（TreemapChartで使用）
 };
 
 export type JaLocaleType = {

@@ -144,7 +144,7 @@ export function AttributeFilterDialog({
               属性フィルター
             </Heading>
             <Text fontSize="sm" mb={5} color="gray.600">
-              表示する意見グループを属性で絞り込みます。各項目のフィルタはAND結合されます。
+              表示する意見グループを属性で絞り込みます。フィルタ間はAND結合され、フィルタ内はOR結合されます。
             </Text>
             {attributes.length === 0 ? (
               <Text fontSize="sm" color="gray.500">
