@@ -184,23 +184,23 @@ export function ScatterChart({
   const clusterDataSets = targetClusters.map((cluster) => {
     // クラスターに属するすべての引数を取得（フィルター状況に関係なく）
     const allClusterArguments = allArguments.filter((arg) => arg.cluster_ids.includes(cluster.id));
-    
+
     // クラスター中心はフィルター状況に関わらず、すべての要素から計算
     const allXValues = allClusterArguments.map((arg) => arg.x);
     const allYValues = allClusterArguments.map((arg) => arg.y);
 
     const centerX = allXValues.length > 0 ? allXValues.reduce((sum, val) => sum + val, 0) / allXValues.length : 0;
     const centerY = allYValues.length > 0 ? allYValues.reduce((sum, val) => sum + val, 0) / allYValues.length : 0;
-    
+
     // フィルター適用後の表示用データを分離
     const { matching, notMatching } = separateDataByFilter(cluster);
-    
+
     // フィルターが適用されている場合に、クラスター内の全要素がフィルターされていても表示する
     // @ts-ignore allFilteredプロパティが存在する前提で処理（TypeScript型定義に追加済み）
     const allElementsFiltered = filteredArgumentIds && (matching.length === 0 || cluster.allFiltered);
-    
-    const notMatchingData = 
-      (notMatching.length > 0 || allElementsFiltered)
+
+    const notMatchingData =
+      notMatching.length > 0 || allElementsFiltered
         ? {
             x: notMatching.length > 0 ? notMatching.map((arg) => arg.x) : allClusterArguments.map((arg) => arg.x),
             y: notMatching.length > 0 ? notMatching.map((arg) => arg.y) : allClusterArguments.map((arg) => arg.y),
@@ -308,11 +308,13 @@ export function ScatterChart({
     ? clusterDataSets.map((dataSet) => {
         // フィルターされていても背景色を維持（灰色のクラスターでもラベルは元の色で表示）
         // @ts-ignore allFilteredプロパティが存在する前提で処理（TypeScript型定義に追加済み）
-        const isAllFiltered = filteredArgumentIds && (separateDataByFilter(dataSet.cluster).matching.length === 0 || dataSet.cluster.allFiltered);
-        const bgColor = isAllFiltered 
+        const isAllFiltered =
+          filteredArgumentIds &&
+          (separateDataByFilter(dataSet.cluster).matching.length === 0 || dataSet.cluster.allFiltered);
+        const bgColor = isAllFiltered
           ? clusterColorMapA[dataSet.cluster.id].replace(/[0-9a-f]{2}$/i, "cc") // クラスター全体がフィルターされた場合も薄くする
           : clusterColorMapA[dataSet.cluster.id];
-          
+
         return {
           x: dataSet.centerX,
           y: dataSet.centerY,

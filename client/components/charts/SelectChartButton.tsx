@@ -47,10 +47,10 @@ export function SelectChartButton({
   onClickDensitySetting,
   onClickFullscreen,
   isDenseGroupEnabled,
-  onClickAttentionFilter, 
-  isAttentionFilterEnabled, 
-  showAttentionFilterBadge, 
-  attentionFilterBadgeCount, 
+  onClickAttentionFilter,
+  isAttentionFilterEnabled,
+  showAttentionFilterBadge,
+  attentionFilterBadgeCount,
 }: Props) {
   const items = [
     {
@@ -89,12 +89,12 @@ export function SelectChartButton({
           h="56px"
         >
           <SegmentGroup.Indicator bg="white" border="1px solid #E4E4E7" boxShadow="0 4px 6px 0 rgba(0, 0, 0, 0.1)" />
-          <SegmentGroup.Items items={items} w={["calc(100% / 3)", null, "162px"]} h="56px" cursor="pointer"/>
+          <SegmentGroup.Items items={items} w={["calc(100% / 3)", null, "162px"]} h="56px" cursor="pointer" />
         </SegmentGroup.Root>
 
         <HStack gap={1} justifySelf={["end"]} alignSelf={"center"}>
           {isAttentionFilterEnabled && onClickAttentionFilter && (
-            <Tooltip content={"属性フィルタ"} openDelay={0} closeDelay={0}>
+            <Tooltip content={"フィルタ"} openDelay={0} closeDelay={0}>
               <Button onClick={onClickAttentionFilter} variant="outline" h={"50px"}>
                 <Box display="flex" alignItems="center" gap={1}>
                   <Icon>

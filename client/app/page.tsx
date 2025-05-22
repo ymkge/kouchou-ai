@@ -113,7 +113,7 @@ export default async function Page() {
 
 const EmptyState = () => {
   return (
-    <VStack mt={8} mb={12} gap={0} lineHeight={2} >
+    <VStack mt={8} mb={12} gap={0} lineHeight={2}>
       <Text fontSize="18px" fontWeight="bold">
         レポートが0件です
       </Text>

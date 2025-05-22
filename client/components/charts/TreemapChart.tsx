@@ -29,29 +29,29 @@ export function TreemapChart({ clusterList, argumentList, onHover, level, onTree
     }
     return converted;
   });
-  
+
   // フィルター適用後の各クラスタの件数を計算
   const clusterCounts: Record<string, number> = {};
-  
+
   // 初期化: すべてのクラスタの件数を0にセット
-  clusterList.forEach(cluster => {
+  for (const cluster of clusterList) {
     clusterCounts[cluster.id] = 0;
-  });
-  
+  }
+
   // フィルター適用後の引数を使ってカウント
-  argumentList.forEach(arg => {
+  for (const arg of argumentList) {
     // フィルターが適用されていて、引数がフィルター対象でない場合はスキップ
     if (isFilteringActive && !filteredArgumentIds.includes(arg.arg_id)) {
-      return;
+      continue;
     }
-    
+
     // 各クラスタIDに対して件数を増やす
-    arg.cluster_ids.forEach(clusterId => {
+    for (const clusterId of arg.cluster_ids) {
       if (clusterCounts[clusterId] !== undefined) {
         clusterCounts[clusterId]++;
       }
-    });
-  });
+    }
+  }
 
   const list = [{ ...clusterList[0], parent: "" }, ...clusterList.slice(1), ...convertedArgumentList];
   const ids = list.map((node) => node.id);
@@ -70,17 +70,17 @@ export function TreemapChart({ clusterList, argumentList, onHover, level, onTree
   });
   const customdata = list.map((node) => {
     let takeaway = node.takeaway.replace(/(.{15})/g, "$1<br />");
-    
+
     // クラスターノードの場合、フィルター情報を追加
     if (clusterCounts[node.id] !== undefined && isFilteringActive) {
       const originalCount = node.value;
       const filteredCount = clusterCounts[node.id];
-      
+
       if (filteredCount < originalCount) {
         takeaway = `${takeaway}<br><br>元の件数: ${originalCount}<br>フィルター後: ${filteredCount}`;
       }
     }
-    
+
     // @ts-ignore filtered プロパティを追加したので無視
     return node.filtered
       ? "" // フィルター対象外はホバー表示しない
