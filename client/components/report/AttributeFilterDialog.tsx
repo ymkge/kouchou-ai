@@ -183,13 +183,7 @@ export function AttributeFilterDialog({
               フィルタ
             </Heading>
             <Text fontSize="sm" mb={5} color="gray.600">
-              表示する意見グループを絞り込みます。フィルタは、
-              <br />
-              ・テキスト検索によるフィルタ
-              <br />
-              ・属性情報によるフィルタ
-              <br />
-              の2種類があり、フィルタ間はAND結合され、フィルタ内の条件はOR結合されます。
+              表示する意見グループを絞り込みます。フィルタ間はAND結合され、フィルタ内の条件はOR結合されます。
             </Text>
 
             <Box mb={6} borderWidth={1} borderRadius="md" p={3}>

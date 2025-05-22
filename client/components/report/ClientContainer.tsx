@@ -285,19 +285,20 @@ export function ClientContainer({ result }: Props) {
         onClickDensitySetting={handleClickDensitySetting}
         onClickFullscreen={handleClickFullscreen}
         isDenseGroupEnabled={isDenseGroupEnabled}
-        // The following props are for the new AttentionFilter button
-        onClickAttentionFilter={handleOpenAttributeFilter} // Assuming this is the correct handler
-        isAttentionFilterEnabled={attributeMetas.length > 0} // Assuming this is the correct condition
+        onClickAttentionFilter={handleOpenAttributeFilter}
+        isAttentionFilterEnabled={attributeMetas.length > 0}
         showAttentionFilterBadge={
           Object.keys(attributeFilters).length > 0 ||
-          Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0
+          Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0 ||
+          textSearch.trim() !== ""
         }
         attentionFilterBadgeCount={(() => {
           const allFilteredAttributes = new Set([
             ...Object.keys(attributeFilters),
             ...Object.keys(enabledRanges).filter((k) => enabledRanges[k]),
           ]);
-          return allFilteredAttributes.size;
+          // テキスト検索が有効な場合は+1する
+          return allFilteredAttributes.size + (textSearch.trim() !== "" ? 1 : 0);
         })()}
       />
       <Chart
