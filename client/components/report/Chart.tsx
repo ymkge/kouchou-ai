@@ -22,7 +22,7 @@ type FilterState = {
   numericRanges: Record<string, [number, number]>;
   enabledRanges: Record<string, boolean>;
   includeEmptyValues: Record<string, boolean>;
-  textSearch: string; // 追加: テキスト検索文字列
+  textSearch: string;
 };
 
 export function Chart({
@@ -45,7 +45,7 @@ export function Chart({
     if (
       Object.keys(attributeFilters).length === 0 &&
       Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length === 0 &&
-      textSearch.trim() === "" // 追加: テキスト検索が空かどうか
+      textSearch.trim() === ""
     ) {
       return undefined;
     }
@@ -60,7 +60,7 @@ export function Chart({
             return false;
           }
         }
-        
+
         // 属性フィルタをチェック
         if (arg.attributes) {
           // カテゴリーフィルター

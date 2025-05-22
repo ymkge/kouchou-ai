@@ -4,6 +4,15 @@ import { Box, Button, Flex, Heading, Input, Text, Wrap, WrapItem } from "@chakra
 import React, { useCallback, useMemo, useState } from "react";
 import { FixedSizeList as List } from "react-window";
 
+// リストアイテムのデータ型定義
+type ListItemData = {
+  attrName: string;
+  values: string[];
+  checkedList: string[];
+  valueCounts: Record<string, number>;
+  onChange: (attr: string, value: string) => void;
+};
+
 export type AttributeFilters = Record<string, string[]>;
 type NumericRange = [number, number];
 type NumericRangeFilters = Record<string, NumericRange>;
@@ -23,13 +32,13 @@ type AttributeFilterDialogProps = {
   initialNumericRanges?: NumericRangeFilters;
   initialEnabledRanges?: Record<string, boolean>;
   initialIncludeEmptyValues?: Record<string, boolean>;
-  initialTextSearch?: string; // 追加: 初期テキスト検索文字列
+  initialTextSearch?: string;
   onApplyFilters: (
     filters: AttributeFilters,
     numericRanges: NumericRangeFilters,
     includeEmpty: Record<string, boolean>,
     enabledRanges: Record<string, boolean>,
-    textSearch: string, // 追加: テキスト検索文字列
+    textSearch: string,
   ) => void;
   onClose: () => void;
 };
@@ -77,21 +86,26 @@ export function AttributeFilterDialog({
   initialNumericRanges = {},
   initialEnabledRanges = {},
   initialIncludeEmptyValues = {},
-  initialTextSearch = "", // 追加: デフォルト空文字列
+  initialTextSearch = "",
 }: AttributeFilterDialogProps) {
   // 属性名リスト
-  const attributeNames = useMemo(() => attributes.map(a => a.name), [attributes]);
+  const attributeNames = useMemo(() => attributes.map((a) => a.name), [attributes]);
 
   // --- 編集用一時状態 ---
   const [editCategoricalFilters, setEditCategoricalFilters] = useState<AttributeFilters>(initialFilters);
   const [editNumericRanges, setEditNumericRanges] = useState<NumericRangeFilters>(
     Object.keys(initialNumericRanges).length > 0
       ? initialNumericRanges
-      : Object.fromEntries(attributes.filter(a => a.type === "numeric" && a.numericRange).map(a => [a.name, a.numericRange!]))
+      : Object.fromEntries(
+          attributes
+            .filter((a) => a.type === "numeric" && a.numericRange)
+            .map((a) => [a.name, a.numericRange as NumericRange]),
+        ),
   );
   const [editEnabledRanges, setEditEnabledRanges] = useState<Record<string, boolean>>(initialEnabledRanges);
-  const [editIncludeEmptyValues, setEditIncludeEmptyValues] = useState<Record<string, boolean>>(initialIncludeEmptyValues);
-  const [editTextSearch, setEditTextSearch] = useState<string>(initialTextSearch); // 追加: テキスト検索状態
+  const [editIncludeEmptyValues, setEditIncludeEmptyValues] =
+    useState<Record<string, boolean>>(initialIncludeEmptyValues);
+  const [editTextSearch, setEditTextSearch] = useState<string>(initialTextSearch);
 
   // --- ハンドラ ---
   const handleCheckboxChange = useCallback((attr: string, value: string) => {
@@ -109,7 +123,7 @@ export function AttributeFilterDialog({
   const handleRangeChange = useCallback(
     (attr: string, idx: 0 | 1, value: number) => {
       setEditNumericRanges((prev) => {
-        const [min, max] = prev[attr] ?? attributes.find(a => a.name === attr)?.numericRange ?? [0, 0];
+        const [min, max] = prev[attr] ?? attributes.find((a) => a.name === attr)?.numericRange ?? [0, 0];
         const next: NumericRange = idx === 0 ? [Math.min(value, max), max] : [min, Math.max(value, min)];
         return { ...prev, [attr]: next };
       });
@@ -127,17 +141,37 @@ export function AttributeFilterDialog({
 
   const handleClearFilters = useCallback(() => {
     setEditCategoricalFilters({});
-    setEditNumericRanges(Object.fromEntries(attributes.filter(a => a.type === "numeric" && a.numericRange).map(a => [a.name, a.numericRange!])));
+    setEditNumericRanges(
+      Object.fromEntries(
+        attributes
+          .filter((a) => a.type === "numeric" && a.numericRange)
+          .map((a) => [a.name, a.numericRange as NumericRange]),
+      ),
+    );
     setEditEnabledRanges({});
     setEditIncludeEmptyValues({});
-    setEditTextSearch(""); // 追加: テキスト検索をクリア
+    setEditTextSearch("");
   }, [attributes]);
 
   // --- 適用 ---
   const onApply = useCallback(() => {
-    onApplyFilters(editCategoricalFilters, editNumericRanges, editIncludeEmptyValues, editEnabledRanges, editTextSearch);
+    onApplyFilters(
+      editCategoricalFilters,
+      editNumericRanges,
+      editIncludeEmptyValues,
+      editEnabledRanges,
+      editTextSearch,
+    );
     onClose();
-  }, [editCategoricalFilters, editNumericRanges, editIncludeEmptyValues, editEnabledRanges, editTextSearch, onApplyFilters, onClose]);
+  }, [
+    editCategoricalFilters,
+    editNumericRanges,
+    editIncludeEmptyValues,
+    editEnabledRanges,
+    editTextSearch,
+    onApplyFilters,
+    onClose,
+  ]);
 
   // --- UI ---
   return (
@@ -149,16 +183,21 @@ export function AttributeFilterDialog({
               フィルタ
             </Heading>
             <Text fontSize="sm" mb={5} color="gray.600">
-              表示する意見グループを属性で絞り込みます。フィルタ間はAND結合され、フィルタ内はOR結合されます。
+              表示する意見グループを絞り込みます。フィルタは、
+              <br />
+              ・テキスト検索によるフィルタ
+              <br />
+              ・属性情報によるフィルタ
+              <br />
+              の2種類があり、フィルタ間はAND結合され、フィルタ内の条件はOR結合されます。
             </Text>
-            
-            {/* テキスト検索フィールドを追加 */}
+
             <Box mb={6} borderWidth={1} borderRadius="md" p={3}>
               <Heading as="h4" size="sm" mb={2}>
                 テキスト検索
               </Heading>
               <Input
-                placeholder="検索したいテキストを入力してください"
+                placeholder="検索したいテキストを入力してください。入力されたテキストが含まれる意見のみ表示されます。"
                 value={editTextSearch}
                 onChange={(e) => setEditTextSearch(e.target.value)}
                 mb={2}
@@ -169,7 +208,7 @@ export function AttributeFilterDialog({
                 利用できる属性情報がありません。CSVファイルをアップロードする際に、属性列を選択してください。
               </Text>
             ) : (
-              attributes.map(attr => {
+              attributes.map((attr) => {
                 const isNumeric = attr.type === "numeric";
                 return (
                   <Box key={attr.name} mb={4}>
@@ -178,7 +217,10 @@ export function AttributeFilterDialog({
                         {attr.name}
                       </Heading>
                       {isNumeric && attr.values.length > 0 && (
-                        <Checkbox checked={!!editEnabledRanges[attr.name]} onChange={() => toggleRangeFilter(attr.name)}>
+                        <Checkbox
+                          checked={!!editEnabledRanges[attr.name]}
+                          onChange={() => toggleRangeFilter(attr.name)}
+                        >
                           フィルター有効化
                         </Checkbox>
                       )}
@@ -235,7 +277,11 @@ export function AttributeFilterDialog({
                               onChange: handleCheckboxChange,
                             }}
                           >
-                            {({ index, style, data }: any) => {
+                            {({
+                              index,
+                              style,
+                              data,
+                            }: { index: number; style: React.CSSProperties; data: ListItemData }) => {
                               const value = data.values[index];
                               return (
                                 <div style={style} key={`${data.attrName}-${value}`}>
