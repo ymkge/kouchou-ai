@@ -101,6 +101,7 @@ export function ClientContainer({ result }: Props) {
   const [numericRanges, setNumericRanges] = useState<NumericRangeFilters>({});
   const [enabledRanges, setEnabledRanges] = useState<Record<string, boolean>>({});
   const [includeEmptyValues, setIncludeEmptyValues] = useState<Record<string, boolean>>({});
+  const [textSearch, setTextSearch] = useState<string>(""); // 追加: テキスト検索状態
   const [openAttributeFilter, setOpenAttributeFilter] = useState(false);
 
   // --- 密度フィルタ有効性 ---
@@ -114,14 +115,25 @@ export function ClientContainer({ result }: Props) {
     maxDensity: number,
     minValue: number,
     attrFilters: AttributeFilters = attributeFilters,
+    textSearchString: string = textSearch, // 追加: テキスト検索文字列パラメータ
   ) {
     if (!result) return;
     let filteredArgs = result.arguments;
     let filteredArgIds: string[] = [];
     const hasActiveFilters =
-      Object.keys(attrFilters).length > 0 || Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0;
+      Object.keys(attrFilters).length > 0 || 
+      Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0 ||
+      textSearchString.trim() !== ""; // 追加: テキスト検索が有効かどうか
     if (hasActiveFilters) {
       filteredArgs = result.arguments.filter((arg) => {
+        if (textSearchString.trim() !== "") {
+          const searchLower = textSearchString.trim().toLowerCase();
+          const argumentLower = arg.argument.toLowerCase();
+          if (!argumentLower.includes(searchLower)) {
+            return false;
+          }
+        }
+        
         if (arg.attributes) {
           const passesAttributeFilters = Object.entries(attrFilters).every(([attrName, selectedValues]) => {
             const attrValue = arg.attributes?.[attrName];
@@ -146,7 +158,7 @@ export function ClientContainer({ result }: Props) {
           });
           return passesAttributeFilters && passesNumericRanges;
         }
-        return false;
+        return textSearchString.trim() === ""; // テキスト検索がない場合のみ属性なしの引数を許可
       });
       filteredArgIds = filteredArgs.map((arg) => arg.arg_id);
     }
@@ -190,16 +202,19 @@ export function ClientContainer({ result }: Props) {
     numericRanges_: NumericRangeFilters,
     includeEmpty: Record<string, boolean>,
     enabledRanges_: Record<string, boolean>,
+    textSearchString: string, // 追加: テキスト検索文字列
   ) {
     setAttributeFilters(filters);
     setNumericRanges(numericRanges_);
     setIncludeEmptyValues(includeEmpty);
     setEnabledRanges(enabledRanges_);
+    setTextSearch(textSearchString); // 追加: テキスト検索状態を更新
     if (selectedChart === "scatterAll" || selectedChart === "scatterDensity") {
       updateFilteredResult(
         selectedChart === "scatterDensity" ? maxDensity : 1,
         selectedChart === "scatterDensity" ? minValue : 0,
         filters,
+        textSearchString, // 追加: テキスト検索文字列を渡す
       );
     }
   }
@@ -221,12 +236,12 @@ export function ClientContainer({ result }: Props) {
   const handleCloseAttributeFilter = () => setOpenAttributeFilter(false);
   const handleChartChange = (selectedChart: string) => {
     setSelectedChart(selectedChart);
-    if (selectedChart === "scatterAll") updateFilteredResult(1, 0, attributeFilters);
+    if (selectedChart === "scatterAll") updateFilteredResult(1, 0, attributeFilters, textSearch);
     if (selectedChart === "treemap") {
       // 属性フィルターをリセットせずに維持
-      updateFilteredResult(1, 0, attributeFilters);
+      updateFilteredResult(1, 0, attributeFilters, textSearch);
     }
-    if (selectedChart === "scatterDensity") updateFilteredResult(maxDensity, minValue, attributeFilters);
+    if (selectedChart === "scatterDensity") updateFilteredResult(maxDensity, minValue, attributeFilters, textSearch);
   };
   const handleClickDensitySetting = () => setOpenDensityFilterSetting(true);
   const handleClickFullscreen = () => setIsFullscreen(true);
@@ -293,6 +308,7 @@ export function ClientContainer({ result }: Props) {
           numericRanges,
           enabledRanges,
           includeEmptyValues,
+          textSearch, // 追加: テキスト検索状態を渡す
         }}
       />
       {clustersToDisplay.map((c) => (

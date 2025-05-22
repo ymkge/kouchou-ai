@@ -94,7 +94,7 @@ export function SelectChartButton({
 
         <HStack gap={1} justifySelf={["end"]} alignSelf={"center"}>
           {isAttentionFilterEnabled && onClickAttentionFilter && (
-            <Tooltip content={"属性フィルタ"} openDelay={0} closeDelay={0}>
+            <Tooltip content={"フィルタ"} openDelay={0} closeDelay={0}>
               <Button onClick={onClickAttentionFilter} variant="outline" h={"50px"}>
                 <Box display="flex" alignItems="center" gap={1}>
                   <Icon>

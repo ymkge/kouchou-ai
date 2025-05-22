@@ -23,11 +23,13 @@ type AttributeFilterDialogProps = {
   initialNumericRanges?: NumericRangeFilters;
   initialEnabledRanges?: Record<string, boolean>;
   initialIncludeEmptyValues?: Record<string, boolean>;
+  initialTextSearch?: string; // 追加: 初期テキスト検索文字列
   onApplyFilters: (
     filters: AttributeFilters,
     numericRanges: NumericRangeFilters,
     includeEmpty: Record<string, boolean>,
     enabledRanges: Record<string, boolean>,
+    textSearch: string, // 追加: テキスト検索文字列
   ) => void;
   onClose: () => void;
 };
@@ -75,6 +77,7 @@ export function AttributeFilterDialog({
   initialNumericRanges = {},
   initialEnabledRanges = {},
   initialIncludeEmptyValues = {},
+  initialTextSearch = "", // 追加: デフォルト空文字列
 }: AttributeFilterDialogProps) {
   // 属性名リスト
   const attributeNames = useMemo(() => attributes.map(a => a.name), [attributes]);
@@ -88,6 +91,7 @@ export function AttributeFilterDialog({
   );
   const [editEnabledRanges, setEditEnabledRanges] = useState<Record<string, boolean>>(initialEnabledRanges);
   const [editIncludeEmptyValues, setEditIncludeEmptyValues] = useState<Record<string, boolean>>(initialIncludeEmptyValues);
+  const [editTextSearch, setEditTextSearch] = useState<string>(initialTextSearch); // 追加: テキスト検索状態
 
   // --- ハンドラ ---
   const handleCheckboxChange = useCallback((attr: string, value: string) => {
@@ -126,13 +130,14 @@ export function AttributeFilterDialog({
     setEditNumericRanges(Object.fromEntries(attributes.filter(a => a.type === "numeric" && a.numericRange).map(a => [a.name, a.numericRange!])));
     setEditEnabledRanges({});
     setEditIncludeEmptyValues({});
+    setEditTextSearch(""); // 追加: テキスト検索をクリア
   }, [attributes]);
 
   // --- 適用 ---
   const onApply = useCallback(() => {
-    onApplyFilters(editCategoricalFilters, editNumericRanges, editIncludeEmptyValues, editEnabledRanges);
+    onApplyFilters(editCategoricalFilters, editNumericRanges, editIncludeEmptyValues, editEnabledRanges, editTextSearch);
     onClose();
-  }, [editCategoricalFilters, editNumericRanges, editIncludeEmptyValues, editEnabledRanges, onApplyFilters, onClose]);
+  }, [editCategoricalFilters, editNumericRanges, editIncludeEmptyValues, editEnabledRanges, editTextSearch, onApplyFilters, onClose]);
 
   // --- UI ---
   return (
@@ -141,11 +146,24 @@ export function AttributeFilterDialog({
         <DialogBody>
           <Box mb={6} mt={4}>
             <Heading as="h3" size="md" mb={2}>
-              属性フィルター
+              フィルタ
             </Heading>
             <Text fontSize="sm" mb={5} color="gray.600">
               表示する意見グループを属性で絞り込みます。フィルタ間はAND結合され、フィルタ内はOR結合されます。
             </Text>
+            
+            {/* テキスト検索フィールドを追加 */}
+            <Box mb={6} borderWidth={1} borderRadius="md" p={3}>
+              <Heading as="h4" size="sm" mb={2}>
+                テキスト検索
+              </Heading>
+              <Input
+                placeholder="検索したいテキストを入力してください"
+                value={editTextSearch}
+                onChange={(e) => setEditTextSearch(e.target.value)}
+                mb={2}
+              />
+            </Box>
             {attributes.length === 0 ? (
               <Text fontSize="sm" color="gray.500">
                 利用できる属性情報がありません。CSVファイルをアップロードする際に、属性列を選択してください。

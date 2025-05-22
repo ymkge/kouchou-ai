@@ -22,6 +22,7 @@ type FilterState = {
   numericRanges: Record<string, [number, number]>;
   enabledRanges: Record<string, boolean>;
   includeEmptyValues: Record<string, boolean>;
+  textSearch: string; // 追加: テキスト検索文字列
 };
 
 export function Chart({
@@ -38,12 +39,13 @@ export function Chart({
   // フィルター済み引数IDリストを計算
   const filteredArgumentIds = useMemo(() => {
     if (!filterState) return undefined;
-    const { attributeFilters, numericRanges, enabledRanges, includeEmptyValues } = filterState;
+    const { attributeFilters, numericRanges, enabledRanges, includeEmptyValues, textSearch } = filterState;
 
     // フィルター条件が空なら全て表示（未定義を返す）
     if (
       Object.keys(attributeFilters).length === 0 &&
-      Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length === 0
+      Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length === 0 &&
+      textSearch.trim() === "" // 追加: テキスト検索が空かどうか
     ) {
       return undefined;
     }
@@ -51,6 +53,14 @@ export function Chart({
     // フィルター条件に合致する引数IDを返す
     return result.arguments
       .filter((arg) => {
+        if (textSearch.trim() !== "") {
+          const searchLower = textSearch.trim().toLowerCase();
+          const argumentLower = arg.argument.toLowerCase();
+          if (!argumentLower.includes(searchLower)) {
+            return false;
+          }
+        }
+        
         // 属性フィルタをチェック
         if (arg.attributes) {
           // カテゴリーフィルター
@@ -73,6 +83,10 @@ export function Chart({
               if (Number.isNaN(numValue) || numValue < range[0] || numValue > range[1]) return false;
             }
           }
+        } else if (textSearch.trim() !== "") {
+          return true;
+        } else {
+          return false;
         }
         return true;
       })
