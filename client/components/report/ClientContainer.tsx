@@ -271,6 +271,7 @@ export function ClientContainer({ result }: Props) {
           initialNumericRanges={numericRanges}
           initialEnabledRanges={enabledRanges}
           initialIncludeEmptyValues={includeEmptyValues}
+          initialTextSearch={textSearch}
         />
       )}
       <SelectChartButton
