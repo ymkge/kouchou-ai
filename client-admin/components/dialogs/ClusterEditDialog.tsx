@@ -305,8 +305,7 @@ export function ClusterEditDialog({
                       title: "更新完了",
                       description: "意見グループ情報が更新されました",
                     });
-                    // ダイアログを閉じるかは検討（連続編集の可能性）
-                    // onClose();
+                    onClose();
                   } catch (error) {
                     console.error("意見グループ情報の更新に失敗しました:", error);
                     toaster.create({

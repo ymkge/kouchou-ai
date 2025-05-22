@@ -13,6 +13,32 @@ CONFIG_DIR = ROOT_DIR / "scatter" / "pipeline" / "configs"
 PIPELINE_DIR = ROOT_DIR / "broadlistening" / "pipeline"
 
 
+def json_serialize_numpy(obj: Any) -> Any:
+    """
+    Recursively convert NumPy data types to native Python types for JSON serialization.
+
+    Args:
+        obj: Any Python object which might contain NumPy data types
+
+    Returns:
+        The same object structure with NumPy types converted to Python native types
+    """
+    if isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, dict):
+        return {k: json_serialize_numpy(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [json_serialize_numpy(item) for item in obj]
+    elif isinstance(obj, tuple):
+        return tuple(json_serialize_numpy(item) for item in obj)
+    else:
+        return obj
+
+
 class Argument(TypedDict):
     arg_id: str
     argument: str
@@ -36,7 +62,7 @@ class Cluster(TypedDict):
 
 def hierarchical_aggregation(config) -> bool:
     try:
-        path = PIPELINE_DIR / f"outputs/{config['output_dir']}/hierarchical_result.json"
+        path = f"outputs/{config['output_dir']}/hierarchical_result.json"
         results = {
             "arguments": [],
             "clusters": [],
@@ -47,33 +73,35 @@ def hierarchical_aggregation(config) -> bool:
             "config": config,
         }
 
-        arguments = pd.read_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/args.csv")
+        arguments = pd.read_csv(f"outputs/{config['output_dir']}/args.csv")
         arguments.set_index("arg-id", inplace=True)
         arg_num = len(arguments)
-
-        relation_df = pd.read_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/relations.csv")
-        comments = pd.read_csv(PIPELINE_DIR / f"inputs/{config['input']}.csv")
-        clusters = pd.read_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/hierarchical_clusters.csv")
-        labels = pd.read_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/hierarchical_merge_labels.csv")
+        relation_df = pd.read_csv(f"outputs/{config['output_dir']}/relations.csv")
+        comments = pd.read_csv(f"inputs/{config['input']}.csv")
+        clusters = pd.read_csv(f"outputs/{config['output_dir']}/hierarchical_clusters.csv")
+        labels = pd.read_csv(f"outputs/{config['output_dir']}/hierarchical_merge_labels.csv")
 
         hidden_properties_map: dict[str, list[str]] = config["hierarchical_aggregation"]["hidden_properties"]
 
-        results["arguments"] = _build_arguments(clusters)
+        results["arguments"] = _build_arguments(clusters, comments, relation_df)
         results["clusters"] = _build_cluster_value(labels, arg_num)
 
-        # NOTE: 属性に応じたコメントフィルタ機能が実装されておらず、全てのコメントが含まれてしまうので、コメントアウト
         # results["comments"] = _build_comments_value(
         #     comments, arguments, hidden_properties_map
         # )
-
         results["comment_num"] = len(comments)
         results["translations"] = _build_translations(config)
         # 属性情報のカラムは、元データに対して指定したカラムとclassificationするカテゴリを合わせたもの
-        results["propertyMap"] = _build_property_map(arguments, hidden_properties_map, config)
+        results["propertyMap"] = _build_property_map(arguments, comments, hidden_properties_map, config)
 
-        with open(PIPELINE_DIR / f"outputs/{config['output_dir']}/hierarchical_overview.txt") as f:
+        with open(f"outputs/{config['output_dir']}/hierarchical_overview.txt") as f:
             overview = f.read()
+        print("overview")
+        print(overview)
         results["overview"] = overview
+
+        # Convert non-serializable NumPy types to native Python types
+        results = json_serialize_numpy(results)
 
         with open(path, "w") as file:
             json.dump(results, file, indent=2, ensure_ascii=False)
