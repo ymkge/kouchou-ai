@@ -5,10 +5,8 @@ import { AttributeFilterDialog, type AttributeFilters } from "@/components/repor
 import { Chart } from "@/components/report/Chart";
 import { ClusterOverview } from "@/components/report/ClusterOverview";
 import { DisplaySettingDialog } from "@/components/report/DisplaySettingDialog";
-import { Tooltip } from "@/components/ui/tooltip";
 import type { Cluster, Result } from "@/type";
-import { Box, Button, Icon } from "@chakra-ui/react";
-import { Filter } from "lucide-react";
+import { Box } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from "react";
 import type { AttributeMeta } from "./AttributeFilterDialog";
 import { type NumericRangeFilters, filterSamples } from "./attributeFilterUtils";
@@ -261,38 +259,27 @@ export function ClientContainer({ result }: Props) {
           initialIncludeEmptyValues={includeEmptyValues}
         />
       )}
-      <Box display="flex" gap={2} mb={3}>
+      <Box display="flex" justifyContent="flex-end" gap={2} mb={3}>
         <SelectChartButton
           selected={selectedChart}
           onChange={handleChartChange}
           onClickDensitySetting={handleClickDensitySetting}
           onClickFullscreen={handleClickFullscreen}
           isDenseGroupEnabled={isDenseGroupEnabled}
-          attributeFilterButton={
-            attributeMetas.length > 0 ? (
-              <Tooltip content={"属性フィルタ"} openDelay={0} closeDelay={0}>
-                <Button onClick={handleOpenAttributeFilter} variant="outline" h={"50px"}>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <Icon>
-                      <Filter size={16} />
-                    </Icon>
-                    {(Object.keys(attributeFilters).length > 0 ||
-                      Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0) && (
-                      <Box as="span" fontSize="xs" bg="cyan.500" color="white" p="1" borderRadius="md" minW="5">
-                        {(() => {
-                          const allFilteredAttributes = new Set([
-                            ...Object.keys(attributeFilters),
-                            ...Object.keys(enabledRanges).filter((k) => enabledRanges[k]),
-                          ]);
-                          return allFilteredAttributes.size;
-                        })()}
-                      </Box>
-                    )}
-                  </Box>
-                </Button>
-              </Tooltip>
-            ) : null
+          // The following props are for the new AttentionFilter button
+          onClickAttentionFilter={handleOpenAttributeFilter} // Assuming this is the correct handler
+          isAttentionFilterEnabled={attributeMetas.length > 0} // Assuming this is the correct condition
+          showAttentionFilterBadge={
+            (Object.keys(attributeFilters).length > 0 ||
+              Object.keys(enabledRanges).filter((k) => enabledRanges[k]).length > 0)
           }
+          attentionFilterBadgeCount={(() => {
+            const allFilteredAttributes = new Set([
+              ...Object.keys(attributeFilters),
+              ...Object.keys(enabledRanges).filter((k) => enabledRanges[k]),
+            ]);
+            return allFilteredAttributes.size;
+          })()}
         />
       </Box>
       <Chart
