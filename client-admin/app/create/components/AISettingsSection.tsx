@@ -172,7 +172,7 @@ export function AISettingsSection({
         <Field.Root>
           <Field.Label>AIモデル</Field.Label>
           <NativeSelect.Root w={"40%"}>
-            <NativeSelect.Field value={model} onChange={onModelChange} disabled={provider === "none"}>
+            <NativeSelect.Field value={model} onChange={onModelChange}>
               {modelOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}

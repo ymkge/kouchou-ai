@@ -35,8 +35,6 @@ def hierarchical_initial_labelling(config: dict) -> None:
 
     cluster_id_columns = [col for col in clusters_argument_df.columns if col.startswith("cluster-level-")]
     initial_cluster_id_column = cluster_id_columns[-1]
-    #※省略時の文言は空にするとnullに吸収されてエラーになる
-    SKIPPED_DESCRIPTION_PLACEHOLDER = "（説明は省略されています）"
     # ✅ スキップ対応
     if config.get("skip_initial_labelling", False):
         print("⏩ 初期ラベリングをスキップします。")

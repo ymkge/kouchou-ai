@@ -9,7 +9,6 @@ from services.category_classification import classify_args
 from services.llm import request_to_chat_ai
 from services.parse_json_list import parse_extraction_response
 from tqdm import tqdm
-
 from utils import update_progress
 
 COMMA_AND_SPACE_AND_RIGHT_BRACKET = re.compile(r",\s*(\])")
@@ -54,7 +53,7 @@ def extraction(config):
 
     if skip_extraction:
         print("⏩ 抽出ステップをスキップします（skip_extraction が有効）")
-        for i, comment_id in enumerate(comment_ids):
+        for _, comment_id in enumerate(comment_ids):
             comment_body = comments.loc[comment_id]["comment-body"]
             arg_id = f"A{comment_id}_0"
             argument_map[comment_body] = {
