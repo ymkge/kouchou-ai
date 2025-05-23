@@ -8,3 +8,15 @@ class ClusterFileNotFound(ClusterRepoError):
 
 class ClusterCSVParseError(ClusterRepoError):
     """クラスタのCSVファイルのパースに失敗したケース"""
+
+
+class ConfigRepoError(Exception):
+    """ConfigRepository の基底例外"""
+
+
+class ConfigFileNotFound(ConfigRepoError):
+    """設定ファイルが存在しないケース"""
+
+
+class ConfigJSONParseError(ConfigRepoError):
+    """設定ファイルのパースに失敗したケース"""
