@@ -604,43 +604,45 @@ function ReportCard({
                 >
                   レポートを編集する
                 </MenuItem>
-                <MenuItem
-                  value="edit-cluster"
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    try {
-                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`, {
-                        headers: {
-                          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                        },
-                      });
-                      if (!response.ok) {
-                        throw new Error("クラスタ一覧の取得に失敗しました");
+                {report.status === "ready" && (
+                  <MenuItem
+                    value="edit-cluster"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`, {
+                          headers: {
+                            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                          },
+                        });
+                        if (!response.ok) {
+                          throw new Error("クラスタ一覧の取得に失敗しました");
+                        }
+                        const data = await response.json();
+                        setClusters(data.clusters || []);
+                        if (data.clusters && data.clusters.length > 0) {
+                          setSelectedClusterId(data.clusters[0].id);
+                          setEditClusterTitle(data.clusters[0].label);
+                          setEditClusterDescription(data.clusters[0].description);
+                        } else {
+                          setSelectedClusterId(undefined);
+                          setEditClusterTitle("");
+                          setEditClusterDescription("");
+                        }
+                        setIsClusterEditDialogOpen(true);
+                      } catch (error) {
+                        console.error(error);
+                        toaster.create({
+                          type: "error",
+                          title: "エラー",
+                          description: "クラスタ一覧の取得に失敗しました。",
+                        });
                       }
-                      const data = await response.json();
-                      setClusters(data.clusters || []);
-                      if (data.clusters && data.clusters.length > 0) {
-                        setSelectedClusterId(data.clusters[0].id);
-                        setEditClusterTitle(data.clusters[0].label);
-                        setEditClusterDescription(data.clusters[0].description);
-                      } else {
-                        setSelectedClusterId(undefined);
-                        setEditClusterTitle("");
-                        setEditClusterDescription("");
-                      }
-                      setIsClusterEditDialogOpen(true);
-                    } catch (error) {
-                      console.error(error);
-                      toaster.create({
-                        type: "error",
-                        title: "エラー",
-                        description: "クラスタ一覧の取得に失敗しました。",
-                      });
-                    }
-                  }}
-                >
-                  意見グループを編集する
-                </MenuItem>
+                    }}
+                  >
+                    意見グループを編集する
+                  </MenuItem>
+                )}
                 <MenuItem
                   value="delete"
                   color="fg.error"
