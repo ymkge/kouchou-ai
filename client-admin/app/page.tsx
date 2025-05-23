@@ -746,7 +746,7 @@ function ReportCard({
                         },
                         body: JSON.stringify({
                           question: editTitle,
-                          description: editDescription,
+                          intro: editDescription,
                         }),
                       });
 

@@ -106,7 +106,7 @@ def get_status(slug: str) -> str:
 def invalidate_report_cache(slug: str) -> None:
     # Next.jsのキャッシュを破棄するAPIを呼び出す
     try:
-        logger.info(f"Attempting to revalidate Next.js cache for path: /{slug}")
+        logger.info(f"Attempting to revalidate Next.js cache for report: {slug}")
 
         # 環境変数からrevalidate URLを取得
         revalidate_url = settings.REVALIDATE_URL
@@ -115,13 +115,13 @@ def invalidate_report_cache(slug: str) -> None:
 
         response = requests.post(
             revalidate_url,
-            json={"path": f"/{slug}", "secret": settings.REVALIDATE_SECRET},
+            json={"tag": f"report-{slug}", "secret": settings.REVALIDATE_SECRET},
             timeout=3,  # タイムアウトを短く設定
             headers={"Content-Type": "application/json"},
         )
 
         if response.status_code == 200:
-            logger.info("Successfully revalidated Next.js cache")
+            logger.info(f"Successfully revalidated Next.js cache for tag: report-{slug}")
         else:
             logger.error(f"Failed to revalidate: {response.status_code} {response.text}")
     except Exception as e:

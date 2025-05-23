@@ -37,13 +37,6 @@ class ReportInput(SchemaBaseModel):
     local_llm_address: str | None = None  # LocalLLM用アドレス（例: "127.0.0.1:1234"）
 
 
-class ReportMetadataUpdate(SchemaBaseModel):
-    """レポートのメタデータ更新用スキーマ"""
-
-    title: str | None = None  # レポートのタイトル
-    description: str | None = None  # レポートの調査概要
-
-
 class ReportVisibilityUpdate(SchemaBaseModel):
     """レポートの可視性更新用スキーマ"""
 
