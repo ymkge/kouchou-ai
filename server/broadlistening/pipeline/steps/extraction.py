@@ -5,10 +5,11 @@ import re
 
 import pandas as pd
 from pydantic import BaseModel, Field
+from tqdm import tqdm
+
 from services.category_classification import classify_args
 from services.llm import request_to_chat_ai
 from services.parse_json_list import parse_extraction_response
-from tqdm import tqdm
 from utils import update_progress
 
 COMMA_AND_SPACE_AND_RIGHT_BRACKET = re.compile(r",\s*(\])")
@@ -60,10 +61,12 @@ def extraction(config):
                 "arg-id": arg_id,
                 "argument": comment_body,
             }
-            relation_rows.append({
-                "arg-id": arg_id,
-                "comment-id": comment_id,
-            })
+            relation_rows.append(
+                {
+                    "arg-id": arg_id,
+                    "comment-id": comment_id,
+                }
+            )
             update_progress(config, incr=1)
     else:
         for i in tqdm(range(0, len(comment_ids), workers)):

@@ -5,6 +5,7 @@ import re
 
 import pandas as pd
 from pydantic import BaseModel, Field
+
 from services.llm import request_to_chat_ai
 
 

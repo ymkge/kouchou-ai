@@ -55,7 +55,7 @@ export default function AutoClusterScoreChartClient({ data, bestTop, bestBottom,
         layout={{
           margin: { t: 30, b: 40, l: 50, r: 30 },
           xaxis: {
-            title: "グループ数",
+            title: { text: "グループ数" },
             tickmode: "linear",
             dtick: 1,
           },

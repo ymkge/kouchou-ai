@@ -6,8 +6,9 @@ from functools import partial
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel, Field
-from services.llm import request_to_chat_ai
 from tqdm import tqdm
+
+from services.llm import request_to_chat_ai
 
 
 @dataclass
@@ -246,7 +247,6 @@ def process_merge_labelling(
             for _, row in previous_records.iterrows()
         ]
         return previous_values
-
 
     previous_values = filter_previous_values(result_df, previous_columns)
 

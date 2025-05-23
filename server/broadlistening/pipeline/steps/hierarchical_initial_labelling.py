@@ -5,6 +5,7 @@ from typing import TypedDict
 
 import pandas as pd
 from pydantic import BaseModel, Field
+
 from services.llm import request_to_chat_ai
 
 
@@ -156,12 +157,9 @@ def process_initial_labelling(
     if config.get("skip_initial_labelling", False):
         print(f"⏩ 初期ラベリングをスキップします。{cluster_id}")
         return LabellingResult(
-            cluster_id=cluster_id,
-            label=f"クラスタ {cluster_id}",
-            description="（説明は省略されています）"
+            cluster_id=cluster_id, label=f"クラスタ {cluster_id}", description="（説明は省略されています）"
         )
-    
-    
+
     cluster_data = df[df[target_column] == cluster_id]
     sampling_num = min(sampling_num, len(cluster_data))
     cluster = cluster_data.sample(sampling_num)

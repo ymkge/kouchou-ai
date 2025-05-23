@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+
 from src.config import settings
 from src.schemas.admin_report import ReportInput
-from src.services.report_status import (add_new_report_to_status, set_status,
-                                        update_token_usage)
+from src.services.report_status import add_new_report_to_status, set_status, update_token_usage
 from src.services.report_sync import ReportSyncService
 from src.utils.logger import setup_logger
 
@@ -58,7 +58,6 @@ def _build_config(report_input: ReportInput) -> dict[str, Any]:
         "cluster_top_min": report_input.cluster_top_min,
         "cluster_top_max": report_input.cluster_top_max,
         "cluster_bottom_max": report_input.cluster_bottom_max,
-
     }
     return config
 
