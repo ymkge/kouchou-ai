@@ -46,7 +46,7 @@ def parse_arguments():
     parser.add_argument("--cluster-top-min", type=int, help="Minimum number of top-level clusters.")
     parser.add_argument("--cluster-top-max", type=int, help="Maximum number of top-level clusters.")
     parser.add_argument("--cluster-bottom-max", type=int, help="Maximum number of bottom-level clusters.")
-    
+
     return parser.parse_args()
 
 
@@ -79,7 +79,7 @@ def main():
         new_argv.extend(["--cluster-top-max", str(args.cluster_top_max)])
     if args.cluster_bottom_max is not None:
         new_argv.extend(["--cluster-bottom-max", str(args.cluster_bottom_max)])
-        
+
     config = initialization(new_argv)
 
     try:

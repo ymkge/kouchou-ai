@@ -45,6 +45,7 @@ class ReportInput(SchemaBaseModel):
     cluster_top_max: int | None = None  # 自動クラスタ範囲（上位層最大）
     cluster_bottom_max: int | None = None  # 自動クラスタ範囲（下位層最大）
 
+
 class ReportMetadataUpdate(SchemaBaseModel):
     """レポートのメタデータ更新用スキーマ"""
 

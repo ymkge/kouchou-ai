@@ -35,7 +35,6 @@ def hierarchical_clustering(config):
 
     umap_embeds = umap_model.fit_transform(embeddings_array)
 
-
     # ✅ 自動クラスタ設定の場合
     if config.get("auto_cluster_enabled", False):
         start_time = time.time()
@@ -82,8 +81,14 @@ def hierarchical_clustering(config):
             "top_range": [int(top_min), int(top_max)],
             "bottom_range": [int(top_max + 1), int(bottom_max)],
             "best": {
-                "top": {"k": int(best_top) if best_top is not None else None, "score": float(best_top_score) if best_top_score >= 0 else None},
-                "bottom": {"k": int(best_bottom) if best_bottom is not None else None, "score": float(best_bottom_score) if best_bottom_score >= 0 else None},
+                "top": {
+                    "k": int(best_top) if best_top is not None else None,
+                    "score": float(best_top_score) if best_top_score >= 0 else None,
+                },
+                "bottom": {
+                    "k": int(best_bottom) if best_bottom is not None else None,
+                    "score": float(best_bottom_score) if best_bottom_score >= 0 else None,
+                },
             },
             "duration_sec": round(float(time.time() - start_time), 3),
             "results": [{"label": str(label), "score": float(score)} for label, score in silhouette_results],
@@ -92,11 +97,10 @@ def hierarchical_clustering(config):
         with open(f"outputs/{dataset}/auto_cluster_result.json", "w", encoding="utf-8") as f:
             json.dump(auto_result, f, indent=2, ensure_ascii=False)
 
-        update_status(config, {"auto_cluster_result": auto_result})  
+        update_status(config, {"auto_cluster_result": auto_result})
         cluster_nums = [best_top, best_bottom]
 
     else:
-
         # 通常モード
         cluster_nums = config["hierarchical_clustering"]["cluster_nums"]
 

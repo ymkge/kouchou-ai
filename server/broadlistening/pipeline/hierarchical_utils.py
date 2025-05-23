@@ -142,7 +142,7 @@ def initialization(sysargv):
             config["cluster_top_max"] = int(sysargv[i + 1])
         if option == "--cluster-bottom-max":
             config["cluster_bottom_max"] = int(sysargv[i + 1])
-            
+
     output_dir = config["output_dir"]
 
     # check if job has run before
