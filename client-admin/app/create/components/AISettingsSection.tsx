@@ -188,8 +188,8 @@ export function AISettingsSection({
         <Checkbox
           checked={isEmbeddedAtLocal}
           onCheckedChange={(details) => {
-            if (checked === "indeterminate") return;
-            onEmbeddedAtLocalChange(checked);
+            if (details.checked === "indeterminate") return;
+            onEmbeddedAtLocalChange(details.checked);
           }}
           disabled={isEmbeddedAtLocalDisabled?.() || provider === "none"}
         >
