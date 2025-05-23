@@ -59,7 +59,7 @@ export default function AutoClusterScoreChartClient({ data, bestTop, bestBottom,
             tickmode: "linear",
             dtick: 1,
           },
-          yaxis: { title: "シルエットスコア" },
+          yaxis: { title: { text: "シルエットスコア" } },
           height: 300,
           shapes: [
             {
