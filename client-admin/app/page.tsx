@@ -738,14 +738,14 @@ function ReportCard({
                   ml={3}
                   onClick={async () => {
                     try {
-                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/metadata`, {
+                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/config`, {
                         method: "PATCH",
                         headers: {
                           "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
                           "Content-Type": "application/json",
                         },
                         body: JSON.stringify({
-                          title: editTitle,
+                          question: editTitle,
                           description: editDescription,
                         }),
                       });
