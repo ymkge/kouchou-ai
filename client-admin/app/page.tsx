@@ -2,10 +2,11 @@
 
 import { getApiBaseUrl } from "@/app/utils/api";
 import { Header } from "@/components/Header";
+import { ClusterEditDialog } from "@/components/dialogs/ClusterEditDialog";
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
-import type { Report } from "@/type";
+import type { ClusterResponse, Report } from "@/type";
 import {
   Box,
   Button,
@@ -38,7 +39,7 @@ import {
   ExternalLinkIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // ステップの定義
 const stepKeys = [
@@ -227,11 +228,19 @@ function ReportCard({
     progress === "completed" ? steps.length : stepKeys.indexOf(progress) === -1 ? 0 : stepKeys.indexOf(progress);
 
   const [lastProgress, setLastProgress] = useState<string | null>(null);
+  const clusterDialogContentRef = useRef<HTMLDivElement>(null);
 
   // 編集ダイアログの状態管理
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editTitle, setEditTitle] = useState(report.title);
   const [editDescription, setEditDescription] = useState(report.description || "");
+
+  // クラスタ編集ダイアログの状態管理
+  const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
+  const [clusters, setClusters] = useState<ClusterResponse[]>([]);
+  const [selectedClusterId, setSelectedClusterId] = useState<string | undefined>(undefined);
+  const [editClusterTitle, setEditClusterTitle] = useState("");
+  const [editClusterDescription, setEditClusterDescription] = useState("");
 
   // エラー状態の判定
   const isErrorState = progress === "error" || report.status === "error";
@@ -595,6 +604,45 @@ function ReportCard({
                 >
                   レポートを編集する
                 </MenuItem>
+                {report.status === "ready" && (
+                  <MenuItem
+                    value="edit-cluster"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`, {
+                          headers: {
+                            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                          },
+                        });
+                        if (!response.ok) {
+                          throw new Error("クラスタ一覧の取得に失敗しました");
+                        }
+                        const data = await response.json();
+                        setClusters(data.clusters || []);
+                        if (data.clusters && data.clusters.length > 0) {
+                          setSelectedClusterId(data.clusters[0].id);
+                          setEditClusterTitle(data.clusters[0].label);
+                          setEditClusterDescription(data.clusters[0].description);
+                        } else {
+                          setSelectedClusterId(undefined);
+                          setEditClusterTitle("");
+                          setEditClusterDescription("");
+                        }
+                        setIsClusterEditDialogOpen(true);
+                      } catch (error) {
+                        console.error(error);
+                        toaster.create({
+                          type: "error",
+                          title: "エラー",
+                          description: "クラスタ一覧の取得に失敗しました。",
+                        });
+                      }
+                    }}
+                  >
+                    意見グループを編集する
+                  </MenuItem>
+                )}
                 <MenuItem
                   value="delete"
                   color="fg.error"
@@ -692,15 +740,15 @@ function ReportCard({
                   ml={3}
                   onClick={async () => {
                     try {
-                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/metadata`, {
+                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/config`, {
                         method: "PATCH",
                         headers: {
                           "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
                           "Content-Type": "application/json",
                         },
                         body: JSON.stringify({
-                          title: editTitle,
-                          description: editDescription,
+                          question: editTitle,
+                          intro: editDescription,
                         }),
                       });
 
@@ -749,6 +797,21 @@ function ReportCard({
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
+
+      {/* クラスタ編集ダイアログ */}
+      <ClusterEditDialog
+        report={report}
+        isOpen={isClusterEditDialogOpen}
+        onClose={() => setIsClusterEditDialogOpen(false)}
+        clusters={clusters}
+        setClusters={setClusters}
+        selectedClusterId={selectedClusterId}
+        setSelectedClusterId={setSelectedClusterId}
+        editClusterTitle={editClusterTitle}
+        setEditClusterTitle={setEditClusterTitle}
+        editClusterDescription={editClusterDescription}
+        setEditClusterDescription={setEditClusterDescription}
+      />
     </LinkBox>
   );
 }

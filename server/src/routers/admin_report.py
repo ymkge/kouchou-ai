@@ -7,14 +7,20 @@ from fastapi.responses import FileResponse, ORJSONResponse
 from fastapi.security.api_key import APIKeyHeader
 
 from src.config import settings
-from src.schemas.admin_report import ReportInput, ReportMetadataUpdate, ReportVisibilityUpdate
+from src.core.exceptions import ClusterCSVParseError, ClusterFileNotFound
+from src.repositories.cluster_repository import ClusterRepository
+from src.repositories.config_repository import ConfigRepository
+from src.schemas.admin_report import ReportInput, ReportVisibilityUpdate
+from src.schemas.cluster import ClusterResponse, ClusterUpdate
 from src.schemas.report import Report, ReportStatus
+from src.schemas.report_config import ReportConfigUpdate
 from src.services.llm_models import get_models_by_provider
-from src.services.report_launcher import launch_report_generation
+from src.services.report_launcher import execute_aggregation, launch_report_generation
 from src.services.report_status import (
+    invalidate_report_cache,
     load_status_as_reports,
     set_status,
-    update_report_metadata,
+    update_report_config,
     update_report_visibility_state,
 )
 from src.utils.logger import setup_logger
@@ -142,25 +148,35 @@ async def update_report_visibility(
         raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
-@router.patch("/admin/reports/{slug}/metadata")
-async def update_report_metadata_endpoint(
-    slug: str, metadata: ReportMetadataUpdate, api_key: str = Depends(verify_admin_api_key)
+@router.patch("/admin/reports/{slug}/config")
+async def update_report_config_endpoint(
+    slug: str, config: ReportConfigUpdate, api_key: str = Depends(verify_admin_api_key)
 ) -> dict:
     """レポートのメタデータ（タイトル、説明）を更新するエンドポイント
 
     Args:
         slug: レポートのスラッグ
-        metadata: 更新するメタデータ
+        config: 更新するレポートの設定
         api_key: 管理者APIキー
 
     Returns:
         更新後のレポート情報
     """
     try:
-        updated_report = update_report_metadata(
+        # 中間ファイル（config.json）を更新
+        config_repo = ConfigRepository(slug)
+        is_updated = config_repo.update_json(config)
+        if not is_updated:
+            raise Exception(f"Failed to update config json for {slug}")
+
+        is_aggregation_executed = execute_aggregation(slug)
+        if not is_aggregation_executed:
+            raise Exception(f"Failed to execute aggregation for {slug}")
+
+        # report_status.json を更新
+        updated_report = update_report_config(
             slug=slug,
-            title=metadata.title or "",
-            description=metadata.description or "",
+            updated_config=config,
         )
         return {
             "success": True,
@@ -172,6 +188,43 @@ async def update_report_metadata_endpoint(
     except Exception as e:
         slogger.error(f"Exception: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error") from e
+
+
+@router.get("/admin/reports/{slug}/cluster-labels")
+async def get_clusters(slug: str, api_key: str = Depends(verify_admin_api_key)) -> dict[str, list[ClusterResponse]]:
+    try:
+        repo = ClusterRepository(slug)
+        return {
+            "clusters": repo.read_from_csv(),
+        }
+    # FIXME: エラーハンドリングが肥大化してきた段階で、ハンドリング処理をhandler/middlewareに切り出す
+    except ClusterFileNotFound as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except ClusterCSVParseError as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error") from e
+
+
+@router.patch("/admin/reports/{slug}/cluster-label")
+async def update_cluster_label(
+    slug: str, updated_cluster: ClusterUpdate, api_key: str = Depends(verify_admin_api_key)
+) -> dict[str, bool]:
+    # FIXME: error handlingを共通化するタイミングで、error handlingを切り出す
+    # issue: https://github.com/digitaldemocracy2030/kouchou-ai/issues/546
+    repo = ClusterRepository(slug)
+    is_csv_updated = repo.update_csv(updated_cluster)
+    if not is_csv_updated:
+        raise HTTPException(status_code=500, detail="意見グループの更新に失敗しました")
+
+    # aggregation を実行
+    is_aggregation_executed = execute_aggregation(slug)
+    if not is_aggregation_executed:
+        raise HTTPException(status_code=500, detail="意見グループ更新の集計に失敗しました")
+
+    invalidate_report_cache(slug)
+
+    return {"success": True}
 
 
 @router.get("/admin/models")
