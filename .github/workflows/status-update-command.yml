@@ -1,4 +1,4 @@
-name: Update issue sattus based on comment commands
+name: Update issue status based on comment commands
 
 permissions:
   issues: write
