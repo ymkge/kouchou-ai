@@ -2,10 +2,11 @@
 
 import { getApiBaseUrl } from "@/app/utils/api";
 import { Header } from "@/components/Header";
+import { ClusterEditDialog } from "@/components/dialogs/ClusterEditDialog";
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
-import type { Report } from "@/type";
+import type { ClusterResponse, Report } from "@/type";
 import {
   Box,
   Button,
@@ -15,6 +16,7 @@ import {
   HStack,
   Heading,
   Icon,
+  Image,
   Input,
   LinkBox,
   LinkOverlay,
@@ -37,7 +39,7 @@ import {
   ExternalLinkIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // ステップの定義
 const stepKeys = [
@@ -306,11 +308,19 @@ function ReportCard({
     progress === "completed" ? steps.length : stepKeys.indexOf(progress) === -1 ? 0 : stepKeys.indexOf(progress);
 
   const [lastProgress, setLastProgress] = useState<string | null>(null);
+  const clusterDialogContentRef = useRef<HTMLDivElement>(null);
 
   // 編集ダイアログの状態管理
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editTitle, setEditTitle] = useState(report.title);
   const [editDescription, setEditDescription] = useState(report.description || "");
+
+  // クラスタ編集ダイアログの状態管理
+  const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
+  const [clusters, setClusters] = useState<ClusterResponse[]>([]);
+  const [selectedClusterId, setSelectedClusterId] = useState<string | undefined>(undefined);
+  const [editClusterTitle, setEditClusterTitle] = useState("");
+  const [editClusterDescription, setEditClusterDescription] = useState("");
 
   // エラー状態の判定
   const isErrorState = progress === "error" || report.status === "error";
@@ -677,6 +687,45 @@ function ReportCard({
                 >
                   レポートを編集する
                 </MenuItem>
+                {report.status === "ready" && (
+                  <MenuItem
+                    value="edit-cluster"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`, {
+                          headers: {
+                            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                          },
+                        });
+                        if (!response.ok) {
+                          throw new Error("クラスタ一覧の取得に失敗しました");
+                        }
+                        const data = await response.json();
+                        setClusters(data.clusters || []);
+                        if (data.clusters && data.clusters.length > 0) {
+                          setSelectedClusterId(data.clusters[0].id);
+                          setEditClusterTitle(data.clusters[0].label);
+                          setEditClusterDescription(data.clusters[0].description);
+                        } else {
+                          setSelectedClusterId(undefined);
+                          setEditClusterTitle("");
+                          setEditClusterDescription("");
+                        }
+                        setIsClusterEditDialogOpen(true);
+                      } catch (error) {
+                        console.error(error);
+                        toaster.create({
+                          type: "error",
+                          title: "エラー",
+                          description: "クラスタ一覧の取得に失敗しました。",
+                        });
+                      }
+                    }}
+                  >
+                    意見グループを編集する
+                  </MenuItem>
+                )}
                 <MenuItem
                   value="delete"
                   color="fg.error"
@@ -774,15 +823,15 @@ function ReportCard({
                   ml={3}
                   onClick={async () => {
                     try {
-                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/metadata`, {
+                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/config`, {
                         method: "PATCH",
                         headers: {
                           "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
                           "Content-Type": "application/json",
                         },
                         body: JSON.stringify({
-                          title: editTitle,
-                          description: editDescription,
+                          question: editTitle,
+                          intro: editDescription,
                         }),
                       });
 
@@ -831,6 +880,21 @@ function ReportCard({
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
+
+      {/* クラスタ編集ダイアログ */}
+      <ClusterEditDialog
+        report={report}
+        isOpen={isClusterEditDialogOpen}
+        onClose={() => setIsClusterEditDialogOpen(false)}
+        clusters={clusters}
+        setClusters={setClusters}
+        selectedClusterId={selectedClusterId}
+        setSelectedClusterId={setSelectedClusterId}
+        editClusterTitle={editClusterTitle}
+        setEditClusterTitle={setEditClusterTitle}
+        editClusterDescription={editClusterDescription}
+        setEditClusterDescription={setEditClusterDescription}
+      />
     </LinkBox>
   );
 }
@@ -886,6 +950,30 @@ function DownloadBuildButton() {
   );
 }
 
+const EmptyState = () => {
+  return (
+    <VStack mt={8} gap={0} lineHeight={2}>
+      <Text fontSize="18px" fontWeight="bold">
+        レポートが0件です
+      </Text>
+      <Text fontSize="14px" textAlign={{ md: "center" }} mt={5}>
+        レポートが作成されるとここに一覧が表示され、
+        <Box as="br" display={{ base: "none", md: "block" }} />
+        公開やダウンロードなどの操作が行えるようになります。
+      </Text>
+      <Text fontSize="12px" color="gray.500" mt={3}>
+        レポート作成が開始済みの場合は、AI分析が完了するまでしばらくお待ちください。
+      </Text>
+      <Image src="images/report-empty.png" mt={8} />
+      <Box mt={8}>
+        <Link href="/create">
+          <Button size="xl">新しいレポートを作成する</Button>
+        </Link>
+      </Box>
+    </VStack>
+  );
+};
+
 export default function Page() {
   const [reports, setReports] = useState<Report[]>();
 
@@ -906,36 +994,34 @@ export default function Page() {
   return (
     <div className="container">
       <Header />
-      <Box mx="auto" maxW="1000px" mb={5}>
+      <Box mx="auto" maxW="1000px">
         <Heading textAlign="left" fontSize="xl" mb={8}>
-          レポート管理
+          レポート一覧
         </Heading>
         {!reports && (
           <VStack>
             <Spinner />
           </VStack>
         )}
-        {reports && reports.length === 0 && (
-          <VStack my={10}>
-            <Text>レポートがありません</Text>
-          </VStack>
+        {reports && reports.length === 0 && <EmptyState />}
+        {reports && reports.length > 0 && (
+          <>
+            {reports.map((report) => (
+              <ReportCard key={report.slug} report={report} reports={reports} setReports={setReports} />
+            ))}
+            <HStack justify="center" mt={10}>
+              <Link href="/create">
+                <Button size="xl">新しいレポートを作成する</Button>
+              </Link>
+              <DownloadBuildButton />
+              <Link href="/environment">
+                <Button size="xl" variant="outline">
+                  環境検証
+                </Button>
+              </Link>
+            </HStack>
+          </>
         )}
-        {reports &&
-          reports.length > 0 &&
-          reports.map((report) => (
-            <ReportCard key={report.slug} report={report} reports={reports} setReports={setReports} />
-          ))}
-        <HStack justify="center" mt={10}>
-          <Link href="/create">
-            <Button size="xl">新しいレポートを作成する</Button>
-          </Link>
-          <DownloadBuildButton />
-          <Link href="/environment">
-            <Button size="xl" variant="outline">
-              環境検証
-            </Button>
-          </Link>
-        </HStack>
       </Box>
     </div>
   );

@@ -1,7 +1,7 @@
 import { AllViewIcon, DenseViewIcon, HierarchyViewIcon } from "@/components/icons/ViewIcons";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Box, Button, HStack, Icon, SegmentGroup, Stack } from "@chakra-ui/react";
-import { CogIcon, FullscreenIcon } from "lucide-react";
+import { CogIcon, Filter, FullscreenIcon } from "lucide-react"; // Filter アイコンをインポート
 import type React from "react";
 import type { ComponentType } from "react";
 
@@ -11,6 +11,10 @@ type Props = {
   onClickDensitySetting: () => void;
   onClickFullscreen: () => void;
   isDenseGroupEnabled: boolean;
+  onClickAttentionFilter?: () => void;
+  isAttentionFilterEnabled?: boolean;
+  showAttentionFilterBadge?: boolean;
+  attentionFilterBadgeCount?: number;
 };
 
 const SegmentItemWithIcon = (icon: ComponentType, text: string, selected: boolean) => {
@@ -43,6 +47,10 @@ export function SelectChartButton({
   onClickDensitySetting,
   onClickFullscreen,
   isDenseGroupEnabled,
+  onClickAttentionFilter,
+  isAttentionFilterEnabled,
+  showAttentionFilterBadge,
+  attentionFilterBadgeCount,
 }: Props) {
   const items = [
     {
@@ -81,15 +89,33 @@ export function SelectChartButton({
           h={["80px", null, "56px"]}
         >
           <SegmentGroup.Indicator bg="white" border="1px solid #E4E4E7" boxShadow="0 4px 6px 0 rgba(0, 0, 0, 0.1)" />
-          <SegmentGroup.Items items={items} w={["calc(100% / 3)", null, "162px"]} />
+          <SegmentGroup.Items items={items} w={["calc(100% / 3)", null, "162px"]} h="100%" cursor="pointer" />
         </SegmentGroup.Root>
 
         <HStack gap={1} justifySelf={["end"]} alignSelf={"center"}>
+          {isAttentionFilterEnabled && onClickAttentionFilter && (
+            <Tooltip content={"フィルタ"} openDelay={0} closeDelay={0}>
+              <Button onClick={onClickAttentionFilter} variant="outline" h={"50px"}>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Icon>
+                    <Filter size={16} />
+                  </Icon>
+                  {showAttentionFilterBadge && (
+                    <Box as="span" fontSize="xs" bg="cyan.500" color="white" p="1" borderRadius="md" minW="5">
+                      {attentionFilterBadgeCount}
+                    </Box>
+                  )}
+                </Box>
+              </Button>
+            </Tooltip>
+          )}
+
           <Tooltip content={"表示設定"} openDelay={0} closeDelay={0}>
             <Button onClick={onClickDensitySetting} variant={"outline"} h={"50px"} w={"50px"} p={0}>
               <Icon as={CogIcon} />
             </Button>
           </Tooltip>
+
           <Tooltip content={"全画面表示"} openDelay={0} closeDelay={0}>
             <Button onClick={onClickFullscreen} variant={"outline"} h={"50px"} w={"50px"} p={0}>
               <Icon as={FullscreenIcon} />

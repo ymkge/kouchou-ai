@@ -9,6 +9,7 @@ from src.config import settings
 from src.schemas.admin_report import ReportInput
 from src.schemas.report import Report, ReportStatus, ReportVisibility
 from src.services.llm_pricing import LLMPricing
+from src.schemas.report_config import ReportConfigUpdate
 
 # ロガーの設定
 logger = logging.getLogger("uvicorn")
@@ -109,7 +110,7 @@ def get_status(slug: str) -> str:
 def invalidate_report_cache(slug: str) -> None:
     # Next.jsのキャッシュを破棄するAPIを呼び出す
     try:
-        logger.info(f"Attempting to revalidate Next.js cache for path: /{slug}")
+        logger.info(f"Attempting to revalidate Next.js cache for report: {slug}")
 
         # 環境変数からrevalidate URLを取得
         revalidate_url = settings.REVALIDATE_URL
@@ -118,13 +119,13 @@ def invalidate_report_cache(slug: str) -> None:
 
         response = requests.post(
             revalidate_url,
-            json={"path": f"/{slug}", "secret": settings.REVALIDATE_SECRET},
+            json={"tag": f"report-{slug}", "secret": settings.REVALIDATE_SECRET},
             timeout=3,  # タイムアウトを短く設定
             headers={"Content-Type": "application/json"},
         )
 
         if response.status_code == 200:
-            logger.info("Successfully revalidated Next.js cache")
+            logger.info(f"Successfully revalidated Next.js cache for tag: report-{slug}")
         else:
             logger.error(f"Failed to revalidate: {response.status_code} {response.text}")
     except Exception as e:
@@ -202,7 +203,7 @@ def update_token_usage(
         save_status()
 
 
-def update_report_metadata(slug: str, title: str | None = None, description: str | None = None) -> dict:
+def update_report_config(slug: str, updated_config: ReportConfigUpdate) -> dict:
     """レポートのメタデータ（タイトル、説明）を更新する
 
     Args:
@@ -221,37 +222,14 @@ def update_report_metadata(slug: str, title: str | None = None, description: str
             raise ValueError(f"slug {slug} not found in report status")
 
         # タイトルの更新（指定された場合のみ）
-        if title is not None:
-            _report_status[slug]["title"] = title
+        if updated_config.question is not None:
+            _report_status[slug]["title"] = updated_config.question
 
         # 説明の更新（指定された場合のみ）
-        if description is not None:
-            _report_status[slug]["description"] = description
+        if updated_config.intro is not None:
+            _report_status[slug]["description"] = updated_config.intro
 
         save_status()
-
-        # hierarchical_result.json ファイルも更新する
-        report_path = settings.REPORT_DIR / slug / "hierarchical_result.json"
-        if report_path.exists():
-            try:
-                with open(report_path) as f:
-                    report_data = json.load(f)
-
-                # タイトルの更新（指定された場合のみ）
-                if title is not None and "config" in report_data:
-                    report_data["config"]["question"] = title
-
-                # 概要の更新（指定された場合のみ）
-                if description is not None:
-                    report_data["overview"] = description
-
-                # 更新したデータを書き込む
-                with open(report_path, "w") as f:
-                    json.dump(report_data, f, ensure_ascii=False, indent=2)
-            except Exception as e:
-                # ファイルの更新に失敗しても、ステータスの更新は成功しているので例外は投げない
-                # ただしログには残す
-                logger.error(f"Failed to update hierarchical_result.json for {slug}: {e}")
 
     invalidate_report_cache(slug)
     return _report_status[slug]
