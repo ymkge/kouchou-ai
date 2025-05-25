@@ -346,6 +346,9 @@ function ReportCard({
                 tokenUsage: tokenUsage || r.tokenUsage,
                 tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
                 tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput,
+                estimatedCost: estimatedCost || r.estimatedCost,
+                provider: provider || r.provider,
+                model: model || r.model,
               }
             : r,
         );
@@ -359,6 +362,9 @@ function ReportCard({
                 tokenUsage: tokenUsage || r.tokenUsage,
                 tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
                 tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput,
+                estimatedCost: estimatedCost || r.estimatedCost,
+                provider: provider || r.provider,
+                model: model || r.model,
               }
             : r,
         );
@@ -426,6 +432,18 @@ function ReportCard({
                     : report.tokenUsage != null
                       ? `${report.tokenUsage.toLocaleString()} (詳細なし)`
                       : "情報なし"}
+              </Text>
+              {/* 推定コストの表示を追加 */}
+              <Text fontSize="xs" color="gray.500" mb={1}>
+                推定コスト:{" "}
+                {report.status === "processing"
+                  ? displayEstimatedCost != null && displayEstimatedCost > 0
+                    ? `$${displayEstimatedCost.toFixed(6)}`
+                    : "情報なし"
+                  : report.estimatedCost != null
+                    ? `$${report.estimatedCost.toFixed(6)}`
+                    : "情報なし"}
+                {displayProvider && displayModel ? ` (${displayProvider}/${displayModel})` : ""}
               </Text>
               {report.status !== "ready" && (
                 <Box mt={2}>
