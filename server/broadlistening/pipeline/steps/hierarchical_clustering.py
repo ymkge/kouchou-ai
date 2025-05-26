@@ -20,12 +20,7 @@ def hierarchical_clustering(config):
     embeddings_array = np.asarray(embeddings_df["embedding"].values.tolist())
 
     n_samples = embeddings_array.shape[0]
-    default_n_neighbors = 15
-    # テスト等サンプルが少なすぎる場合、n_neighborsの設定値を下げる
-    if n_samples <= default_n_neighbors:
-        n_neighbors = max(2, n_samples - 1)
-    else:
-        n_neighbors = default_n_neighbors
+    n_neighbors = max(2, min(15, n_samples - 1))
 
     umap_model = UMAP(random_state=42, n_components=2, n_neighbors=n_neighbors)
     # TODO 詳細エラーメッセージを加える
@@ -33,6 +28,7 @@ def hierarchical_clustering(config):
     # TypeError: Cannot use scipy.linalg.eigh for sparse A with k >= N. Use scipy.linalg.eigh(A.toarray()) or reduce k.
 
     umap_embeds = umap_model.fit_transform(embeddings_array)
+
     # ✅ 自動クラスタ設定の場合
     clustering_config = config.get("hierarchical_clustering", {})
     if clustering_config.get("auto_cluster_enabled", False):
@@ -41,7 +37,6 @@ def hierarchical_clustering(config):
         lv2_min = clustering_config.get("cluster_lv2_min", lv1_max + 1)
         lv2_max = clustering_config.get("cluster_lv2_max", 100)
 
-        n_samples = umap_embeds.shape[0]
         max_clusters = max(2, n_samples - 1)
 
         # 上限補正
@@ -59,6 +54,16 @@ def hierarchical_clustering(config):
         start = time.time()
 
         for k in range(lv1_min, lv1_max + 1):
+            try:
+                labels = KMeans(n_clusters=k, random_state=42).fit_predict(umap_embeds)
+                score = silhouette_score(umap_embeds, labels)
+                silhouette_results.append((f"lv1-{k}", score))
+                if score > best_lv1_score:
+                    best_lv1_score, best_lv1 = score, k
+            except ValueError as e:
+                print(f"[auto-cluster] silhouette_score error for lv1-{k}: {e}")
+
+        for k in range(lv2_min, lv2_max + 1):
             try:
                 labels = KMeans(n_clusters=k, random_state=42).fit_predict(umap_embeds)
                 score = silhouette_score(umap_embeds, labels)
