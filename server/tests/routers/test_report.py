@@ -11,7 +11,7 @@ from src.schemas.report import ReportStatus, ReportVisibility
 class TestReportEndpoint:
     """Test cases for /reports/{slug} endpoint."""
 
-    def test_get_report_with_visibility_public(self, client: TestClient, temp_report_dir):
+    def test_get_report_with_visibility_public(self, client: TestClient, temp_report_dir, test_settings):
         """正常系：publicなレポートの取得とvisibilityフィールドの確認"""
         slug = "test-public-report"
 
@@ -33,7 +33,8 @@ class TestReportEndpoint:
             patch("src.routers.report.settings.REPORT_DIR", temp_report_dir),
             patch("src.routers.report.load_status_as_reports", return_value=mock_reports),
         ):
-            response = client.get(f"/reports/{slug}", headers={"x-api-key": "test-public-api-key"})
+            # test_settingsからAPIキーを取得
+            response = client.get(f"/reports/{slug}", headers={"x-api-key": test_settings.PUBLIC_API_KEY})
 
         assert response.status_code == 200
         response_data = response.json()
@@ -43,7 +44,7 @@ class TestReportEndpoint:
         assert response_data["config"]["question"] == "テスト質問"
         assert response_data["overview"] == "テスト概要"
 
-    def test_get_report_with_visibility_unlisted(self, client: TestClient, temp_report_dir):
+    def test_get_report_with_visibility_unlisted(self, client: TestClient, temp_report_dir, test_settings):
         """正常系：unlistedなレポートの取得とvisibilityフィールドの確認"""
         slug = "test-unlisted-report"
 
@@ -70,7 +71,8 @@ class TestReportEndpoint:
             patch("src.routers.report.settings.REPORT_DIR", temp_report_dir),
             patch("src.routers.report.load_status_as_reports", return_value=mock_reports),
         ):
-            response = client.get(f"/reports/{slug}", headers={"x-api-key": "test-public-api-key"})
+            # test_settingsからAPIキーを取得
+            response = client.get(f"/reports/{slug}", headers={"x-api-key": test_settings.PUBLIC_API_KEY})
 
         assert response.status_code == 200
         response_data = response.json()
@@ -78,7 +80,7 @@ class TestReportEndpoint:
         # visibilityフィールドが正しく含まれていることを確認
         assert response_data["visibility"] == "unlisted"
 
-    def test_get_private_report_returns_404(self, client: TestClient, temp_report_dir):
+    def test_get_private_report_returns_404(self, client: TestClient, temp_report_dir, test_settings):
         """異常系：privateなレポートは404を返す"""
         slug = "test-private-report"
 
@@ -100,19 +102,21 @@ class TestReportEndpoint:
             patch("src.routers.report.settings.REPORT_DIR", temp_report_dir),
             patch("src.routers.report.load_status_as_reports", return_value=mock_reports),
         ):
-            response = client.get(f"/reports/{slug}", headers={"x-api-key": "test-public-api-key"})
+            # test_settingsからAPIキーを取得
+            response = client.get(f"/reports/{slug}", headers={"x-api-key": test_settings.PUBLIC_API_KEY})
 
         assert response.status_code == 404
         assert "Report is private" in response.json()["detail"]
 
-    def test_get_nonexistent_report_returns_404(self, client: TestClient, temp_report_dir):
+    def test_get_nonexistent_report_returns_404(self, client: TestClient, temp_report_dir, test_settings):
         """異常系：存在しないレポートは404を返す"""
         # settings.REPORT_DIRをパッチして、report routerがテスト用ディレクトリを使用するようにする
         with (
             patch("src.routers.report.settings.REPORT_DIR", temp_report_dir),
             patch("src.routers.report.load_status_as_reports", return_value=[]),
         ):
-            response = client.get("/reports/nonexistent-slug", headers={"x-api-key": "test-public-api-key"})
+            # test_settingsからAPIキーを取得
+            response = client.get("/reports/nonexistent-slug", headers={"x-api-key": test_settings.PUBLIC_API_KEY})
 
         assert response.status_code == 404
         assert "Report not found" in response.json()["detail"]
