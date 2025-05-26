@@ -36,7 +36,7 @@ export type Result = {
   config: Config; // 設定情報
   comment_num: number; // コメント数
   filteredArgumentIds?: string[]; // フィルターに一致した引数IDのリスト（グレーアウト表示の制御に使用）
-  visibility?: string; // レポートの可視性設定
+  visibility?: ReportVisibility; // レポートの可視性設定
 };
 
 type Argument = {
