@@ -264,14 +264,6 @@ def process_merge_labelling(
             current_columns.description: previous_values[0].description,
         }
 
-    if all("クラスタ" in val.label for val in previous_values):
-        print(f"⏩ 統合ラベリングをスキップ（テンプレラベルのみ）: {target_cluster_id}")
-        return {
-            current_columns.id: target_cluster_id,
-            current_columns.label: previous_values[0].label,
-            current_columns.description: previous_values[0].description,
-        }
-
     # 通常 LLM 呼び出し処理
     current_cluster_data = result_df[result_df[current_columns.id] == target_cluster_id]
     sampling_num = min(
