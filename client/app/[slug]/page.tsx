@@ -42,12 +42,15 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   try {
     const slug = (await params).slug;
-    const metaResponse = await fetch(`${getApiBaseUrl()}/meta/metadata.json`);
+    const metaResponse = await fetch(`${getApiBaseUrl()}/meta/metadata.json`, {
+      next: { tags: ["meta"] },
+    });
     const resultResponse = await fetch(`${getApiBaseUrl()}/reports/${slug}`, {
       headers: {
         "x-api-key": process.env.NEXT_PUBLIC_PUBLIC_API_KEY || "",
         "Content-Type": "application/json",
       },
+      next: { tags: [`report-${slug}`] },
     });
     if (!metaResponse.ok || !resultResponse.ok) {
       return {};
@@ -83,12 +86,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Page({ params }: PageProps) {
   const slug = (await params).slug;
-  const metaResponse = await fetch(`${getApiBaseUrl()}/meta/metadata.json`);
+  const metaResponse = await fetch(`${getApiBaseUrl()}/meta/metadata.json`, {
+    next: { tags: ["meta"] },
+  });
   const resultResponse = await fetch(`${getApiBaseUrl()}/reports/${slug}`, {
     headers: {
       "x-api-key": process.env.NEXT_PUBLIC_PUBLIC_API_KEY || "",
       "Content-Type": "application/json",
     },
+    next: { tags: [`report-${slug}`] },
   });
 
   if (metaResponse.status === 404 || resultResponse.status === 404) {

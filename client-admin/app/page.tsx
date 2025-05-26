@@ -2,10 +2,11 @@
 
 import { getApiBaseUrl } from "@/app/utils/api";
 import { Header } from "@/components/Header";
+import { ClusterEditDialog } from "@/components/dialogs/ClusterEditDialog";
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
-import type { Report } from "@/type";
+import type { ClusterResponse, Report } from "@/type";
 import {
   Box,
   Button,
@@ -38,7 +39,7 @@ import {
   ExternalLinkIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // ステップの定義
 const stepKeys = [
@@ -99,6 +100,60 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
   const [tokenUsage, setTokenUsage] = useState<number>(0);
   const [tokenUsageInput, setTokenUsageInput] = useState<number>(0);
   const [tokenUsageOutput, setTokenUsageOutput] = useState<number>(0);
+  const [estimatedCost, setEstimatedCost] = useState<number>(0);
+  const [provider, setProvider] = useState<string | null>(null);
+  const [model, setModel] = useState<string | null>(null);
+  const [pricingData, setPricingData] = useState<Record<string, Record<string, { input: number; output: number }>>>({});
+  const [isPricingLoaded, setIsPricingLoaded] = useState<boolean>(false);
+
+  // LLM価格情報を取得する
+  useEffect(() => {
+    async function fetchPricingData() {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/llm-pricing`, {
+          headers: {
+            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setPricingData(data);
+        } else {
+          console.error("Failed to fetch LLM pricing data");
+          // APIから取得できない場合は空のオブジェクトを設定（情報なし）
+          setPricingData({});
+        }
+        setIsPricingLoaded(true);
+      } catch (error) {
+        console.error("Error fetching LLM pricing data:", error);
+        setIsPricingLoaded(true);
+      }
+    }
+
+    fetchPricingData();
+  }, []);
+
+
+  // トークン使用量から推定コストを計算する関数
+  const calculateCost = (
+    provider: string | null,
+    model: string | null,
+    tokenUsageInput: number,
+    tokenUsageOutput: number
+  ): number => {
+    if (!provider || !model || !isPricingLoaded) return 0;
+    
+    const price = pricingData[provider]?.[model];
+    if (!price) return 0; // 不明なモデルの場合は 0 を返す
+    
+    const inputCost = (tokenUsageInput / 1_000_000) * price.input;
+    const outputCost = (tokenUsageOutput / 1_000_000) * price.output;
+    return inputCost + outputCost;
+  };
 
   // hasReloaded のデフォルト値を false に設定
   const [hasReloaded, setHasReloaded] = useState<boolean>(false);
@@ -135,6 +190,32 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
           }
           if (data.token_usage_output !== undefined) {
             setTokenUsageOutput(data.token_usage_output);
+          }
+          if (data.estimated_cost !== undefined) {
+            setEstimatedCost(data.estimated_cost);
+          }
+          if (data.provider !== undefined) {
+            setProvider(data.provider);
+          }
+          if (data.model !== undefined) {
+            setModel(data.model);
+          }
+          
+          // トークン使用量が更新されたら、推定コストも計算して更新
+          if (
+            (data.token_usage_input !== undefined || data.token_usage_output !== undefined) &&
+            data.provider !== undefined &&
+            data.model !== undefined
+          ) {
+            const newTokenUsageInput = data.token_usage_input !== undefined ? data.token_usage_input : tokenUsageInput;
+            const newTokenUsageOutput = data.token_usage_output !== undefined ? data.token_usage_output : tokenUsageOutput;
+            const newEstimatedCost = calculateCost(
+              data.provider,
+              data.model,
+              newTokenUsageInput,
+              newTokenUsageOutput
+            );
+            setEstimatedCost(newEstimatedCost);
           }
 
           if (!data.current_step || data.current_step === "loading") {
@@ -204,7 +285,7 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
     }
   }, [progress, hasReloaded]);
 
-  return { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput };
+  return { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost, provider, model };
 }
 
 // 個々のレポートカードコンポーネント
@@ -218,7 +299,7 @@ function ReportCard({
   setReports?: (reports: Report[] | undefined) => void;
 }) {
   const statusDisplay = getStatusDisplay(report.status);
-  const { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput } = useReportProgressPoll(
+  const { progress, errorStep, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost, provider, model } = useReportProgressPoll(
     report.slug,
     report.status !== "ready",
   );
@@ -227,18 +308,29 @@ function ReportCard({
     progress === "completed" ? steps.length : stepKeys.indexOf(progress) === -1 ? 0 : stepKeys.indexOf(progress);
 
   const [lastProgress, setLastProgress] = useState<string | null>(null);
+  const clusterDialogContentRef = useRef<HTMLDivElement>(null);
 
   // 編集ダイアログの状態管理
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editTitle, setEditTitle] = useState(report.title);
   const [editDescription, setEditDescription] = useState(report.description || "");
 
+  // クラスタ編集ダイアログの状態管理
+  const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
+  const [clusters, setClusters] = useState<ClusterResponse[]>([]);
+  const [selectedClusterId, setSelectedClusterId] = useState<string | undefined>(undefined);
+  const [editClusterTitle, setEditClusterTitle] = useState("");
+  const [editClusterDescription, setEditClusterDescription] = useState("");
+
   // エラー状態の判定
   const isErrorState = progress === "error" || report.status === "error";
 
   const displayTokenUsageInput = report.status === "processing" ? tokenUsageInput : report.tokenUsageInput;
   const displayTokenUsageOutput = report.status === "processing" ? tokenUsageOutput : report.tokenUsageOutput;
+  const displayEstimatedCost = report.status === "processing" ? estimatedCost : report.estimatedCost;
   const displayTokenUsage = report.status === "processing" ? tokenUsage : report.tokenUsage;
+  const displayProvider = report.status === "processing" ? provider : report.provider;
+  const displayModel = report.status === "processing" ? model : report.model;
 
   // progress が変更されたときにレポート状態を更新
   useEffect(() => {
@@ -254,6 +346,9 @@ function ReportCard({
                 tokenUsage: tokenUsage || r.tokenUsage,
                 tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
                 tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput,
+                estimatedCost: estimatedCost || r.estimatedCost,
+                provider: provider || r.provider,
+                model: model || r.model,
               }
             : r,
         );
@@ -267,13 +362,16 @@ function ReportCard({
                 tokenUsage: tokenUsage || r.tokenUsage,
                 tokenUsageInput: tokenUsageInput || r.tokenUsageInput,
                 tokenUsageOutput: tokenUsageOutput || r.tokenUsageOutput,
+                estimatedCost: estimatedCost || r.estimatedCost,
+                provider: provider || r.provider,
+                model: model || r.model,
               }
             : r,
         );
         setReports(updatedReports);
       }
     }
-  }, [progress, lastProgress, reports, setReports, report.slug, tokenUsage, tokenUsageInput, tokenUsageOutput]);
+  }, [progress, lastProgress, reports, setReports, report.slug, tokenUsage, tokenUsageInput, tokenUsageOutput, estimatedCost, provider, model]);
   return (
     <LinkBox
       as={Card.Root}
@@ -334,6 +432,18 @@ function ReportCard({
                     : report.tokenUsage != null
                       ? `${report.tokenUsage.toLocaleString()} (詳細なし)`
                       : "情報なし"}
+              </Text>
+              {/* 推定コストの表示を追加 */}
+              <Text fontSize="xs" color="gray.500" mb={1}>
+                推定コスト:{" "}
+                {report.status === "processing"
+                  ? displayEstimatedCost != null && displayEstimatedCost > 0
+                    ? `$${displayEstimatedCost.toFixed(6)}`
+                    : "情報なし"
+                  : report.estimatedCost != null
+                    ? `$${report.estimatedCost.toFixed(6)}`
+                    : "情報なし"}
+                {displayProvider && displayModel ? ` (${displayProvider}/${displayModel})` : ""}
               </Text>
               {report.status !== "ready" && (
                 <Box mt={2}>
@@ -595,6 +705,45 @@ function ReportCard({
                 >
                   レポートを編集する
                 </MenuItem>
+                {report.status === "ready" && (
+                  <MenuItem
+                    value="edit-cluster"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`, {
+                          headers: {
+                            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+                          },
+                        });
+                        if (!response.ok) {
+                          throw new Error("クラスタ一覧の取得に失敗しました");
+                        }
+                        const data = await response.json();
+                        setClusters(data.clusters || []);
+                        if (data.clusters && data.clusters.length > 0) {
+                          setSelectedClusterId(data.clusters[0].id);
+                          setEditClusterTitle(data.clusters[0].label);
+                          setEditClusterDescription(data.clusters[0].description);
+                        } else {
+                          setSelectedClusterId(undefined);
+                          setEditClusterTitle("");
+                          setEditClusterDescription("");
+                        }
+                        setIsClusterEditDialogOpen(true);
+                      } catch (error) {
+                        console.error(error);
+                        toaster.create({
+                          type: "error",
+                          title: "エラー",
+                          description: "クラスタ一覧の取得に失敗しました。",
+                        });
+                      }
+                    }}
+                  >
+                    意見グループを編集する
+                  </MenuItem>
+                )}
                 <MenuItem
                   value="delete"
                   color="fg.error"
@@ -692,15 +841,15 @@ function ReportCard({
                   ml={3}
                   onClick={async () => {
                     try {
-                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/metadata`, {
+                      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/config`, {
                         method: "PATCH",
                         headers: {
                           "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
                           "Content-Type": "application/json",
                         },
                         body: JSON.stringify({
-                          title: editTitle,
-                          description: editDescription,
+                          question: editTitle,
+                          intro: editDescription,
                         }),
                       });
 
@@ -749,6 +898,21 @@ function ReportCard({
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
+
+      {/* クラスタ編集ダイアログ */}
+      <ClusterEditDialog
+        report={report}
+        isOpen={isClusterEditDialogOpen}
+        onClose={() => setIsClusterEditDialogOpen(false)}
+        clusters={clusters}
+        setClusters={setClusters}
+        selectedClusterId={selectedClusterId}
+        setSelectedClusterId={setSelectedClusterId}
+        editClusterTitle={editClusterTitle}
+        setEditClusterTitle={setEditClusterTitle}
+        editClusterDescription={editClusterDescription}
+        setEditClusterDescription={setEditClusterDescription}
+      />
     </LinkBox>
   );
 }

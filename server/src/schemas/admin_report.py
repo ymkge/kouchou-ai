@@ -47,13 +47,6 @@ class ReportInput(SchemaBaseModel):
     clusterLv2_max: int | None = None  # 自動クラスタ範囲（下位層最大）
 
 
-class ReportMetadataUpdate(SchemaBaseModel):
-    """レポートのメタデータ更新用スキーマ"""
-
-    title: str | None = None  # レポートのタイトル
-    description: str | None = None  # レポートの調査概要
-
-
 class ReportVisibilityUpdate(SchemaBaseModel):
     """レポートの可視性更新用スキーマ"""
 

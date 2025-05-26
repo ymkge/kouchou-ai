@@ -378,8 +378,10 @@ def request_to_embed(args, model, is_embedded_at_local=False, provider="openai",
         return request_to_local_embed(args)
 
     if provider == "azure":
+        logging.info("request_to_azure_embed")
         return request_to_azure_embed(args, model)
     elif provider == "openai":
+        logging.info("request_to_openai_embed")
         _validate_model(model)
         args = preprocess_openai_embed_args(args, model)  # ✅ トークン長チェック＋切り捨て
         client = OpenAI()
