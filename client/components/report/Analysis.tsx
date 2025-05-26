@@ -59,8 +59,12 @@ export function Analysis({ result }: ReportProps) {
 
   // Analysis 関数の中にこれを入れる
   useEffect(() => {
-    if (!result.config.auto_cluster_enabled || !result.config.auto_cluster_result) return;
-    setAutoClusterData(result.config.auto_cluster_result);
+    if (
+      !result.config.hierarchical_clustering.auto_cluster_enabled ||
+      !result.config.hierarchical_clustering.auto_cluster_result
+    )
+      return;
+    setAutoClusterData(result.config.hierarchical_clustering.auto_cluster_result);
   }, [result]);
 
   return (
@@ -148,7 +152,7 @@ export function Analysis({ result }: ReportProps) {
                 {p.step === "extraction" && (
                   <TimelineContent>
                     <TimelineTitle fontWeight={"bold"}>
-                      抽出 ({result.config.skip_extraction ? "スキップ" : result.config.extraction.model})
+                      抽出 ({result.config.extraction.skip ? "スキップ" : result.config.extraction.model})
                     </TimelineTitle>
                     <TimelineDescription>
                       コメントデータから意見を抽出するステップです。
@@ -232,14 +236,14 @@ export function Analysis({ result }: ReportProps) {
                       >
                         ソースコード
                       </Button>
-                      {result.config.auto_cluster_enabled && (
+                      {result.config.hierarchical_clustering.auto_cluster_enabled && (
                         <Button
                           variant="outline"
                           size="xs"
                           onClick={() =>
                             setSelectedData({
                               title: "グループ数試行結果",
-                              body: JSON.stringify(result.config.auto_cluster_result, null, 2),
+                              body: JSON.stringify(result.config.hierarchical_clustering.auto_cluster_result, null, 2),
                             })
                           }
                         >
@@ -253,7 +257,7 @@ export function Analysis({ result }: ReportProps) {
                   <TimelineContent>
                     <TimelineTitle fontWeight={"bold"}>
                       初期ラベリング (
-                      {result.config.skip_initial_labelling
+                      {result.config.hierarchical_initial_labelling.skip
                         ? "スキップ"
                         : result.config.hierarchical_initial_labelling.model}
                       )
@@ -295,7 +299,7 @@ export function Analysis({ result }: ReportProps) {
                   <TimelineContent>
                     <TimelineTitle fontWeight={"bold"}>
                       統合ラベリング (
-                      {result.config.skip_merge_labelling
+                      {result.config.hierarchical_merge_labelling.skip
                         ? "スキップ"
                         : result.config.hierarchical_merge_labelling.model}
                       )
@@ -337,7 +341,11 @@ export function Analysis({ result }: ReportProps) {
                 {p.step === "hierarchical_overview" && (
                   <TimelineContent>
                     <TimelineTitle fontWeight={"bold"}>
-                      要約 ({result.config.skip_overview ? "スキップ" : result.config.hierarchical_overview.model})
+                      要約 (
+                      {result.config.hierarchical_overview.skip
+                        ? "スキップ"
+                        : result.config.hierarchical_overview.model}
+                      )
                     </TimelineTitle>
                     <TimelineDescription>
                       意見グループの概要を作成するステップです。
@@ -434,14 +442,20 @@ export function Analysis({ result }: ReportProps) {
           </DrawerHeader>
           <DrawerBody fontSize={"xs"}>
             {/* 🔽 ここにグラフ差し込み条件分岐 */}
-            {selectedData?.title === "グループ数試行結果" && autoClusterData && (
-              <AutoClusterScoreChartClient
-                data={autoClusterData.results}
-                bestTop={autoClusterData.best.top.k}
-                bestBottom={autoClusterData.best.bottom.k}
-                durationSec={autoClusterData.duration_sec}
-              />
-            )}
+            {(() => {
+              try {
+                return selectedData?.title === "グループ数試行結果" && autoClusterData ? (
+                  <AutoClusterScoreChartClient
+                    data={autoClusterData.results}
+                    bestLv1={autoClusterData.best.lv1.k}
+                    bestLv2={autoClusterData.best.lv2.k}
+                    durationSec={autoClusterData.duration_sec}
+                  />
+                ) : null;
+              } catch (e) {
+                return <Text color="red.400">グラフの描画に失敗しました</Text>;
+              }
+            })()}
             <Box p={5} borderRadius={5} bgColor={"#111"} color={"#fff"} whiteSpace={"pre-wrap"} className={"code"}>
               {selectedData?.body}
             </Box>

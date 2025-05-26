@@ -1,4 +1,3 @@
-import json
 import time
 from datetime import datetime
 from importlib import import_module
@@ -6,7 +5,7 @@ from importlib import import_module
 import numpy as np
 import pandas as pd
 import scipy.cluster.hierarchy as sch
-from hierarchical_utils import update_status  # ← 追加
+from hierarchical_utils import update_status
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
@@ -34,72 +33,81 @@ def hierarchical_clustering(config):
     # TypeError: Cannot use scipy.linalg.eigh for sparse A with k >= N. Use scipy.linalg.eigh(A.toarray()) or reduce k.
 
     umap_embeds = umap_model.fit_transform(embeddings_array)
-
     # ✅ 自動クラスタ設定の場合
-    if config.get("auto_cluster_enabled", False):
-        start_time = time.time()
-
-        top_min = config.get("cluster_top_min", 2)
-        top_max = config.get("cluster_top_max", 10)
-        bottom_max = config.get("cluster_bottom_max", 20)
+    clustering_config = config.get("hierarchical_clustering", {})
+    if clustering_config.get("auto_cluster_enabled", False):
+        lv1_min = clustering_config.get("cluster_lv1_min", 2)
+        lv1_max = clustering_config.get("cluster_lv1_max", 20)
+        lv2_min = clustering_config.get("cluster_lv2_min", lv1_max + 1)
+        lv2_max = clustering_config.get("cluster_lv2_max", 100)
 
         n_samples = umap_embeds.shape[0]
         max_clusters = max(2, n_samples - 1)
 
-        # 上下限補正
-        top_max = min(top_max, max_clusters)
-        bottom_max = min(bottom_max, max_clusters)
-        top_min = max(2, min(top_min, top_max))
+        # 上限補正
+        lv1_max = min(lv1_max, max_clusters)
+        lv2_max = min(lv2_max, max_clusters)
+
+        # 下限補正
+        lv1_min = max(2, min(lv1_min, lv1_max))
+        lv2_min = max(lv1_max + 1, min(lv2_min, lv2_max))
 
         silhouette_results = []
-        best_top_score, best_top = -1.0, None
-        best_bottom_score, best_bottom = -1.0, None
+        best_lv1_score, best_lv1 = -1, None
+        best_lv2_score, best_lv2 = -1, None
 
-        for k in range(top_min, top_max + 1):
+        start = time.time()
+
+        for k in range(lv1_min, lv1_max + 1):
             try:
                 labels = KMeans(n_clusters=k, random_state=42).fit_predict(umap_embeds)
                 score = silhouette_score(umap_embeds, labels)
-                silhouette_results.append((f"top-{k}", float(score)))
-                if score > best_top_score:
-                    best_top_score, best_top = float(score), int(k)
+                silhouette_results.append((f"lv1-{k}", score))
+                if score > best_lv1_score:
+                    best_lv1_score, best_lv1 = score, k
             except ValueError as e:
-                print(f"[auto-cluster] silhouette_score error for top-{k}: {e}")
+                print(f"[auto-cluster] silhouette_score error for lv1-{k}: {e}")
 
-        for k in range(top_max + 1, bottom_max + 1):
+        for k in range(lv2_min, lv2_max + 1):
             try:
                 labels = KMeans(n_clusters=k, random_state=42).fit_predict(umap_embeds)
                 score = silhouette_score(umap_embeds, labels)
-                silhouette_results.append((f"bottom-{k}", float(score)))
-                if score > best_bottom_score:
-                    best_bottom_score, best_bottom = float(score), int(k)
+                silhouette_results.append((f"lv2-{k}", score))
+                if score > best_lv2_score:
+                    best_lv2_score, best_lv2 = score, k
             except ValueError as e:
-                print(f"[auto-cluster] silhouette_score error for bottom-{k}: {e}")
+                print(f"[auto-cluster] silhouette_score error for lv2-{k}: {e}")
 
-        # JSON出力（型変換含む）
-        auto_result = {
+        duration_sec = round(time.time() - start, 2)
+
+        structured_result = {
             "timestamp": datetime.now().isoformat(),
-            "top_range": [int(top_min), int(top_max)],
-            "bottom_range": [int(top_max + 1), int(bottom_max)],
+            "lv1_range": [int(lv1_min), int(lv1_max)],
+            "lv2_range": [int(lv2_min), int(lv2_max)],
             "best": {
-                "top": {
-                    "k": int(best_top) if best_top is not None else None,
-                    "score": float(best_top_score) if best_top_score >= 0 else None,
-                },
-                "bottom": {
-                    "k": int(best_bottom) if best_bottom is not None else None,
-                    "score": float(best_bottom_score) if best_bottom_score >= 0 else None,
-                },
+                "lv1": {"k": int(best_lv1), "score": float(round(best_lv1_score, 6))},
+                "lv2": {"k": int(best_lv2), "score": float(round(best_lv2_score, 6))},
             },
-            "duration_sec": round(float(time.time() - start_time), 3),
-            "results": [{"label": str(label), "score": float(score)} for label, score in silhouette_results],
+            "duration_sec": float(duration_sec),
+            "results": [{"label": label, "score": float(round(score, 6))} for label, score in silhouette_results],
         }
 
-        with open(f"outputs/{dataset}/auto_cluster_result.json", "w", encoding="utf-8") as f:
-            json.dump(auto_result, f, indent=2, ensure_ascii=False)
+        # 人間向けの .txt 出力も維持
+        lines = ["🔎 クラスタリング評価結果 (Silhouette Score)"]
+        for r in structured_result["results"]:
+            lines.append(f"{r['label']:>10}: {r['score']:.6f}")
+        lines.append("\n✅ 最適クラスタ数:")
+        lines.append(f" - best_lv1: {best_lv1} (score={best_lv1_score:.6f})")
+        lines.append(f" - best_lv2: {best_lv2} (score={best_lv2_score:.6f})")
+        with open(f"outputs/{dataset}/auto_cluster_result.txt", "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
 
-        update_status(config, {"auto_cluster_result": auto_result})
-        cluster_nums = [best_top, best_bottom]
+        # ✅ 保存
+        clustering_config["auto_cluster_result"] = structured_result
+        cluster_nums = [best_lv1, best_lv2]
+        clustering_config["cluster_nums"] = cluster_nums
 
+        update_status(config, {})
     else:
         # 通常モード
         cluster_nums = config["hierarchical_clustering"]["cluster_nums"]

@@ -32,7 +32,7 @@ def extraction(config):
     workers = config["extraction"]["workers"]
     limit = config["extraction"]["limit"]
     property_columns = config["extraction"]["properties"]
-    skip_extraction = config.get("skip_extraction", False)
+    skip_extraction = config["extraction"].get("skip", False)
     if "provider" not in config:
         raise RuntimeError("provider is not set")
     provider = config["provider"]

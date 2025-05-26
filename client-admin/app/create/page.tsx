@@ -19,6 +19,7 @@ import { usePromptSettings } from "./hooks/usePromptSettings";
 import { type CsvData, parseCsv } from "./parseCsv";
 import { showErrorToast } from "./utils/error-handler";
 import { validateFormValues } from "./utils/validation";
+import { generateDefaultQuestionTitle } from "./utils/generateTitle";
 
 function generateClusterList(min: number, topMax: number, bottomMax: number): number[] {
   const clusters: number[] = [];
@@ -172,36 +173,8 @@ export default function Page() {
       let question = basicInfo.question.trim();
       let intro = basicInfo.intro.trim();
 
-      //      if (question === "") {
-      //        question = "（タイトル）";
-      //      }
       if (question === "") {
-        const providerLabel = aiSettings.provider === "none" ? "LLMなし" : `${aiSettings.provider}/${aiSettings.model}`;
-        const source =
-          inputData.inputType === "file"
-            ? (inputData.csv?.name ?? "ファイル未指定")
-            : (inputData.spreadsheetUrl.split("/")[5] ?? "シート未指定");
-        const col = inputData.selectedCommentColumn || "カラム未選択";
-        const clustering = clusterSettings.autoClusterEnabled
-          ? `自動 (${clusterSettings.clusterTopMax}+${clusterSettings.clusterBottomMax})`
-          : `手動 (${clusterSettings.clusterLv1}+${clusterSettings.clusterLv2})`;
-        const skips = [
-          aiSettings.skipExtraction && "抽出スキップ",
-          aiSettings.skipInitialLabelling && "初期ラベルスキップ",
-          aiSettings.skipMergeLabelling && "統合ラベルスキップ",
-          aiSettings.skipOverview && "要約スキップ",
-        ]
-          .filter(Boolean)
-          .join(", ");
-
-        // 並列数とローカル埋込はAIありのときだけ表示
-        const extra =
-          aiSettings.provider !== "none"
-            ? // biome-ignore lint/style/useTemplate: <explanation>
-              ` (${aiSettings.workers}並列)` + (aiSettings.isEmbeddedAtLocal ? "｜ローカル埋込" : "")
-            : "";
-
-        question = `[${source}] ${col}列｜${clustering}｜${providerLabel}${extra}${skips ? `｜${skips}` : ""}`;
+        question = generateDefaultQuestionTitle({ inputData, clusterSettings, aiSettings });
       }
       if (intro === "") {
         intro = "";
@@ -225,9 +198,10 @@ export default function Page() {
         skip_merge_labelling: aiSettings.skipMergeLabelling,
         skip_overview: aiSettings.skipOverview,
         auto_cluster_enabled: clusterSettings.autoClusterEnabled,
-        cluster_top_min: 2,
-        cluster_top_max: clusterSettings.clusterTopMax,
-        cluster_bottom_max: clusterSettings.clusterBottomMax,
+        clusterLv1_min: clusterSettings.clusterLv1Min,
+        clusterLv1_max: clusterSettings.clusterLv1Max,
+        clusterLv2_min: clusterSettings.clusterLv2Min,
+        clusterLv2_max: clusterSettings.clusterLv2Max,
       });
 
       toaster.create({

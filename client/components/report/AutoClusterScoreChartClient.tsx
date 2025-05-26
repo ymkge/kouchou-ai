@@ -10,22 +10,22 @@ type DataPoint = {
 
 type Props = {
   data: DataPoint[];
-  bestTop: number;
-  bestBottom: number;
+  bestLv1: number;
+  bestLv2: number;
   durationSec: number;
 };
 
-export default function AutoClusterScoreChartClient({ data, bestTop, bestBottom, durationSec }: Props) {
+export default function AutoClusterScoreChartClient({ data, bestLv1, bestLv2, durationSec }: Props) {
   // x軸ラベルを数値だけに変換 & 上下層分類
   const simplified = data.map((d) => {
     const parts = d.label.split("-");
-    const layer = parts[0]; // top or bottom
+    const layer = parts[0].toLowerCase(); // ← 小文字化で "lv1", "lv2" に揃える
     const num = Number(parts[1]);
     return { ...d, labelNum: num, layer };
   });
 
-  const topData = simplified.filter((d) => d.layer === "top");
-  const bottomData = simplified.filter((d) => d.layer === "bottom");
+  const lv1Data = simplified.filter((d) => d.layer === "lv1");
+  const lv2Data = simplified.filter((d) => d.layer === "lv2");
 
   return (
     <Box w="100%" maxW="750px" mx="auto" mb={8}>
@@ -36,19 +36,19 @@ export default function AutoClusterScoreChartClient({ data, bestTop, bestBottom,
       <Plot
         data={[
           {
-            x: topData.map((d) => d.labelNum),
-            y: topData.map((d) => d.score),
+            x: lv1Data.map((d) => d.labelNum),
+            y: lv1Data.map((d) => d.score),
             type: "scatter",
             mode: "lines+markers",
-            name: "統合ラベル数（上層）",
+            name: "第一階層",
             line: { color: "#3182CE" },
           },
           {
-            x: bottomData.map((d) => d.labelNum),
-            y: bottomData.map((d) => d.score),
+            x: lv2Data.map((d) => d.labelNum),
+            y: lv2Data.map((d) => d.score),
             type: "scatter",
             mode: "lines+markers",
-            name: "初期ラベル数（下層）",
+            name: "第二階層",
             line: { color: "#38A169" },
           },
         ]}
@@ -64,8 +64,8 @@ export default function AutoClusterScoreChartClient({ data, bestTop, bestBottom,
           shapes: [
             {
               type: "line",
-              x0: bestTop,
-              x1: bestTop,
+              x0: bestLv1,
+              x1: bestLv1,
               y0: 0,
               y1: 1,
               xref: "x",
@@ -74,8 +74,8 @@ export default function AutoClusterScoreChartClient({ data, bestTop, bestBottom,
             },
             {
               type: "line",
-              x0: bestBottom,
-              x1: bestBottom,
+              x0: bestLv2,
+              x1: bestLv2,
               y0: 0,
               y1: 1,
               xref: "x",
@@ -85,7 +85,7 @@ export default function AutoClusterScoreChartClient({ data, bestTop, bestBottom,
           ],
           annotations: [
             {
-              x: bestTop,
+              x: bestLv1,
               y: 1,
               xref: "x",
               yref: "paper",
@@ -95,7 +95,7 @@ export default function AutoClusterScoreChartClient({ data, bestTop, bestBottom,
               yanchor: "bottom",
             },
             {
-              x: bestBottom,
+              x: bestLv2,
               y: 1,
               xref: "x",
               yref: "paper",

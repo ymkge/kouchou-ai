@@ -57,9 +57,6 @@ def hierarchical_merge_labelling(config: dict) -> None:
     merge_path = f"outputs/{dataset}/hierarchical_merge_labels.csv"
     clusters_df = pd.read_csv(f"outputs/{dataset}/hierarchical_initial_labels.csv")
 
-    if config.get("skip_merge_labelling", False):
-        print("⏩ 統合ラベリングをスキップします。")
-
     # 通常処理（既存）
     cluster_id_columns: list[str] = _filter_id_columns(clusters_df.columns)
     # ボトムクラスタのラベル・説明とクラスタid付きの各argumentを入力し、各階層のクラスタラベル・説明を生成し、argumentに付けたdfを作成
@@ -251,7 +248,7 @@ def process_merge_labelling(
     previous_values = filter_previous_values(result_df, previous_columns)
 
     # ✅ スキップ判定：すべてテンプレ or 単一ラベル or フラグによるスキップ
-    if config.get("skip_merge_labelling", False):
+    if config["hierarchical_merge_labelling"].get("skip", False):
         print(f"⏩ 統合ラベリングをスキップ（明示的設定）: {target_cluster_id}")
         return {
             current_columns.id: target_cluster_id,

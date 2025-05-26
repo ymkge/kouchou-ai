@@ -41,9 +41,10 @@ class ReportInput(SchemaBaseModel):
     skip_overview: bool = False  # 要約プロンプトスキップ
 
     auto_cluster_enabled: bool = False  # 自動クラスタ数設定
-    cluster_top_min: int | None = None  # 自動クラスタ範囲（上位層最小）
-    cluster_top_max: int | None = None  # 自動クラスタ範囲（上位層最大）
-    cluster_bottom_max: int | None = None  # 自動クラスタ範囲（下位層最大）
+    clusterLv1_min: int | None = None  # 自動クラスタ範囲（上位層最小）
+    clusterLv1_max: int | None = None  # 自動クラスタ範囲（上位層最大）
+    clusterLv2_min: int | None = None  # 自動クラスタ範囲（下位層最小）
+    clusterLv2_max: int | None = None  # 自動クラスタ範囲（下位層最大）
 
 
 class ReportMetadataUpdate(SchemaBaseModel):

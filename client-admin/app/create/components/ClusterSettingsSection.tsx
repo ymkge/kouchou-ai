@@ -1,5 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import { Box, Button, Field, HStack, Input, Text } from "@chakra-ui/react";
+import { Field, HStack, Input, Text } from "@chakra-ui/react";
+import type { Warning } from "../hooks/useClusterSettings";
 import type { ClusterSettings } from "../types";
 
 export function ClusterSettingsSection({
@@ -10,11 +11,16 @@ export function ClusterSettingsSection({
   onLv1Change,
   onLv2Change,
   autoClusterEnabled,
-  clusterTopMax,
-  clusterBottomMax,
+  clusterLv1Min,
+  clusterLv1Max,
+  clusterLv2Min,
+  clusterLv2Max,
   onAutoClusterToggle,
-  onTopMaxChange,
-  onBottomMaxChange,
+  onLv1MinChange,
+  onLv1MaxChange,
+  onLv2MinChange,
+  onLv2MaxChange,
+  manualWarnings,
 }: {
   clusterLv1: number;
   clusterLv2: number;
@@ -23,13 +29,21 @@ export function ClusterSettingsSection({
   onLv1Change: (value: number) => void;
   onLv2Change: (value: number) => void;
   autoClusterEnabled: boolean;
-  clusterTopMax: number;
-  clusterBottomMax: number;
+  clusterLv1Min: number;
+  clusterLv1Max: number;
+  clusterLv2Min: number;
+  clusterLv2Max: number;
   onAutoClusterToggle: (value: boolean) => void;
-  onTopMaxChange: (value: number) => void;
-  onBottomMaxChange: (value: number) => void;
+  onLv1MinChange: (value: number) => void;
+  onLv1MaxChange: (value: number) => void;
+  onLv2MinChange: (value: number) => void;
+  onLv2MaxChange: (value: number) => void;
+  manualWarnings: Warning[];
 }) {
   if (!recommendedClusters) return null;
+
+  const lv1HasWarning = manualWarnings.some((w) => w.field === "lv1");
+  const lv2HasWarning = manualWarnings.some((w) => w.field === "lv2");
 
   return (
     <Field.Root mt={4}>
@@ -40,115 +54,98 @@ export function ClusterSettingsSection({
         </Checkbox>
       </HStack>
 
-      <HStack mt={3} flexWrap="wrap" w="100%">
+      <HStack mt={3} flexWrap="wrap" w="100%" align="center">
+        <Text fontSize="sm" w="100px">
+          第一階層
+        </Text>
         {autoClusterEnabled ? (
           <>
-            <Text fontSize="sm" w="80px">
-              2～
-            </Text>
-            <Button onClick={() => onTopMaxChange(clusterTopMax - 1)} variant="outline" size="sm">
-              -
-            </Button>
             <Input
               type="number"
-              value={clusterTopMax.toString()}
-              min={2}
-              max={40}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                if (!Number.isNaN(v)) onTopMaxChange(v);
-              }}
+              value={clusterLv1Min.toString()}
+              onChange={(e) => onLv1MinChange(Number(e.target.value))}
               size="sm"
-              w="100px"
+              w="81px"
             />
-            <Button onClick={() => onTopMaxChange(clusterTopMax + 1)} variant="outline" size="sm">
-              +
-            </Button>
-
+            <Text fontSize="sm" mx={1}>
+              ～
+            </Text>
+            <Input
+              type="number"
+              value={clusterLv1Max.toString()}
+              onChange={(e) => onLv1MaxChange(Number(e.target.value))}
+              size="sm"
+              w="81px"
+            />
             <Text fontSize="sm" mx={3} w="40px" textAlign="center">
               ▶
             </Text>
-
-            <Text fontSize="sm" w="60px">
-              {clusterTopMax + 1} ～
+            <Text fontSize="sm" w="100px">
+              第二階層
             </Text>
-            <Button onClick={() => onBottomMaxChange(clusterBottomMax - 1)} variant="outline" size="sm">
-              -
-            </Button>
             <Input
               type="number"
-              value={clusterBottomMax.toString()}
-              min={clusterTopMax + 1}
-              max={1000}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                if (!Number.isNaN(v)) onBottomMaxChange(v);
-              }}
+              value={clusterLv2Min.toString()}
+              onChange={(e) => onLv2MinChange(Number(e.target.value))}
               size="sm"
-              w="100px"
+              w="81px"
             />
-            <Button onClick={() => onBottomMaxChange(clusterBottomMax + 1)} variant="outline" size="sm">
-              +
-            </Button>
+            <Text fontSize="sm" mx={1}>
+              ～
+            </Text>
+            <Input
+              type="number"
+              value={clusterLv2Max.toString()}
+              onChange={(e) => onLv2MaxChange(Number(e.target.value))}
+              size="sm"
+              w="81px"
+            />
           </>
         ) : (
           <>
-            <Box w="80px" /> {/* ▶位置調整のために空幅 */}
-            <Button onClick={() => onLv1Change(clusterLv1 - 1)} variant="outline" size="sm">
-              -
-            </Button>
             <Input
               type="number"
               value={clusterLv1.toString()}
-              min={2}
-              max={40}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                if (!Number.isNaN(v)) onLv1Change(v);
-              }}
+              onChange={(e) => onLv1Change(Number(e.target.value))}
+              min={clusterLv1Min}
+              max={clusterLv1Max}
               size="sm"
-              w="100px"
+              w="200px"
             />
-            <Button onClick={() => onLv1Change(clusterLv1 + 1)} variant="outline" size="sm">
-              +
-            </Button>
             <Text fontSize="sm" mx={3} w="40px" textAlign="center">
               ▶
             </Text>
-            <Button onClick={() => onLv2Change(clusterLv2 - 1)} variant="outline" size="sm">
-              -
-            </Button>
+            <Text fontSize="sm" w="100px">
+              第二階層
+            </Text>
             <Input
               type="number"
               value={clusterLv2.toString()}
-              min={2}
-              max={1000}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                if (!Number.isNaN(v)) onLv2Change(v);
-              }}
+              onChange={(e) => onLv2Change(Number(e.target.value))}
+              min={clusterLv2Min}
+              max={clusterLv2Max}
               size="sm"
-              w="100px"
+              w="200px"
             />
-            <Button onClick={() => onLv2Change(clusterLv2 + 1)} variant="outline" size="sm">
-              +
-            </Button>
           </>
         )}
       </HStack>
 
+      {manualWarnings.map((w) => (
+        <Text key={`${w.field}-${w.message}`} fontSize="sm" color="orange.500">
+          {w.message}
+        </Text>
+      ))}
+
       {autoClusterEnabled ? (
-        <Field.HelperText mt={2}>自動モードでは、上限範囲内で複数のクラスタ数を評価します。</Field.HelperText>
+        <Field.HelperText mt={2}>
+          階層ごとの意見グループ生成数を「下限 ～ 上限」の範囲で自動的に評価し、最適な数を決定します。
+        </Field.HelperText>
       ) : (
         <>
           <Field.HelperText mt={2}>
             階層ごとの意見グループ生成数を手動で設定します。初期値はコメント数に基づいた推奨意見グループ数です。
           </Field.HelperText>
-          {autoAdjusted && (
-            <Text color="orange.500" fontSize="sm" mt={2}>
-              第2階層の意見グループ数が自動調整されました。第2階層の意見グループ数は第1階層の意見グループ数の2倍以上に設定してください。
-            </Text>
-          )}
         </>
       )}
     </Field.Root>

@@ -16,9 +16,9 @@ class OverviewResponse(BaseModel):
 def hierarchical_overview(config):
     dataset = config["output_dir"]
     path = f"outputs/{dataset}/hierarchical_overview.txt"
-    # ✅ スキップ時処理 ※省略時の文言は空にするとnullや型不明のエラーになりやすい
-    if config.get("skip_overview", False):
-        print("⏩ 概要生成（overview）をスキップします。空ファイルを出力します。")
+    # ✅ スキップ時処理
+    if config["hierarchical_overview"].get("skip", False):
+        print("⏩ 概要生成（overview）をスキップします。")
         with open(path, "w", encoding="utf-8") as f:
             f.write("（説明は省略されています）")
         return

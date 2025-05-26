@@ -36,9 +36,6 @@ def hierarchical_initial_labelling(config: dict) -> None:
 
     cluster_id_columns = [col for col in clusters_argument_df.columns if col.startswith("cluster-level-")]
     initial_cluster_id_column = cluster_id_columns[-1]
-    # ✅ スキップ対応
-    if config.get("skip_initial_labelling", False):
-        print("⏩ 初期ラベリングをスキップします。")
 
     # スキップしない通常処理
     sampling_num = config["hierarchical_initial_labelling"]["sampling_num"]
@@ -154,7 +151,7 @@ def process_initial_labelling(
         クラスタのラベリング結果
     """
     # ✅ スキップ対応
-    if config.get("skip_initial_labelling", False):
+    if config["hierarchical_initial_labelling"].get("skip", False):
         print(f"⏩ 初期ラベリングをスキップします。{cluster_id}")
         return LabellingResult(
             cluster_id=cluster_id, label=f"クラスタ {cluster_id}", description="（説明は省略されています）"

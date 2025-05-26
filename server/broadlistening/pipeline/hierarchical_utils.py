@@ -22,21 +22,13 @@ def validate_config(config):
         "is_embedded_at_local",
         "provider",
         "local_llm_address",
-        "skip_extraction",
-        "skip_initial_labelling",
-        "skip_merge_labelling",
-        "skip_overview",
-        "auto_cluster_enabled",
-        "cluster_top_min",
-        "cluster_top_max",
-        "cluster_bottom_max",
     ]
     step_names = [x["step"] for x in specs]
     for key in config:
         if key not in valid_fields and key not in step_names:
             raise Exception(f"Unknown field '{key}' in config")
     for step_spec in specs:
-        valid_options = list(step_spec.get("options", {}).keys())
+        valid_options = list(step_spec.get("options", {}).keys()) + ["skip"]  # ✅ skipを明示的に許可
         if step_spec.get("use_llm"):
             valid_options = valid_options + ["prompt", "model", "prompt_file"]
         for key in config.get(step_spec["step"], {}):
@@ -126,22 +118,6 @@ def initialization(sysargv):
             config["skip-interaction"] = True
         if option == "--without-html":
             config["without-html"] = True
-        if option == "--skip-extraction":
-            config["skip_extraction"] = True
-        if option == "--skip-initial-labelling":
-            config["skip_initial_labelling"] = True
-        if option == "--skip-merge-labelling":
-            config["skip_merge_labelling"] = True
-        if option == "--skip-overview":
-            config["skip_overview"] = True
-        if option == "--auto-cluster":
-            config["auto_cluster_enabled"] = True
-        if option == "--cluster-top-min":
-            config["cluster_top_min"] = int(sysargv[i + 1])
-        if option == "--cluster-top-max":
-            config["cluster_top_max"] = int(sysargv[i + 1])
-        if option == "--cluster-bottom-max":
-            config["cluster_bottom_max"] = int(sysargv[i + 1])
 
     output_dir = config["output_dir"]
 
