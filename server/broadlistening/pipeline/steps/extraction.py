@@ -44,8 +44,11 @@ def extraction(config):
     comments = pd.read_csv(
         f"inputs/{config['input']}.csv", usecols=["comment-id", "comment-body"] + config["extraction"]["properties"]
     )
-    comment_ids = (comments["comment-id"].values)[:limit]
+
+    # ✅ 空コメントを除外（この段階ではまだ index 化してないのでOK）
+    comments = comments[comments["comment-body"].notna() & (comments["comment-body"].str.strip() != "")]
     comments.set_index("comment-id", inplace=True)
+    comment_ids = comments.index.values[:limit]
     results = pd.DataFrame()
     update_progress(config, total=len(comment_ids))
 
