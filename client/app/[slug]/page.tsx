@@ -6,6 +6,7 @@ import { BackButton } from "@/components/report/BackButton";
 import { ClientContainer } from "@/components/report/ClientContainer";
 import { Overview } from "@/components/report/Overview";
 import type { Meta, Report, Result } from "@/type";
+import { ReportVisibility } from "@/type";
 import { Separator } from "@chakra-ui/react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -66,7 +67,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
 
     // visibilityが"unlisted"の場合、noindexを設定
-    if (result.visibility === "unlisted") {
+    if (result.visibility === ReportVisibility.UNLISTED) {
       metaData.robots = {
         index: false,
         follow: false,
