@@ -45,7 +45,7 @@ class TestReportEndpoint:
         assert response_data["overview"] == "テスト概要"
 
     def test_get_report_with_visibility_unlisted(self, client: TestClient, temp_report_dir, test_settings):
-        """正常系：unlistedなレポートの取得とvisibilityフィールドの確認"""
+        """正常系：限定公開のレポートの取得とvisibilityフィールドの確認"""
         slug = "test-unlisted-report"
 
         # テスト用のレポートファイルを作成
@@ -53,8 +53,8 @@ class TestReportEndpoint:
         report_dir.mkdir(parents=True, exist_ok=True)
         report_file = report_dir / "hierarchical_result.json"
         report_data = {
-            "config": {"question": "アンリスト質問"},
-            "overview": "アンリスト概要",
+            "config": {"question": "限定公開レポートの質問"},
+            "overview": "限定公開レポートの概要",
             "clusters": [],
             "arguments": [],
         }
@@ -81,14 +81,14 @@ class TestReportEndpoint:
         assert response_data["visibility"] == "unlisted"
 
     def test_get_private_report_returns_404(self, client: TestClient, temp_report_dir, test_settings):
-        """異常系：privateなレポートは404を返す"""
+        """異常系：非公開のレポートは404を返す"""
         slug = "test-private-report"
 
         # テスト用のレポートファイルを作成
         report_dir = temp_report_dir / slug
         report_dir.mkdir(parents=True, exist_ok=True)
         report_file = report_dir / "hierarchical_result.json"
-        report_data = {"config": {"question": "プライベート質問"}}
+        report_data = {"config": {"question": "非公開のレポートの質問"}}
         with open(report_file, "w") as f:
             json.dump(report_data, f)
 
