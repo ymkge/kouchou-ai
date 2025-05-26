@@ -65,6 +65,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: `${result.overview}`,
     };
 
+    // visibilityが"unlisted"の場合、noindexを設定
+    if (result.visibility === "unlisted") {
+      metaData.robots = {
+        index: false,
+        follow: false,
+      };
+    }
+
     // 静的エクスポート時はmetadataBaseを設定しない（相対パスを使用するため）
     if (process.env.NEXT_PUBLIC_OUTPUT_MODE !== "export") {
       // 開発環境やSSR時のみmetadataBaseを設定
