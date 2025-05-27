@@ -22,8 +22,13 @@ function MessageText({ message }: { message: string }) {
         {message}
         {!isShow && (
           <Flex position="absolute" right="0" bottom="0" zIndex="1" bg="white">
-            <Text w="1rem">....</Text>
-            <Link variant="underline" color="currentcolor" onClick={() => setIsShow(true)}>
+            <Text w="1rem">...</Text>
+            <Link
+              variant="underline"
+              color="currentcolor"
+              textDecorationColor="currentcolor"
+              onClick={() => setIsShow(true)}
+            >
               全文表示
             </Link>
           </Flex>
