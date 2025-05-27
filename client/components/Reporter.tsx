@@ -28,7 +28,11 @@ function EmptyText({ loading }: { loading: boolean }) {
 
 type LoadingStatus = "loading" | "success" | "error";
 
-function MessageText({ isDefault, message, status }: { isDefault: boolean; message: string; status: LoadingStatus }) {
+function MessageText({
+  isDefault,
+  message,
+  reporterImgLoadingStatus,
+}: { isDefault: boolean; message: string; reporterImgLoadingStatus: LoadingStatus }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const [isCalculating, setIsCalculating] = useState(true);
@@ -52,8 +56,9 @@ function MessageText({ isDefault, message, status }: { isDefault: boolean; messa
     };
   }, []);
 
+  // metdataが未設定の場合は、設定方法を案内するテキストを表示
   if (isDefault) {
-    return <EmptyText loading={status === "loading"} />;
+    return <EmptyText loading={reporterImgLoadingStatus === "loading"} />;
   }
 
   return (
@@ -94,9 +99,13 @@ function MessageText({ isDefault, message, status }: { isDefault: boolean; messa
 
 function ReporterImage({
   reporterName,
-  status,
-  setStatus,
-}: { reporterName: string; status: LoadingStatus; setStatus: (status: LoadingStatus) => void }) {
+  reporterImgLoadingStatus,
+  setReporterImgLoadingStatus,
+}: {
+  reporterName: string;
+  reporterImgLoadingStatus: LoadingStatus;
+  setReporterImgLoadingStatus: (status: LoadingStatus) => void;
+}) {
   const imgRef = useRef<HTMLImageElement>(null);
   const src = getImageFromServerSrc("/meta/reporter.png");
 
@@ -107,12 +116,12 @@ function ReporterImage({
     if (img.complete) {
       // 画像がすでに読み込まれているかどうかをチェック
       if (img.naturalWidth === 0) {
-        setStatus("error");
+        setReporterImgLoadingStatus("error");
       } else {
-        setStatus("success");
+        setReporterImgLoadingStatus("success");
       }
     }
-  }, [setStatus]);
+  }, [setReporterImgLoadingStatus]);
 
   return (
     <Image
@@ -120,25 +129,30 @@ function ReporterImage({
       src={src}
       alt={reporterName}
       w="150px"
-      display={status === "success" ? "inline-block" : "none"}
+      display={reporterImgLoadingStatus === "success" ? "inline-block" : "none"}
       mb={{ base: "4", md: "0" }}
       mr={{ base: "0", md: "4" }}
-      onLoad={() => setStatus("success")}
-      onError={() => setStatus("error")}
+      onLoad={() => setReporterImgLoadingStatus("success")}
+      onError={() => setReporterImgLoadingStatus("error")}
     />
   );
 }
 
 export function Reporter({ meta }: { meta: Meta }) {
-  const [status, setStatus] = useState<LoadingStatus>("loading");
+  const [reporterImgLoadingStatus, setReporterImgLoadingStatus] = useState<LoadingStatus>("loading");
 
   return (
     <Flex flexDirection="column" gap="4" color="gray.600">
-      <Skeleton loading={status === "loading"} w="fit-content" asChild>
-        <Flex flexDirection={{ base: "column", md: "row" }} alignItems={{ base: "flex-start", md: "center" }}>
-          <ReporterImage reporterName={meta.reporter} status={status} setStatus={setStatus} />
+      <Skeleton loading={reporterImgLoadingStatus === "loading"} w="fit-content" asChild>
+        <Flex flexDirection={{ base: "column", md: "row" }} alignItems="flex-start">
+          <ReporterImage
+            reporterName={meta.reporter}
+            reporterImgLoadingStatus={reporterImgLoadingStatus}
+            setReporterImgLoadingStatus={setReporterImgLoadingStatus}
+          />
           <Flex flexDirection="column" justifyContent="space-between" color="gray.600">
             <Text fontSize="xs">レポーター</Text>
+            {/* metadataが未設定の場合は、レポーター名は非表示 */}
             {!meta.isDefault && (
               <Text fontSize="md" fontWeight="bold">
                 {meta.reporter}
@@ -147,8 +161,12 @@ export function Reporter({ meta }: { meta: Meta }) {
           </Flex>
         </Flex>
       </Skeleton>
-      <MessageText isDefault={meta.isDefault} message={meta.message} status={status} />
-      <Skeleton loading={status === "loading"} asChild>
+      <MessageText
+        isDefault={meta.isDefault}
+        message={meta.message}
+        reporterImgLoadingStatus={reporterImgLoadingStatus}
+      />
+      <Skeleton loading={reporterImgLoadingStatus === "loading"} asChild>
         <Flex gap="3" flexWrap="wrap" w="fit-content">
           {!meta.isDefault && meta.webLink && (
             <Button
