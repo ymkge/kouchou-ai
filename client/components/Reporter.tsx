@@ -2,7 +2,7 @@
 
 import { getImageFromServerSrc } from "@/app/utils/image-src";
 import type { Meta } from "@/type";
-import { Box, Button, Flex, Image, Link, SkeletonText, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Image, Link, Skeleton, SkeletonText, Text } from "@chakra-ui/react";
 import { Globe } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -31,21 +31,13 @@ function MessageText({ message }: { message: string }) {
   }, []);
 
   return (
-    <Box position="relative">
-      <SkeletonText
-        position="absolute"
-        top="0"
-        left="0"
-        zIndex="2"
-        w="100%"
-        h="100%"
-        noOfLines={2}
-        display={isCalculating ? "block" : "none"}
-      />
+    <Box>
+      <SkeletonText h="26px" noOfLines={2} display={isCalculating ? "block" : "none"} />
       <Text
         as="div"
         ref={textRef}
         fontSize="sm"
+        position={isCalculating ? "fixed" : "relative"}
         lineHeight={2}
         color="gray.600"
         textAlign="left"
@@ -73,8 +65,7 @@ function MessageText({ message }: { message: string }) {
   );
 }
 
-function ReporterImage() {
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+function ReporterImage({ status, setStatus } : { status: loadingStatus; setStatus: (status: loadingStatus) => void }) {
   const imgRef = useRef<HTMLImageElement>(null);
   const src = getImageFromServerSrc("/meta/reporter.png");
 
@@ -93,69 +84,78 @@ function ReporterImage() {
   }, []);
 
   return (
-    <Image
-      ref={imgRef}
-      src={src}
-      alt=""
-      onLoad={() => setStatus("success")}
-      onError={() => setStatus("error")}
-      w="150px"
-      display={status === "success" ? "inline-block" : "none"}
-      mb={{ base: "4", md: "0" }}
-      mr={{ base: "0", md: "4" }}
-    />
+    <>
+      <Image
+        ref={imgRef}
+        src={src}
+        alt=""
+        w="150px"
+        display={status === "success" ? "inline-block" : "none"}
+        mb={{ base: "4", md: "0" }}
+        mr={{ base: "0", md: "4" }}
+      />
+      <Box w="150px" h="50px" display={status === "success" ? "none" : "block"} />
+    </>
   );
 }
 
+type loadingStatus = "loading" | "success" | "error";
+
 export function Reporter({ meta }: { meta: Meta }) {
+  const [status, setStatus] = useState<loadingStatus>("loading");
+
   return (
     <Flex flexDirection="column" gap="4" color="gray.600">
-      <Flex flexDirection={{ base: "column", md: "row" }} alignItems={{ base: "flex-start", md: "center" }}>
-        <ReporterImage />
-        <Flex flexDirection="column" justifyContent="space-between" color="gray.600">
-          <Text fontSize="xs">レポーター</Text>
-          <Text fontSize="md" fontWeight="bold">
-            {meta?.reporter}
-          </Text>
+      <Skeleton loading={status === "loading"} w="fit-content" asChild>
+        <Flex flexDirection={{ base: "column", md: "row" }} alignItems={{ base: "flex-start", md: "center" }}>
+          <ReporterImage status={status} setStatus={setStatus} />
+          <Flex flexDirection="column" justifyContent="space-between" color="gray.600">
+            <Text fontSize="xs">レポーター</Text>
+            <Text fontSize="md" fontWeight="bold">
+              {meta?.reporter}
+            </Text>
+          </Flex>
         </Flex>
-      </Flex>
+      </Skeleton>
       {meta.message && <MessageText message={meta.message} />}
-      <Flex gap="3" flexWrap="wrap">
-        {!meta.isDefault && meta.webLink && (
-          <Button
-            variant="outline"
-            size="md"
-            fontSize="xs"
-            color="currentcolor"
-            _icon={{
-              width: "14px",
-              height: "14px",
-            }}
-            asChild
-          >
-            <a href={meta.webLink} target="_blank" rel="noopener noreferrer">
-              <Flex gap="1" alignItems="center">
-                <Globe />
-                ウェブサイト
-              </Flex>
-            </a>
-          </Button>
-        )}
-        {!meta.isDefault && meta.privacyLink && (
-          <Button variant="outline" size="md" fontSize="xs" color="currentcolor" asChild>
-            <a href={meta.privacyLink} target="_blank" rel="noopener noreferrer">
-              プライバシーポリシー
-            </a>
-          </Button>
-        )}
-        {!meta.isDefault && meta.termsLink && (
-          <Button variant="outline" size="md" fontSize="xs" color="currentcolor" asChild>
-            <a href={meta.termsLink} target="_blank" rel="noopener noreferrer">
-              利用規約
-            </a>
-          </Button>
-        )}
-      </Flex>
+      <Skeleton loading={status === "loading"} asChild>
+        <Flex gap="3" flexWrap="wrap" w="fit-content">
+          {!meta.isDefault && meta.webLink && (
+            <Button
+              variant="outline"
+              size="md"
+              fontSize="xs"
+              color="currentcolor"
+              _icon={{
+                width: "14px",
+                height: "14px",
+              }}
+              asChild
+            >
+              <a href={meta.webLink} target="_blank" rel="noopener noreferrer">
+                <Flex gap="1" alignItems="center">
+                  <Globe />
+                  ウェブサイト
+                </Flex>
+              </a>
+            </Button>
+          )}
+          {!meta.isDefault && meta.privacyLink && (
+            <Button variant="outline" size="md" fontSize="xs" color="currentcolor" asChild>
+              <a href={meta.privacyLink} target="_blank" rel="noopener noreferrer">
+                プライバシーポリシー
+              </a>
+            </Button>
+          )}
+          {!meta.isDefault && meta.termsLink && (
+            <Button variant="outline" size="md" fontSize="xs" color="currentcolor" asChild>
+              <a href={meta.termsLink} target="_blank" rel="noopener noreferrer">
+                利用規約
+              </a>
+            </Button>
+          )}
+        </Flex>
+      </Skeleton>
     </Flex>
   );
 }
