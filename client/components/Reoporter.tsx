@@ -27,7 +27,7 @@ export function Reporter({ meta }: { meta?: Meta }) {
   return (
     <div className="reporter">
       <Flex flexDirection="column" gap="4" color="gray.600">
-        <Flex gap="4">
+        <Flex gap="4" flexDirection={{ base: "column", md: "row" }} alignItems={{ base: "flex-start", md: "center" }}>
           <Image w="150px" src="/meta/reporter.png" alt="Reporter Logo" />
           <Flex flexDirection="column" justifyContent="space-between" color="gray.600">
             <Text fontSize="xs">レポーター</Text>
@@ -37,7 +37,7 @@ export function Reporter({ meta }: { meta?: Meta }) {
           </Flex>
         </Flex>
         {meta?.message && <MessageText message={meta.message} />}
-        <Flex gap="3">
+        <Flex gap="3" flexWrap="wrap">
           {meta?.webLink && (
             <Button
               variant="outline"
