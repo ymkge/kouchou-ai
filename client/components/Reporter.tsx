@@ -6,7 +6,29 @@ import { Box, Button, Flex, Image, Link, Skeleton, SkeletonText, Text } from "@c
 import { Globe } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-function MessageText({ message }: { message: string }) {
+function EmptyText({ loading }: { loading: boolean }) {
+  return (
+    <SkeletonText loading={loading} noOfLines={1}>
+      <Text fontSize="sm" color="gray.500">
+        レポーター情報が未設定です。レポート作成者が
+        <Link
+          href="https://github.com/digitaldemocracy2030/kouchou-ai/blob/main/README.md#%E3%83%A1%E3%82%BF%E3%83%87%E3%83%BC%E3%82%BF%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE%E3%82%BB%E3%83%83%E3%83%88%E3%82%A2%E3%83%83%E3%83%97"
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="underline"
+          color="currentcolor"
+        >
+          メタデータをセットアップ
+        </Link>
+        することでレポーター情報が表示されます。
+      </Text>
+    </SkeletonText>
+  );
+}
+
+type LoadingStatus = "loading" | "success" | "error";
+
+function MessageText({ isDefault, message, status }: { isDefault: boolean; message: string; status: LoadingStatus }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const [isCalculating, setIsCalculating] = useState(true);
@@ -29,6 +51,10 @@ function MessageText({ message }: { message: string }) {
       window.removeEventListener("resize", checkOverflow);
     };
   }, []);
+
+  if (isDefault) {
+    return <EmptyText loading={status === "loading"} />;
+  }
 
   return (
     <Box>
@@ -65,13 +91,12 @@ function MessageText({ message }: { message: string }) {
     </Box>
   );
 }
-type loadingStatus = "loading" | "success" | "error";
 
 function ReporterImage({
   reporterName,
   status,
   setStatus,
-}: { reporterName: string; status: loadingStatus; setStatus: (status: loadingStatus) => void }) {
+}: { reporterName: string; status: LoadingStatus; setStatus: (status: LoadingStatus) => void }) {
   const imgRef = useRef<HTMLImageElement>(null);
   const src = getImageFromServerSrc("/meta/reporter.png");
 
@@ -90,25 +115,22 @@ function ReporterImage({
   }, [setStatus]);
 
   return (
-    <>
-      <Image
-        ref={imgRef}
-        src={src}
-        alt={reporterName}
-        w="150px"
-        display={status === "success" ? "inline-block" : "none"}
-        mb={{ base: "4", md: "0" }}
-        mr={{ base: "0", md: "4" }}
-        onLoad={() => setStatus("success")}
-        onError={() => setStatus("error")}
-      />
-      <Box w="150px" h="50px" display={status === "success" ? "none" : "block"} />
-    </>
+    <Image
+      ref={imgRef}
+      src={src}
+      alt={reporterName}
+      w="150px"
+      display={status === "success" ? "inline-block" : "none"}
+      mb={{ base: "4", md: "0" }}
+      mr={{ base: "0", md: "4" }}
+      onLoad={() => setStatus("success")}
+      onError={() => setStatus("error")}
+    />
   );
 }
 
 export function Reporter({ meta }: { meta: Meta }) {
-  const [status, setStatus] = useState<loadingStatus>("loading");
+  const [status, setStatus] = useState<LoadingStatus>("loading");
 
   return (
     <Flex flexDirection="column" gap="4" color="gray.600">
@@ -117,13 +139,15 @@ export function Reporter({ meta }: { meta: Meta }) {
           <ReporterImage reporterName={meta.reporter} status={status} setStatus={setStatus} />
           <Flex flexDirection="column" justifyContent="space-between" color="gray.600">
             <Text fontSize="xs">レポーター</Text>
-            <Text fontSize="md" fontWeight="bold">
-              {meta?.reporter}
-            </Text>
+            {!meta.isDefault && (
+              <Text fontSize="md" fontWeight="bold">
+                {meta.reporter}
+              </Text>
+            )}
           </Flex>
         </Flex>
       </Skeleton>
-      {meta.message && <MessageText message={meta.message} />}
+      <MessageText isDefault={meta.isDefault} message={meta.message} status={status} />
       <Skeleton loading={status === "loading"} asChild>
         <Flex gap="3" flexWrap="wrap" w="fit-content">
           {!meta.isDefault && meta.webLink && (
