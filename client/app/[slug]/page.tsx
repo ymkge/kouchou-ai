@@ -6,10 +6,11 @@ import { BackButton } from "@/components/report/BackButton";
 import { ClientContainer } from "@/components/report/ClientContainer";
 import { Overview } from "@/components/report/Overview";
 import type { Meta, Report, Result } from "@/type";
-import { Separator } from "@chakra-ui/react";
+import { Box, Separator } from "@chakra-ui/react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getApiBaseUrl } from "../utils/api";
+import { Reporter } from "@/components/Reoporter";
 
 type PageProps = {
   params: Promise<{
@@ -113,6 +114,9 @@ export default async function Page({ params }: PageProps) {
         <Analysis result={result} />
         <BackButton />
         <Separator my={12} maxW={"750px"} mx={"auto"} />
+        <Box maxW={'750px'} mx={'auto'} mb={24}>
+          <Reporter meta={meta} />
+        </Box>
         <About meta={meta} />
       </div>
       <Footer meta={meta} />
