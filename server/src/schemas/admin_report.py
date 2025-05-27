@@ -35,16 +35,6 @@ class ReportInput(SchemaBaseModel):
     is_embedded_at_local: bool = False  # エンベデッド処理をローカルで行うかどうか
     provider: str = "openai"  # LLMプロバイダー（openai, azure, openrouter, local）
     local_llm_address: str | None = None  # LocalLLM用アドレス（例: "127.0.0.1:1234"）
-    skip_extraction: bool = False  # 意見抽出スキップ
-    skip_initial_labelling: bool = False  # 初期ラベリングスキップ
-    skip_merge_labelling: bool = False  # 統合ラベリングスキップ
-    skip_overview: bool = False  # 要約プロンプトスキップ
-
-    auto_cluster_enabled: bool = False  # 自動クラスタ数設定
-    clusterLv1_min: int | None = None  # 自動クラスタ範囲（上位層最小）
-    clusterLv1_max: int | None = None  # 自動クラスタ範囲（上位層最大）
-    clusterLv2_min: int | None = None  # 自動クラスタ範囲（下位層最小）
-    clusterLv2_max: int | None = None  # 自動クラスタ範囲（下位層最大）
 
 
 class ReportVisibilityUpdate(SchemaBaseModel):
