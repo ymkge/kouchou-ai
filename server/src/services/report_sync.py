@@ -15,7 +15,17 @@ class ReportSyncService:
     REMOTE_STATUS_FILE_PREFIX = "status"
     REMOTE_CONFIG_DIR_PREFIX = "configs"
     LOCAL_STATUS_FILE_PATH = settings.DATA_DIR / "report_status.json"
-    PRESERVED_REPORT_FILES = (".json", "final_result_with_comments.csv", "hierarchical_merge_labels.csv")
+    PRESERVED_REPORT_FILES = (
+        ".json",
+        "final_result_with_comments.csv",
+        "hierarchical_merge_labels.csv",
+        "hierarchical_result.json",
+        "args.csv",
+        "final_result_with_comments.csv",
+        "hierarchical_clusters.csv",
+        "relations.csv",
+        "hierarchical_overview.txt",
+    )
 
     def __init__(self):
         self.storage_service = get_storage_service()
@@ -100,9 +110,6 @@ class ReportSyncService:
         # ファイルをストレージにアップロード
         upload_success = self.storage_service.upload_file(str(input_file_path), remote_input_file_path)
 
-        # アップロードが成功した場合、ローカルファイルを削除
-        if upload_success:
-            self._cleanup_file(input_file_path)
 
     def sync_config_file_to_storage(self, slug: str) -> None:
         """設定ファイルをストレージにアップロードする"""
@@ -112,7 +119,7 @@ class ReportSyncService:
             return
 
         remote_config_file_path = f"{self.REMOTE_CONFIG_DIR_PREFIX}/{slug}.json"
-        self.storage_service.upload_file(str(config_file_path), remote_config_file_path)
+        self.storage_service.upload_file(str(config_file_path),remote_config_file_path)
 
     def download_status_file_from_storage(self) -> bool:
         """ステータスファイルをストレージからダウンロードする
@@ -162,6 +169,39 @@ class ReportSyncService:
             return False
 
 
+    def download_all_config_files_from_storage(self) -> bool:
+        """設定ファイルをストレージからダウンロードする"""
+        try:
+            self.storage_service.download_directory(
+                str(self.REMOTE_CONFIG_DIR_PREFIX),
+                str(settings.CONFIG_DIR),
+                target_suffixes=(".json", ),
+            )
+            return True
+        except FileNotFoundError:
+            logger.warning(f"ストレージに設定ファイルが存在しません: {self.REMOTE_CONFIG_DIR_PREFIX}")
+            return False
+        except Exception as e:
+            logger.error(f"設定ファイルのダウンロードに失敗しました: {e}")
+            return False
+
+
+    def download_all_input_files_from_storage(self) -> bool:
+        """入力ファイルをストレージからダウンロードする"""
+        try:
+            self.storage_service.download_directory(
+                str(self.REMOTE_INPUT_DIR_PREFIX),
+                str(settings.INPUT_DIR),
+                target_suffixes=(".csv", ),
+            )
+            return True
+        except FileNotFoundError:
+            logger.warning(f"ストレージに入力ファイルが存在しません: {self.REMOTE_INPUT_DIR_PREFIX}")
+            return False
+        except Exception as e:
+            logger.error(f"入力ファイルのダウンロードに失敗しました: {e}")
+            return False
+
 def initialize_from_storage() -> bool:
     """サーバー起動時にストレージからファイルを初期化する
 
@@ -179,4 +219,16 @@ def initialize_from_storage() -> bool:
     except Exception as e:
         logger.error(f"レポートファイルのダウンロードに失敗しました: {e}")
         return False
-    return status_success and reports_success
+    
+    try:
+        config_success = report_sync_service.download_all_config_files_from_storage()
+    except Exception as e:
+        logger.error(f"設定ファイルのダウンロードに失敗しました: {e}")
+        return False
+    try:
+        input_success = report_sync_service.download_all_input_files_from_storage()
+    except Exception as e:
+        logger.error(f"入力ファイルのダウンロードに失敗しました: {e}")
+        return False
+
+    return status_success and reports_success and config_success and input_success

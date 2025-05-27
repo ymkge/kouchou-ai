@@ -42,5 +42,5 @@ class ConfigRepository:
                 json.dump(current_config, jsonfile, ensure_ascii=False, indent=2)
             return True
         except Exception as e:
-            slogger.error(f"Error writing CSV file: {e}")
+            slogger.error(f"Error writing JSON file: {e}")
             return False
