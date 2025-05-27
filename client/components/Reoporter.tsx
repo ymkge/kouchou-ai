@@ -1,5 +1,6 @@
 "use client";
 
+import { getImageFromServerSrc } from "@/app/utils/image-src";
 import type { Meta } from "@/type";
 import { Box, Button, Flex, Image, Link, Text } from "@chakra-ui/react";
 import { Globe } from "lucide-react";
@@ -10,12 +11,21 @@ function MessageText({ message }: { message: string }) {
 
   return (
     <Box position="relative">
-      <Text as="div" fontSize="sm" lineHeight={2} lineClamp={isShow ? undefined : 2} whiteSpace={isShow ? 'pre-line': "normal"} color="gray.600">
+      <Text
+        as="div"
+        fontSize="sm"
+        lineHeight={2}
+        lineClamp={isShow ? undefined : 2}
+        whiteSpace={isShow ? "pre-line" : "normal"}
+        color="gray.600"
+      >
         {message}
         {!isShow && (
-          <Flex position="absolute" right="0" bottom="0" zIndex="1" bg="white" >
+          <Flex position="absolute" right="0" bottom="0" zIndex="1" bg="white">
             <Text w="1rem">....</Text>
-            <Link variant="underline" color="currentcolor" onClick={() => setIsShow(true)}>全文表示</Link>
+            <Link variant="underline" color="currentcolor" onClick={() => setIsShow(true)}>
+              全文表示
+            </Link>
           </Flex>
         )}
       </Text>
@@ -28,7 +38,7 @@ export function Reporter({ meta }: { meta?: Meta }) {
     <div className="reporter">
       <Flex flexDirection="column" gap="4" color="gray.600">
         <Flex gap="4" flexDirection={{ base: "column", md: "row" }} alignItems={{ base: "flex-start", md: "center" }}>
-          <Image w="150px" src="/meta/reporter.png" alt="Reporter Logo" />
+          <Image w="150px" src={getImageFromServerSrc("/meta/reporter.png")} alt="" />
           <Flex flexDirection="column" justifyContent="space-between" color="gray.600">
             <Text fontSize="xs">レポーター</Text>
             <Text fontSize="md" fontWeight="bold">
