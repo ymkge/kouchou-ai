@@ -15,7 +15,7 @@ class ReportSyncService:
     REMOTE_STATUS_FILE_PREFIX = "status"
     REMOTE_CONFIG_DIR_PREFIX = "configs"
     LOCAL_STATUS_FILE_PATH = settings.DATA_DIR / "report_status.json"
-    PRESERVED_REPORT_FILES = (".json", "final_result_with_comments.csv")
+    PRESERVED_REPORT_FILES = (".json", "final_result_with_comments.csv", "hierarchical_merge_labels.csv")
 
     def __init__(self):
         self.storage_service = get_storage_service()
