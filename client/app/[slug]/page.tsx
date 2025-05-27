@@ -1,6 +1,6 @@
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { Reporter } from "@/components/Reoporter";
+import { Reporter } from "@/components/Reporter";
 import { Analysis } from "@/components/report/Analysis";
 import { BackButton } from "@/components/report/BackButton";
 import { ClientContainer } from "@/components/report/ClientContainer";

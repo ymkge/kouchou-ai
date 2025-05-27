@@ -1,6 +1,6 @@
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { Reporter } from "@/components/Reoporter";
+import { Reporter } from "@/components/Reporter";
 import type { Meta, Report } from "@/type";
 import { Box, Card, HStack, Heading, Image, Text, VStack } from "@chakra-ui/react";
 import type { Metadata } from "next";

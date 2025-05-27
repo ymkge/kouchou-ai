@@ -107,56 +107,55 @@ function ReporterImage() {
   );
 }
 
-export function Reporter({ meta }: { meta?: Meta }) {
+export function Reporter({ meta }: { meta: Meta }) {
   return (
-    <div className="reporter">
-      <Flex flexDirection="column" gap="4" color="gray.600">
-        <Flex flexDirection={{ base: "column", md: "row" }} alignItems={{ base: "flex-start", md: "center" }}>
-          <ReporterImage />
-          <Flex flexDirection="column" justifyContent="space-between" color="gray.600">
-            <Text fontSize="xs">レポーター</Text>
-            <Text fontSize="md" fontWeight="bold">
-              {meta?.reporter}
-            </Text>
-          </Flex>
-        </Flex>
-        {meta?.message && <MessageText message={meta.message} />}
-        <Flex gap="3" flexWrap="wrap">
-          {!meta?.isDefault && meta?.webLink && (
-            <Button
-              variant="outline"
-              size="md"
-              fontSize="xs"
-              color="currentcolor"
-              _icon={{
-                width: "14px",
-                height: "14px",
-              }}
-            >
-              <a href={meta.webLink} target="_blank" rel="noopener noreferrer">
-                <Flex gap="1" alignItems="center">
-                  <Globe />
-                  ウェブサイト
-                </Flex>
-              </a>
-            </Button>
-          )}
-          {!meta?.isDefault && meta?.privacyLink && (
-            <Button variant="outline" size="md" fontSize="xs" color="currentcolor">
-              <a href={meta.privacyLink} target="_blank" rel="noopener noreferrer">
-                プライバシーポリシー
-              </a>
-            </Button>
-          )}
-          {!meta?.isDefault && meta?.termsLink && (
-            <Button variant="outline" size="md" fontSize="xs" color="currentcolor">
-              <a href={meta.termsLink} target="_blank" rel="noopener noreferrer">
-                利用規約
-              </a>
-            </Button>
-          )}
+    <Flex flexDirection="column" gap="4" color="gray.600">
+      <Flex flexDirection={{ base: "column", md: "row" }} alignItems={{ base: "flex-start", md: "center" }}>
+        <ReporterImage />
+        <Flex flexDirection="column" justifyContent="space-between" color="gray.600">
+          <Text fontSize="xs">レポーター</Text>
+          <Text fontSize="md" fontWeight="bold">
+            {meta?.reporter}
+          </Text>
         </Flex>
       </Flex>
-    </div>
+      {meta.message && <MessageText message={meta.message} />}
+      <Flex gap="3" flexWrap="wrap">
+        {!meta.isDefault && meta.webLink && (
+          <Button
+            variant="outline"
+            size="md"
+            fontSize="xs"
+            color="currentcolor"
+            _icon={{
+              width: "14px",
+              height: "14px",
+            }}
+            asChild
+          >
+            <a href={meta.webLink} target="_blank" rel="noopener noreferrer">
+              <Flex gap="1" alignItems="center">
+                <Globe />
+                ウェブサイト
+              </Flex>
+            </a>
+          </Button>
+        )}
+        {!meta.isDefault && meta.privacyLink && (
+          <Button variant="outline" size="md" fontSize="xs" color="currentcolor" asChild>
+            <a href={meta.privacyLink} target="_blank" rel="noopener noreferrer">
+              プライバシーポリシー
+            </a>
+          </Button>
+        )}
+        {!meta.isDefault && meta.termsLink && (
+          <Button variant="outline" size="md" fontSize="xs" color="currentcolor" asChild>
+            <a href={meta.termsLink} target="_blank" rel="noopener noreferrer">
+              利用規約
+            </a>
+          </Button>
+        )}
+      </Flex>
+    </Flex>
   );
 }
