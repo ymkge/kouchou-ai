@@ -74,6 +74,18 @@ export type JaLocaleType = {
   };
 };
 
+export type AutoClusterResult = {
+  timestamp: string;
+  lv1_range: [number, number];
+  lv2_range: [number, number];
+  best: {
+    lv1: { k: number; score: number };
+    lv2: { k: number; score: number };
+  };
+  duration_sec: number;
+  results: { label: string; score: number }[];
+};
+
 type Comments = Record<string, { comment: string }>; // コメントIDをキーに持つオブジェクト
 
 type Config = {
@@ -85,6 +97,7 @@ type Config = {
   output_dir: string; // 結果の出力ディレクトリ名
   previous?: Config; // 過去の設定情報
   is_embedded_at_local: boolean; // ローカルで埋め込みを生成するかどうか
+
   extraction: {
     workers: number; // 並列処理数
     limit: number; // データ抽出の上限数
@@ -94,10 +107,17 @@ type Config = {
     source_code: string; // 実行するスクリプトのコード
     prompt: string; // LLM に渡すプロンプト
     model: string; // 使用するモデル名
+    skip: boolean; // 意見抽出ステップのスキップ
   };
   hierarchical_clustering: {
     cluster_nums: number[]; // クラスタ数のリスト
     source_code: string; // クラスタリングのスクリプト
+    auto_cluster_enabled?: boolean; // 意見グループ数の自動決定を有効化
+    clusterLv1_min?: number; // 第一階層クラスタ数の自動決定範囲（最小）
+    clusterLv1_max?: number; // 第一階層クラスタ数の自動決定範囲（最大）
+    clusterLv2_min?: number; // 第二階層クラスタ数の自動決定範囲（最小）
+    clusterLv2_max?: number; // 第二階層クラスタ数の自動決定範囲（最大）
+    auto_cluster_result?: AutoClusterResult; //自動クラスタ数の指向結果
   };
   embedding: {
     model: string; // 使用する埋め込みモデル
@@ -108,17 +128,20 @@ type Config = {
     source_code: string; // 初期ラベリングスクリプト
     prompt: string; // LLM のプロンプト
     model: string; // 使用するモデル
+    skip: boolean; // 初期ラベリングステップのスキップ
   };
   hierarchical_merge_labelling: {
     workers: number; // 並列処理数
     source_code: string; // マージラベリングスクリプト
     prompt: string; // LLM のプロンプト
     model: string; // 使用するモデル
+    skip: boolean; // 統合ラベリングステップのスキップ
   };
   hierarchical_overview: {
     source_code: string; // 概要生成スクリプト
     prompt: string; // LLM のプロンプト
     model: string; // 使用するモデル
+    skip: boolean; // 要約ステップのスキップ
   };
   hierarchical_aggregation: {
     hidden_properties: Record<string, string[]>; // 非表示プロパティ情報
