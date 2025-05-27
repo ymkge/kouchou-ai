@@ -83,9 +83,10 @@ export default function Page() {
         const parsed = await parseCsv(inputData.csv);
         comments = parsed.map((row, index) => {
           const rowData = row as unknown as Record<string, unknown>;
+          
           // コメントオブジェクトの作成（基本フィールド）
           const comment: CsvData = {
-            id: `csv-${index + 1}`,
+            id: row.id || `csv-${index + 1}`,
             comment: rowData[inputData.selectedCommentColumn] as string,
             source: null,
             url: null,
@@ -164,6 +165,7 @@ export default function Page() {
         is_pubcom: aiSettings.isPubcomMode,
         inputType: inputData.inputType,
         is_embedded_at_local: aiSettings.isEmbeddedAtLocal,
+        append_comment_id_to_argument: aiSettings.appendCommentIdToArgument,
         local_llm_address: aiSettings.provider === "local" ? aiSettings.localLLMAddress : undefined,
       });
 
@@ -267,6 +269,7 @@ export default function Page() {
               model={aiSettings.model}
               workers={aiSettings.workers}
               isPubcomMode={aiSettings.isPubcomMode}
+              appendCommentIdToArgument={aiSettings.appendCommentIdToArgument}
               isEmbeddedAtLocal={aiSettings.isEmbeddedAtLocal}
               localLLMAddress={aiSettings.localLLMAddress}
               onProviderChange={aiSettings.handleProviderChange}
@@ -281,6 +284,7 @@ export default function Page() {
               onIncreaseWorkers={aiSettings.increaseWorkers}
               onDecreaseWorkers={aiSettings.decreaseWorkers}
               onPubcomModeChange={aiSettings.handlePubcomModeChange}
+              onAppendCommentIdToArgumentChange={aiSettings.handleAppendCommentIdToArgumentChange}
               onEmbeddedAtLocalChange={(checked) => {
                 if (checked === "indeterminate") return;
                 aiSettings.setIsEmbeddedAtLocal(checked);

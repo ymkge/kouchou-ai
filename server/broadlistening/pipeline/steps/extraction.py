@@ -5,11 +5,11 @@ import re
 
 import pandas as pd
 from pydantic import BaseModel, Field
-from tqdm import tqdm
-
 from services.category_classification import classify_args
 from services.llm import request_to_chat_ai
 from services.parse_json_list import parse_extraction_response
+from tqdm import tqdm
+
 from utils import update_progress
 
 COMMA_AND_SPACE_AND_RIGHT_BRACKET = re.compile(r",\s*(\])")
@@ -22,6 +22,15 @@ class ExtractionResponse(BaseModel):
 def _validate_property_columns(property_columns: list[str], comments: pd.DataFrame) -> None:
     if not all(property in comments.columns for property in property_columns):
         raise ValueError(f"Properties {property_columns} not found in comments. Columns are {comments.columns}")
+
+
+
+def build_argument(comment_id: str, argument: str, append_comment_id_to_argument: bool) -> str:
+    if append_comment_id_to_argument:
+        # github PR 番号などがidに付与されており、管理画面でid表示がONになっている場合は、#{id}を付与する
+        return f"{argument} #{comment_id}"
+    return argument
+
 
 
 def extraction(config):
@@ -64,9 +73,10 @@ def extraction(config):
                 if arg not in argument_map:
                     # argumentテーブルに追加
                     arg_id = f"A{comment_id}_{j}"
+                    argument = build_argument(comment_id, arg, config["append_comment_id_to_argument"])
                     argument_map[arg] = {
                         "arg-id": arg_id,
-                        "argument": arg,
+                        "argument": argument,
                     }
                 else:
                     arg_id = argument_map[arg]["arg-id"]
