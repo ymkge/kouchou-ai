@@ -1,4 +1,3 @@
-import { About } from "@/components/About";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Reporter } from "@/components/Reoporter";
@@ -117,7 +116,6 @@ export default async function Page({ params }: PageProps) {
         <Box maxW={"750px"} mx={"auto"} mb={24}>
           <Reporter meta={meta} />
         </Box>
-        <About meta={meta} />
       </div>
       <Footer meta={meta} />
     </>
