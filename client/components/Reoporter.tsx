@@ -7,27 +7,49 @@ import { Globe } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 function MessageText({ message }: { message: string }) {
-  const [isShow, setIsShow] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const textRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const el = textRef.current;
+    if (!el || isExpanded) return;
+
+    const checkOverflow = () => {
+      const isOverflowing = el.scrollHeight > el.clientHeight + 1; // 多少の誤差を考慮
+      setIsTruncated(isOverflowing);
+    };
+
+    checkOverflow();
+
+    window.addEventListener("resize", checkOverflow);
+    return () => {
+      window.removeEventListener("resize", checkOverflow);
+    };
+  }, [isExpanded]);
 
   return (
     <Box position="relative">
       <Text
         as="div"
+        ref={textRef}
         fontSize="sm"
         lineHeight={2}
-        lineClamp={isShow ? undefined : 2}
-        whiteSpace={isShow ? "pre-line" : "normal"}
         color="gray.600"
+        textAlign="left"
+        lineClamp={isExpanded ? undefined : 2}
+        whiteSpace={isExpanded || !isTruncated ? "pre-line" : "normal"}
+        wordBreak={isExpanded ? "normal" : "break-all"}
       >
         {message}
-        {!isShow && (
+        {isTruncated && !isExpanded && (
           <Flex position="absolute" right="0" bottom="0" zIndex="1" bg="white">
             <Text w="1rem">...</Text>
             <Link
               variant="underline"
               color="currentcolor"
               textDecorationColor="currentcolor"
-              onClick={() => setIsShow(true)}
+              onClick={() => setIsExpanded(true)}
             >
               全文表示
             </Link>
