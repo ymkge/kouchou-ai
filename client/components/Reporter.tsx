@@ -37,7 +37,8 @@ function MessageText({ message }: { message: string }) {
         as="div"
         ref={textRef}
         fontSize="sm"
-        position={isCalculating ? "fixed" : "relative"}
+        position={isCalculating ? "absolute" : "relative"}
+        visibility={isCalculating ? "hidden" : "visible"}
         lineHeight={2}
         color="gray.600"
         textAlign="left"
@@ -64,8 +65,13 @@ function MessageText({ message }: { message: string }) {
     </Box>
   );
 }
+type loadingStatus = "loading" | "success" | "error";
 
-function ReporterImage({ status, setStatus } : { status: loadingStatus; setStatus: (status: loadingStatus) => void }) {
+function ReporterImage({
+  reporterName,
+  status,
+  setStatus,
+}: { reporterName: string; status: loadingStatus; setStatus: (status: loadingStatus) => void }) {
   const imgRef = useRef<HTMLImageElement>(null);
   const src = getImageFromServerSrc("/meta/reporter.png");
 
@@ -81,25 +87,25 @@ function ReporterImage({ status, setStatus } : { status: loadingStatus; setStatu
         setStatus("success");
       }
     }
-  }, []);
+  }, [setStatus]);
 
   return (
     <>
       <Image
         ref={imgRef}
         src={src}
-        alt=""
+        alt={reporterName}
         w="150px"
         display={status === "success" ? "inline-block" : "none"}
         mb={{ base: "4", md: "0" }}
         mr={{ base: "0", md: "4" }}
+        onLoad={() => setStatus("success")}
+        onError={() => setStatus("error")}
       />
       <Box w="150px" h="50px" display={status === "success" ? "none" : "block"} />
     </>
   );
 }
-
-type loadingStatus = "loading" | "success" | "error";
 
 export function Reporter({ meta }: { meta: Meta }) {
   const [status, setStatus] = useState<loadingStatus>("loading");
@@ -108,7 +114,7 @@ export function Reporter({ meta }: { meta: Meta }) {
     <Flex flexDirection="column" gap="4" color="gray.600">
       <Skeleton loading={status === "loading"} w="fit-content" asChild>
         <Flex flexDirection={{ base: "column", md: "row" }} alignItems={{ base: "flex-start", md: "center" }}>
-          <ReporterImage status={status} setStatus={setStatus} />
+          <ReporterImage reporterName={meta.reporter} status={status} setStatus={setStatus} />
           <Flex flexDirection="column" justifyContent="space-between" color="gray.600">
             <Text fontSize="xs">レポーター</Text>
             <Text fontSize="md" fontWeight="bold">
