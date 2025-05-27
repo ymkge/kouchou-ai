@@ -19,25 +19,7 @@ import { usePromptSettings } from "./hooks/usePromptSettings";
 import { type CsvData, parseCsv } from "./parseCsv";
 import { showErrorToast } from "./utils/error-handler";
 import { validateFormValues } from "./utils/validation";
-import { generateDefaultQuestionTitle } from "./utils/generateTitle";
 
-function generateClusterList(min: number, topMax: number, bottomMax: number): number[] {
-  const clusters: number[] = [];
-
-  let current = min;
-  while (current <= topMax) {
-    clusters.push(current);
-    current *= 2;
-  }
-
-  current = topMax + 1;
-  while (current <= bottomMax) {
-    clusters.push(current);
-    current *= 2;
-  }
-
-  return clusters;
-}
 /**
  * レポート作成ページ
  */
@@ -168,21 +150,11 @@ export default function Page() {
 
     try {
       const promptData = promptSettings.getPromptSettings();
-      // ✅ タイトルと調査概要の補完
-      const input = basicInfo.input;
-      let question = basicInfo.question.trim();
-      let intro = basicInfo.intro.trim();
 
-      if (question === "") {
-        question = generateDefaultQuestionTitle({ inputData, clusterSettings, aiSettings });
-      }
-      if (intro === "") {
-        intro = "";
-      }
       await createReport({
         input: basicInfo.input,
-        question,
-        intro,
+        question: basicInfo.question,
+        intro: basicInfo.intro,
         comments,
         cluster: [clusterSettings.clusterLv1, clusterSettings.clusterLv2],
         provider: aiSettings.provider,
@@ -193,15 +165,6 @@ export default function Page() {
         inputType: inputData.inputType,
         is_embedded_at_local: aiSettings.isEmbeddedAtLocal,
         local_llm_address: aiSettings.provider === "local" ? aiSettings.localLLMAddress : undefined,
-        skip_extraction: aiSettings.skipExtraction,
-        skip_initial_labelling: aiSettings.skipInitialLabelling,
-        skip_merge_labelling: aiSettings.skipMergeLabelling,
-        skip_overview: aiSettings.skipOverview,
-        auto_cluster_enabled: clusterSettings.autoClusterEnabled,
-        clusterLv1_min: clusterSettings.clusterLv1Min,
-        clusterLv1_max: clusterSettings.clusterLv1Max,
-        clusterLv2_min: clusterSettings.clusterLv2Min,
-        clusterLv2_max: clusterSettings.clusterLv2Max,
       });
 
       toaster.create({
@@ -329,15 +292,6 @@ export default function Page() {
               requiresConnectionSettings={aiSettings.requiresConnectionSettings}
               isEmbeddedAtLocalDisabled={aiSettings.isEmbeddedAtLocalDisabled}
               promptSettings={promptSettings}
-              // ✅ スキップ系の追加
-              skipExtraction={aiSettings.skipExtraction}
-              setSkipExtraction={aiSettings.setSkipExtraction}
-              skipInitialLabelling={aiSettings.skipInitialLabelling}
-              setSkipInitialLabelling={aiSettings.setSkipInitialLabelling}
-              skipMergeLabelling={aiSettings.skipMergeLabelling}
-              setSkipMergeLabelling={aiSettings.setSkipMergeLabelling}
-              skipOverview={aiSettings.skipOverview}
-              setSkipOverview={aiSettings.setSkipOverview}
             />
           </Presence>
 

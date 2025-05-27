@@ -49,7 +49,8 @@ export function validateFormValues({
   // 共通チェック
   const commonCheck = [
     isValidId(input),
-    //タイトル、概要は必須から省略時自動設定へ
+    question.length > 0,
+    intro.length > 0,
     clusterLv1 > 0,
     clusterLv2 > 0,
     model.length > 0,

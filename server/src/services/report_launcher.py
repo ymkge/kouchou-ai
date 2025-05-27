@@ -8,7 +8,11 @@ import pandas as pd
 
 from src.config import settings
 from src.schemas.admin_report import ReportInput
-from src.services.report_status import add_new_report_to_status, set_status, update_token_usage
+from src.services.report_status import (
+    add_new_report_to_status,
+    set_status,
+    update_token_usage,
+)
 from src.services.report_sync import ReportSyncService
 from src.utils.logger import setup_logger
 
@@ -32,37 +36,25 @@ def _build_config(report_input: ReportInput) -> dict[str, Any]:
             "prompt": report_input.prompt.extraction,
             "workers": report_input.workers,
             "limit": comment_num,
-            "skip": report_input.skip_extraction,
         },
         "hierarchical_clustering": {
             "cluster_nums": report_input.cluster,
-            "auto_cluster_enabled": report_input.auto_cluster_enabled,
-            "cluster_lv1_min": report_input.clusterLv1_min,
-            "cluster_lv1_max": report_input.clusterLv1_max,
-            "cluster_lv2_min": report_input.clusterLv2_min,
-            "cluster_lv2_max": report_input.clusterLv2_max,
         },
         "hierarchical_initial_labelling": {
             "prompt": report_input.prompt.initial_labelling,
             "sampling_num": 30,
             "workers": report_input.workers,
-            "skip": report_input.skip_initial_labelling,
         },
         "hierarchical_merge_labelling": {
             "prompt": report_input.prompt.merge_labelling,
             "sampling_num": 30,
             "workers": report_input.workers,
-            "skip": report_input.skip_merge_labelling,
         },
-        "hierarchical_overview": {
-            "prompt": report_input.prompt.overview,
-            "skip": report_input.skip_overview,
-        },
+        "hierarchical_overview": {"prompt": report_input.prompt.overview},
         "hierarchical_aggregation": {
             "sampling_num": report_input.workers,
         },
     }
-
     return config
 
 
