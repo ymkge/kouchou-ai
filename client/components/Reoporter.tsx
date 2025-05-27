@@ -2,18 +2,19 @@
 
 import { getImageFromServerSrc } from "@/app/utils/image-src";
 import type { Meta } from "@/type";
-import { Box, Button, Flex, Image, Link, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Image, Link, SkeletonText, Text } from "@chakra-ui/react";
 import { Globe } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 function MessageText({ message }: { message: string }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(true);
   const textRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     const el = textRef.current;
-    if (!el || isExpanded) return;
+    if (!el) return;
 
     const checkOverflow = () => {
       const isOverflowing = el.scrollHeight > el.clientHeight + 1; // 多少の誤差を考慮
@@ -21,15 +22,26 @@ function MessageText({ message }: { message: string }) {
     };
 
     checkOverflow();
+    setIsCalculating(false);
 
     window.addEventListener("resize", checkOverflow);
     return () => {
       window.removeEventListener("resize", checkOverflow);
     };
-  }, [isExpanded]);
+  }, []);
 
   return (
     <Box position="relative">
+      <SkeletonText
+        position="absolute"
+        top="0"
+        left="0"
+        zIndex="2"
+        w="100%"
+        h="100%"
+        noOfLines={2}
+        display={isCalculating ? "block" : "none"}
+      />
       <Text
         as="div"
         ref={textRef}
@@ -37,6 +49,7 @@ function MessageText({ message }: { message: string }) {
         lineHeight={2}
         color="gray.600"
         textAlign="left"
+        opacity={isCalculating ? 0 : 1}
         lineClamp={isExpanded ? undefined : 2}
         whiteSpace={isExpanded || !isTruncated ? "pre-line" : "normal"}
         wordBreak={isExpanded ? "normal" : "break-all"}
@@ -77,7 +90,7 @@ function ReporterImage() {
         setStatus("success");
       }
     }
-  }, [src]);
+  }, []);
 
   return (
     <Image
