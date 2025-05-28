@@ -82,14 +82,24 @@ function MessageText({
         {isTruncated && !isExpanded && (
           <Flex position="absolute" right="0" bottom="0" zIndex="1" bg="white">
             <Text w="1rem">...</Text>
-            <Link
-              variant="underline"
-              color="currentcolor"
+            <Button
+              variant="plain"
+              w="fit-content"
+              h="fit-content"
+              p="0"
+              mt="1px"
+              color="gray.600"
+              fontWeight="normal"
+              textUnderlineOffset="3px"
               textDecorationColor="currentcolor"
+              textDecoration="underline"
+              _hover={{
+                color: "gray.400"
+              }}
               onClick={() => setIsExpanded(true)}
             >
               全文表示
-            </Link>
+            </Button>
           </Flex>
         )}
       </Text>
