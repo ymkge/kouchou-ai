@@ -1,5 +1,5 @@
 // filepath: c:\Users\shinta\Documents\GitHub\kouchou-ai\client\components\charts\ScatterChart.tsx
-import type { Argument, Cluster } from "@/type";
+import type { Argument, Cluster, Config } from "@/type";
 import { Box } from "@chakra-ui/react";
 import type { Annotations, Data, Layout } from "plotly.js";
 import { ChartCore } from "./ChartCore";
@@ -12,6 +12,7 @@ type Props = {
   showClusterLabels?: boolean;
   // フィルター適用後の引数IDのリストを受け取り、フィルターに該当しないポイントの表示を変更する
   filteredArgumentIds?: string[];
+  config?: Config; // ソースリンク機能の有効/無効を制御するため
 };
 
 export function ScatterChart({
@@ -21,7 +22,12 @@ export function ScatterChart({
   onHover,
   showClusterLabels,
   filteredArgumentIds, // フィルター済みIDリスト（フィルター条件に合致する引数のID）
+  config,
 }: Props) {
+  // デバッグ用ログ
+  console.log("ScatterChart config:", config);
+  console.log("enable_source_link:", config?.enable_source_link);
+  console.log("arguments with URL:", argumentList.filter(arg => arg.url).length);
   // 全ての引数を表示するため、argumentListをそのまま使用
   // フィルター条件に合致しないものは後で灰色表示する
   const allArguments = argumentList;
@@ -214,6 +220,10 @@ export function ScatterChart({
             type: "scattergl",
             hoverinfo: "skip", // ホバー表示を無効化
             showlegend: false,
+            // argumentのメタデータを埋め込み
+            customdata: notMatching.length > 0 
+              ? notMatching.map((arg) => ({ arg_id: arg.arg_id, url: arg.url }))
+              : allClusterArguments.map((arg) => ({ arg_id: arg.arg_id, url: arg.url })),
           }
         : null;
 
@@ -225,13 +235,17 @@ export function ScatterChart({
             y: matching.map((arg) => arg.y),
             mode: "markers",
             marker: {
-              size: 7,
+              size: 10, // 統一サイズでシンプルに
               color: Array(matching.length).fill(clusterColorMap[cluster.id]),
               opacity: Array(matching.length).fill(1), // 不透明
+              line: config?.enable_source_link ? {
+                width: 2,
+                color: '#ffffff',
+              } : undefined,
             },
             text: matching.map((arg) => {
               const argumentText = arg.argument.replace(/(.{30})/g, "$1<br />");
-              const urlText = arg.url ? `<br>📋 クリックしてソースを見る` : "";
+              const urlText = config?.enable_source_link && arg.url ? `<br><b>🔗 クリックしてソースを見る</b>` : "";
               return `<b>${cluster.label}</b><br>${argumentText}${urlText}`;
             }),
             type: "scattergl",
@@ -247,6 +261,8 @@ export function ScatterChart({
               },
             },
             showlegend: false,
+            // argumentのメタデータを埋め込み
+            customdata: matching.map((arg) => ({ arg_id: arg.arg_id, url: arg.url })),
           }
         : null;
 
@@ -300,12 +316,19 @@ export function ScatterChart({
             },
           },
           showlegend: false,
+          // argumentのメタデータを埋め込み
+          customdata: clusterArguments.map((arg) => ({ arg_id: arg.arg_id, url: arg.url })),
         });
       }
     }
 
     return result;
   });
+
+  // デバッグ用ログ
+  console.log("clusterDataSets length:", clusterDataSets.length);
+  console.log("plotData length:", plotData.length);
+  console.log("plotData structure:", plotData.map((data, index) => ({ index, hasData: !!data })));
 
   // アノテーションの設定
   const annotations: Partial<Annotations>[] = showClusterLabels
@@ -362,7 +385,7 @@ export function ScatterChart({
             } as Partial<Layout>
           }
           useResizeHandler={true}
-          style={{ width: "100%", height: "100%", cursor: "pointer" }}
+          style={{ width: "100%", height: "100%", cursor: config?.enable_source_link ? "pointer" : "default" }}
           config={{
             responsive: true,
             displayModeBar: "hover", // 操作時にツールバーを表示
@@ -371,26 +394,34 @@ export function ScatterChart({
           }}
           onHover={onHover}
           onUpdate={onUpdate}
-          onClick={(data) => {
-            if (data.points && data.points.length > 0) {
-              const point = data.points[0];
-              // ポイントのインデックスから対応するargumentを特定
-              if (point.curveNumber !== undefined && point.pointIndex !== undefined) {
-                // plotDataの構造からargumentを特定
-                const clusterIndex = point.curveNumber;
-                const pointIndex = point.pointIndex;
+          onClick={(data: any) => {
+            if (!config?.enable_source_link) return;
+            
+            try {
+              if (data.points && data.points.length > 0) {
+                const point = data.points[0];
                 
-                // clusterDataSetsから該当するクラスターとargumentを取得
-                const clusterDataSet = clusterDataSets[clusterIndex];
-                if (clusterDataSet) {
-                  const { matching } = separateDataByFilter(clusterDataSet.cluster);
-                  const argument = matching[pointIndex];
+                // customdataから直接argumentの情報を取得
+                if (point.customdata) {
+                  const customData = point.customdata as { arg_id: string; url?: string };
                   
-                  if (argument && argument.url) {
-                    window.open(argument.url, '_blank', 'noopener,noreferrer');
+                  if (customData.url) {
+                    window.open(customData.url, '_blank', 'noopener,noreferrer');
+                  } else {
+                    // customdataにURLがない場合、argumentListから検索
+                    const matchedArgument = argumentList.find(arg => arg.arg_id === customData.arg_id);
+                    if (matchedArgument?.url) {
+                      window.open(matchedArgument.url, '_blank', 'noopener,noreferrer');
+                    } else {
+                      console.log("No URL found for argument:", customData.arg_id);
+                    }
                   }
+                } else {
+                  console.log("No customdata found in clicked point");
                 }
               }
+            } catch (error) {
+              console.error("Error in click handler:", error);
             }
           }}
         />

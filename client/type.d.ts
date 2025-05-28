@@ -38,7 +38,7 @@ export type Result = {
   filteredArgumentIds?: string[]; // フィルターに一致した引数IDのリスト（グレーアウト表示の制御に使用）
 };
 
-type Argument = {
+export type Argument = {
   arg_id: string; // 意見の識別子
   argument: string; // 意見の内容
   comment_id: number; // 関連するコメントの ID
@@ -77,7 +77,7 @@ export type JaLocaleType = {
 
 type Comments = Record<string, { comment: string }>; // コメントIDをキーに持つオブジェクト
 
-type Config = {
+export type Config = {
   name: string; // 設定の名前
   question: string; // AIに関する問い
   input: string; // 入力データの識別子
@@ -86,6 +86,7 @@ type Config = {
   output_dir: string; // 結果の出力ディレクトリ名
   previous?: Config; // 過去の設定情報
   is_embedded_at_local: boolean; // ローカルで埋め込みを生成するかどうか
+  enable_source_link?: boolean; // ソースリンク機能を有効にするかどうか
   extraction: {
     workers: number; // 並列処理数
     limit: number; // データ抽出の上限数
