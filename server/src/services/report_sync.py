@@ -109,7 +109,6 @@ class ReportSyncService:
         # ファイルをストレージにアップロード
         self.storage_service.upload_file(str(input_file_path), remote_input_file_path)
 
-
     def sync_config_file_to_storage(self, slug: str) -> None:
         """設定ファイルをストレージにアップロードする"""
         config_file_path = settings.CONFIG_DIR / f"{slug}.json"
@@ -118,7 +117,7 @@ class ReportSyncService:
             return
 
         remote_config_file_path = f"{self.REMOTE_CONFIG_DIR_PREFIX}/{slug}.json"
-        self.storage_service.upload_file(str(config_file_path),remote_config_file_path)
+        self.storage_service.upload_file(str(config_file_path), remote_config_file_path)
 
     def download_status_file_from_storage(self) -> bool:
         """ステータスファイルをストレージからダウンロードする
@@ -148,11 +147,7 @@ class ReportSyncService:
             return False
 
     def _download_directory_from_storage(
-        self, 
-        remote_dir_prefix: str, 
-        local_dir: Path, 
-        target_suffixes: tuple[str, ...], 
-        file_type_name: str
+        self, remote_dir_prefix: str, local_dir: Path, target_suffixes: tuple[str, ...], file_type_name: str
     ) -> bool:
         """ストレージからディレクトリをダウンロードする汎用関数
 
@@ -186,10 +181,7 @@ class ReportSyncService:
             bool: ダウンロードに成功した場合はTrue、失敗した場合はFalse
         """
         return self._download_directory_from_storage(
-            self.REMOTE_REPORT_DIR_PREFIX,
-            settings.REPORT_DIR,
-            self.PRESERVED_REPORT_FILES,
-            "レポートファイル"
+            self.REMOTE_REPORT_DIR_PREFIX, settings.REPORT_DIR, self.PRESERVED_REPORT_FILES, "レポートファイル"
         )
 
     def download_all_config_files_from_storage(self) -> bool:
@@ -199,10 +191,7 @@ class ReportSyncService:
             bool: ダウンロードに成功した場合はTrue、失敗した場合はFalse
         """
         return self._download_directory_from_storage(
-            self.REMOTE_CONFIG_DIR_PREFIX,
-            settings.CONFIG_DIR,
-            (".json",),
-            "設定ファイル"
+            self.REMOTE_CONFIG_DIR_PREFIX, settings.CONFIG_DIR, (".json",), "設定ファイル"
         )
 
     def download_all_input_files_from_storage(self) -> bool:
@@ -212,10 +201,7 @@ class ReportSyncService:
             bool: ダウンロードに成功した場合はTrue、失敗した場合はFalse
         """
         return self._download_directory_from_storage(
-            self.REMOTE_INPUT_DIR_PREFIX,
-            settings.INPUT_DIR,
-            (".csv",),
-            "入力ファイル"
+            self.REMOTE_INPUT_DIR_PREFIX, settings.INPUT_DIR, (".csv",), "入力ファイル"
         )
 
 
@@ -236,7 +222,7 @@ def initialize_from_storage() -> bool:
     except Exception as e:
         logger.error(f"レポートファイルのダウンロードに失敗しました: {e}")
         return False
-    
+
     try:
         config_success = report_sync_service.download_all_config_files_from_storage()
     except Exception as e:
