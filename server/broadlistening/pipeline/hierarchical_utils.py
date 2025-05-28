@@ -37,7 +37,7 @@ def validate_config(config):
         "is_embedded_at_local",
         "provider",
         "local_llm_address",
-        "append_comment_id_to_argument",
+        "enable_source_link",
     ]
     step_names = [x["step"] for x in specs]
     for key in config:

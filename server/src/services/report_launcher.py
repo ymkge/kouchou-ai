@@ -50,7 +50,7 @@ def _build_config(report_input: ReportInput) -> dict[str, Any]:
         "hierarchical_aggregation": {
             "sampling_num": report_input.workers,
         },
-        "append_comment_id_to_argument": report_input.append_comment_id_to_argument,
+        "enable_source_link": report_input.enable_source_link,
     }
     return config
 

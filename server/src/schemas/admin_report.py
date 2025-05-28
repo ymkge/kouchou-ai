@@ -37,7 +37,7 @@ class ReportInput(SchemaBaseModel):
     local_llm_address: str | None = None  # LocalLLM用アドレス（例: "127.0.0.1:1234"）
 
     # NOTE: team-mirai feature
-    append_comment_id_to_argument: bool = False  # コメントIDをargumentに付与するかどうか。付与する場合はtrue
+    enable_source_link: bool = False  # ソースリンク機能を有効にするかどうか。有効にする場合はtrue
 
 
 class ReportVisibilityUpdate(SchemaBaseModel):

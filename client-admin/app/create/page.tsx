@@ -88,8 +88,8 @@ export default function Page() {
           const comment: CsvData = {
             id: row.id || `csv-${index + 1}`,
             comment: rowData[inputData.selectedCommentColumn] as string,
-            source: null,
-            url: null,
+            source: rowData.source as string || null,
+            url: rowData.url as string || null,
           };
 
           // 選択された属性カラムの値を直接追加（"attribute" プレフィックス付き）
@@ -165,7 +165,7 @@ export default function Page() {
         is_pubcom: aiSettings.isPubcomMode,
         inputType: inputData.inputType,
         is_embedded_at_local: aiSettings.isEmbeddedAtLocal,
-        append_comment_id_to_argument: aiSettings.appendCommentIdToArgument,
+        enable_source_link: aiSettings.enableSourceLink,
         local_llm_address: aiSettings.provider === "local" ? aiSettings.localLLMAddress : undefined,
       });
 
@@ -269,7 +269,7 @@ export default function Page() {
               model={aiSettings.model}
               workers={aiSettings.workers}
               isPubcomMode={aiSettings.isPubcomMode}
-              appendCommentIdToArgument={aiSettings.appendCommentIdToArgument}
+              enableSourceLink={aiSettings.enableSourceLink}
               isEmbeddedAtLocal={aiSettings.isEmbeddedAtLocal}
               localLLMAddress={aiSettings.localLLMAddress}
               onProviderChange={aiSettings.handleProviderChange}
@@ -284,7 +284,7 @@ export default function Page() {
               onIncreaseWorkers={aiSettings.increaseWorkers}
               onDecreaseWorkers={aiSettings.decreaseWorkers}
               onPubcomModeChange={aiSettings.handlePubcomModeChange}
-              onAppendCommentIdToArgumentChange={aiSettings.handleAppendCommentIdToArgumentChange}
+              onEnableSourceLinkChange={aiSettings.handleEnableSourceLinkChange}
               onEmbeddedAtLocalChange={(checked) => {
                 if (checked === "indeterminate") return;
                 aiSettings.setIsEmbeddedAtLocal(checked);
