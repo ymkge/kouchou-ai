@@ -128,8 +128,8 @@ function ReporterImage({
       ref={imgRef}
       src={src}
       alt={reporterName}
-      w="150px"
-      display={reporterImgLoadingStatus === "success" ? "inline-block" : "none"}
+      display={reporterImgLoadingStatus === "error" ? "none" : "inline-block"}
+      maxW="150px"
       mb={{ base: "4", md: "0" }}
       mr={{ base: "0", md: "4" }}
       onLoad={() => setReporterImgLoadingStatus("success")}
@@ -150,7 +150,7 @@ export function Reporter({ meta }: { meta: Meta }) {
             reporterImgLoadingStatus={reporterImgLoadingStatus}
             setReporterImgLoadingStatus={setReporterImgLoadingStatus}
           />
-          <Flex flexDirection="column" justifyContent="space-between" color="gray.600">
+          <Flex flexDirection="column" justifyContent="space-between" color="gray.600" gap="2">
             <Text fontSize="xs">レポーター</Text>
             {/* metadataが未設定の場合は、レポーター名は非表示 */}
             {!meta.isDefault && (
@@ -183,7 +183,7 @@ export function Reporter({ meta }: { meta: Meta }) {
               <a href={meta.webLink} target="_blank" rel="noopener noreferrer">
                 <Flex gap="1" alignItems="center">
                   <Globe />
-                  ウェブサイト
+                  ウェブページ
                 </Flex>
               </a>
             </Button>
