@@ -21,7 +21,6 @@ class ReportSyncService:
         "hierarchical_merge_labels.csv",
         "hierarchical_result.json",
         "args.csv",
-        "final_result_with_comments.csv",
         "hierarchical_clusters.csv",
         "relations.csv",
         "hierarchical_overview.txt",
