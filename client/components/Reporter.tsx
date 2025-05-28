@@ -17,6 +17,9 @@ function EmptyText({ loading }: { loading: boolean }) {
           rel="noopener noreferrer"
           variant="underline"
           color="currentcolor"
+          _hover={{
+            color: "gray.400"
+          }}
         >
           メタデータをセットアップ
         </Link>
