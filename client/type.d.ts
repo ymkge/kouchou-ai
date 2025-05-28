@@ -47,6 +47,7 @@ type Argument = {
   p: number; // 追加情報（数値）
   cluster_ids: string[]; // 属するクラスタの ID リスト
   attributes?: Record<string, string | number>; // 属性情報
+  url?: string; // ソースURL（optional）
 };
 
 export type Cluster = {

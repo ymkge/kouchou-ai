@@ -48,6 +48,7 @@ class Argument(TypedDict):
     p: float
     cluster_ids: list[str]
     attributes: dict[str, str] | None
+    url: str | None
 
 
 class Cluster(TypedDict):
@@ -239,33 +240,41 @@ def _build_arguments(clusters: pd.DataFrame, comments: pd.DataFrame, relation_df
             "p": 0,  # NOTE: 一旦全部0でいれる
             "cluster_ids": cluster_ids,
             "attributes": None,
+            "url": None,
         }
 
-        # Add attributes if available
-        if attribute_columns and row["arg-id"] in arg_comment_map:
+        # Add attributes and URL if available
+        if row["arg-id"] in arg_comment_map:
             comment_id = arg_comment_map[row["arg-id"]]
             comment_rows = comments_copy[comments_copy["comment-id"] == comment_id]
 
             if not comment_rows.empty:
                 comment_row = comment_rows.iloc[0]
-                attributes = {}
-                for attr_col in attribute_columns:
-                    # Remove "attribute_" prefix for cleaner attribute names
-                    attr_name = attr_col[len("attribute_") :]
-                    # Convert potential numpy types to Python native types
-                    attr_value = comment_row.get(attr_col, None)
-                    if attr_value is not None:
-                        if isinstance(attr_value, np.integer):
-                            attr_value = int(attr_value)
-                        elif isinstance(attr_value, np.floating):
-                            attr_value = float(attr_value)
-                        elif isinstance(attr_value, np.ndarray):
-                            attr_value = attr_value.tolist()
-                    attributes[attr_name] = attr_value
+                
+                # Add URL if available
+                if "url" in comment_row and comment_row["url"] is not None:
+                    argument["url"] = str(comment_row["url"])
+                
+                # Add attributes if available
+                if attribute_columns:
+                    attributes = {}
+                    for attr_col in attribute_columns:
+                        # Remove "attribute_" prefix for cleaner attribute names
+                        attr_name = attr_col[len("attribute_") :]
+                        # Convert potential numpy types to Python native types
+                        attr_value = comment_row.get(attr_col, None)
+                        if attr_value is not None:
+                            if isinstance(attr_value, np.integer):
+                                attr_value = int(attr_value)
+                            elif isinstance(attr_value, np.floating):
+                                attr_value = float(attr_value)
+                            elif isinstance(attr_value, np.ndarray):
+                                attr_value = attr_value.tolist()
+                        attributes[attr_name] = attr_value
 
-                # Only add non-empty attributes
-                if any(v is not None for v in attributes.values()):
-                    argument["attributes"] = attributes
+                    # Only add non-empty attributes
+                    if any(v is not None for v in attributes.values()):
+                        argument["attributes"] = attributes
 
         arguments.append(argument)
     return arguments

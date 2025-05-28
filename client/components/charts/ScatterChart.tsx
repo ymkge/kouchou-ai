@@ -229,7 +229,11 @@ export function ScatterChart({
               color: Array(matching.length).fill(clusterColorMap[cluster.id]),
               opacity: Array(matching.length).fill(1), // 不透明
             },
-            text: matching.map((arg) => `<b>${cluster.label}</b><br>${arg.argument.replace(/(.{30})/g, "$1<br />")}`),
+            text: matching.map((arg) => {
+              const argumentText = arg.argument.replace(/(.{30})/g, "$1<br />");
+              const urlText = arg.url ? `<br>📋 クリックしてソースを見る` : "";
+              return `<b>${cluster.label}</b><br>${argumentText}${urlText}`;
+            }),
             type: "scattergl",
             hoverinfo: "text",
             hovertemplate: "%{text}<extra></extra>",
@@ -358,7 +362,7 @@ export function ScatterChart({
             } as Partial<Layout>
           }
           useResizeHandler={true}
-          style={{ width: "100%", height: "100%" }}
+          style={{ width: "100%", height: "100%", cursor: "pointer" }}
           config={{
             responsive: true,
             displayModeBar: "hover", // 操作時にツールバーを表示
@@ -367,6 +371,28 @@ export function ScatterChart({
           }}
           onHover={onHover}
           onUpdate={onUpdate}
+          onClick={(data) => {
+            if (data.points && data.points.length > 0) {
+              const point = data.points[0];
+              // ポイントのインデックスから対応するargumentを特定
+              if (point.curveNumber !== undefined && point.pointIndex !== undefined) {
+                // plotDataの構造からargumentを特定
+                const clusterIndex = point.curveNumber;
+                const pointIndex = point.pointIndex;
+                
+                // clusterDataSetsから該当するクラスターとargumentを取得
+                const clusterDataSet = clusterDataSets[clusterIndex];
+                if (clusterDataSet) {
+                  const { matching } = separateDataByFilter(clusterDataSet.cluster);
+                  const argument = matching[pointIndex];
+                  
+                  if (argument && argument.url) {
+                    window.open(argument.url, '_blank', 'noopener,noreferrer');
+                  }
+                }
+              }
+            }
+          }}
         />
       </Box>
     </Box>

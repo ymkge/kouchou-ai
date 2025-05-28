@@ -88,8 +88,8 @@ export default function Page() {
           const comment: CsvData = {
             id: row.id || `csv-${index + 1}`,
             comment: rowData[inputData.selectedCommentColumn] as string,
-            source: null,
-            url: null,
+            source: rowData.source as string || null,
+            url: rowData.url as string || null,
           };
 
           // 選択された属性カラムの値を直接追加（"attribute" プレフィックス付き）
