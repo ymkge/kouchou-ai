@@ -24,8 +24,11 @@ def _validate_property_columns(property_columns: list[str], comments: pd.DataFra
         raise ValueError(f"Properties {property_columns} not found in comments. Columns are {comments.columns}")
 
 
-
-
+def build_argument(comment_id: str, argument: str, append_comment_id_to_argument: bool) -> str:
+    if append_comment_id_to_argument:
+        # github PR 番号などがidに付与されており、管理画面でid表示がONになっている場合は、#{id}を付与する
+        return f"{argument} #{comment_id}"
+    return argument
 
 
 def extraction(config):
