@@ -25,11 +25,6 @@ def _validate_property_columns(property_columns: list[str], comments: pd.DataFra
 
 
 
-def build_argument(comment_id: str, argument: str, append_comment_id_to_argument: bool) -> str:
-    if append_comment_id_to_argument:
-        # github PR 番号などがidに付与されており、管理画面でid表示がONになっている場合は、#{id}を付与する
-        return f"{argument} #{comment_id}"
-    return argument
 
 
 
@@ -73,7 +68,7 @@ def extraction(config):
                 if arg not in argument_map:
                     # argumentテーブルに追加
                     arg_id = f"A{comment_id}_{j}"
-                    argument = build_argument(comment_id, arg, config["append_comment_id_to_argument"])
+                    argument = arg
                     argument_map[arg] = {
                         "arg-id": arg_id,
                         "argument": argument,

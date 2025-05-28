@@ -84,7 +84,7 @@ def hierarchical_aggregation(config) -> bool:
 
         hidden_properties_map: dict[str, list[str]] = config["hierarchical_aggregation"]["hidden_properties"]
 
-        results["arguments"] = _build_arguments(clusters, comments, relation_df)
+        results["arguments"] = _build_arguments(clusters, comments, relation_df, config)
         results["clusters"] = _build_cluster_value(labels, arg_num)
 
         # results["comments"] = _build_comments_value(
@@ -200,7 +200,7 @@ def add_original_comments(labels, arguments, relation_df, clusters, config):
     final_df.to_csv(PIPELINE_DIR / f"outputs/{config['output_dir']}/final_result_with_comments.csv", index=False)
 
 
-def _build_arguments(clusters: pd.DataFrame, comments: pd.DataFrame, relation_df: pd.DataFrame) -> list[Argument]:
+def _build_arguments(clusters: pd.DataFrame, comments: pd.DataFrame, relation_df: pd.DataFrame, config: dict) -> list[Argument]:
     """
     Build the arguments list including attribute information from original comments
 
@@ -208,6 +208,7 @@ def _build_arguments(clusters: pd.DataFrame, comments: pd.DataFrame, relation_df
         clusters: DataFrame containing cluster information for each argument
         comments: DataFrame containing original comments with attribute columns
         relation_df: DataFrame relating arguments to original comments
+        config: Configuration dictionary containing enable_source_link setting
     """
     cluster_columns = [col for col in clusters.columns if col.startswith("cluster-level-") and "id" in col]
 
@@ -251,8 +252,8 @@ def _build_arguments(clusters: pd.DataFrame, comments: pd.DataFrame, relation_df
             if not comment_rows.empty:
                 comment_row = comment_rows.iloc[0]
                 
-                # Add URL if available
-                if "url" in comment_row and comment_row["url"] is not None:
+                # Add URL if available and enabled
+                if config.get("enable_source_link", False) and "url" in comment_row and comment_row["url"] is not None:
                     argument["url"] = str(comment_row["url"])
                 
                 # Add attributes if available

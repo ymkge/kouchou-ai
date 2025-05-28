@@ -24,10 +24,6 @@ export function ScatterChart({
   filteredArgumentIds, // フィルター済みIDリスト（フィルター条件に合致する引数のID）
   config,
 }: Props) {
-  // デバッグ用ログ
-  console.log("ScatterChart config:", config);
-  console.log("enable_source_link:", config?.enable_source_link);
-  console.log("arguments with URL:", argumentList.filter(arg => arg.url).length);
   // 全ての引数を表示するため、argumentListをそのまま使用
   // フィルター条件に合致しないものは後で灰色表示する
   const allArguments = argumentList;
@@ -324,11 +320,6 @@ export function ScatterChart({
 
     return result;
   });
-
-  // デバッグ用ログ
-  console.log("clusterDataSets length:", clusterDataSets.length);
-  console.log("plotData length:", plotData.length);
-  console.log("plotData structure:", plotData.map((data, index) => ({ index, hasData: !!data })));
 
   // アノテーションの設定
   const annotations: Partial<Annotations>[] = showClusterLabels

@@ -18,7 +18,7 @@ export async function createReport({
   is_pubcom,
   inputType,
   is_embedded_at_local,
-  append_comment_id_to_argument,
+  enable_source_link,
   local_llm_address,
 }: {
   input: string;
@@ -33,7 +33,7 @@ export async function createReport({
   is_pubcom: boolean;
   inputType: string;
   is_embedded_at_local: boolean;
-  append_comment_id_to_argument: boolean;
+  enable_source_link: boolean;
   local_llm_address?: string;
 }): Promise<void> {
   try {
@@ -56,7 +56,7 @@ export async function createReport({
         is_pubcom,
         inputType,
         is_embedded_at_local,
-        append_comment_id_to_argument,
+        enable_source_link,
         local_llm_address,
       }),
     });

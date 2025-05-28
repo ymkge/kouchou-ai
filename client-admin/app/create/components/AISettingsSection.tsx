@@ -9,14 +9,14 @@ export function AISettingsSection({
   model,
   workers,
   isPubcomMode,
-  appendCommentIdToArgument,
+  enableSourceLink,
   onProviderChange,
   onModelChange,
   onWorkersChange,
   onIncreaseWorkers,
   onDecreaseWorkers,
   onPubcomModeChange,
-  onAppendCommentIdToArgumentChange,
+  onEnableSourceLinkChange,
   getModelDescription,
   getProviderDescription,
   getCurrentModels,
@@ -33,14 +33,14 @@ export function AISettingsSection({
   model: string;
   workers: number;
   isPubcomMode: boolean;
-  appendCommentIdToArgument: boolean;
+  enableSourceLink: boolean;
   onProviderChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onModelChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onWorkersChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onIncreaseWorkers: () => void;
   onDecreaseWorkers: () => void;
   onPubcomModeChange: (checked: boolean | "indeterminate") => void;
-  onAppendCommentIdToArgumentChange: (checked: boolean | "indeterminate") => void;
+  onEnableSourceLinkChange: (checked: boolean | "indeterminate") => void;
   getModelDescription: () => string;
   getProviderDescription: () => string;
   getCurrentModels: () => { value: string; label: string }[];
@@ -178,17 +178,17 @@ export function AISettingsSection({
 
       <Field.Root>
         <Checkbox
-          checked={appendCommentIdToArgument}
+          checked={enableSourceLink}
           onCheckedChange={(details) => {
             const { checked } = details;
             if (checked === "indeterminate") return;
-            onAppendCommentIdToArgumentChange(checked);
+            onEnableSourceLinkChange(checked);
           }}
         >
-          コメントIDをテキストの末尾で表示する
+          ソースリンク機能を有効にする
         </Checkbox>
         <Field.HelperText>
-         ONにした場合は、レポートの散布図上で各テキストの末尾でIDが表示されます。Github のPR分析など、元データとのひも付けをしたい場合はONにしてください。
+         ONにした場合は、CSVのurlカラムの情報を使って、レポートの散布図上でデータ点をクリックすると元のソースにアクセスできます。
         </Field.HelperText>
       </Field.Root>
 

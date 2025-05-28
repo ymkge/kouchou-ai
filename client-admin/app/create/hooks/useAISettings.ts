@@ -21,7 +21,7 @@ const STORAGE_KEYS = {
   WORKERS: `${STORAGE_KEY_PREFIX}workers`,
   LOCAL_LLM_ADDRESS: `${STORAGE_KEY_PREFIX}local_llm_address`,
   IS_EMBEDDED_AT_LOCAL: `${STORAGE_KEY_PREFIX}is_embedded_at_local`,
-  APPEND_COMMENT_ID_TO_ARGUMENT: `${STORAGE_KEY_PREFIX}append_comment_id_to_argument`,
+  ENABLE_SOURCE_LINK: `${STORAGE_KEY_PREFIX}enable_source_link`,
 };
 
 // LocalLLMのデフォルトアドレスを定数化
@@ -114,8 +114,8 @@ export function useAISettings() {
   const [isEmbeddedAtLocal, setIsEmbeddedAtLocal] = useState<boolean>(() =>
     getFromStorage<boolean>(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, false),
   );
-  const [appendCommentIdToArgument, setAppendCommentIdToArgument] = useState<boolean>(() =>
-    getFromStorage<boolean>(STORAGE_KEYS.APPEND_COMMENT_ID_TO_ARGUMENT, false),
+  const [enableSourceLink, setEnableSourceLink] = useState<boolean>(() =>
+    getFromStorage<boolean>(STORAGE_KEYS.ENABLE_SOURCE_LINK, false),
   );
 
   const [localLLMAddress, setLocalLLMAddress] = useState<string>(() =>
@@ -146,8 +146,8 @@ export function useAISettings() {
   }, [isEmbeddedAtLocal]);
 
   useEffect(() => {
-    saveToStorage(STORAGE_KEYS.APPEND_COMMENT_ID_TO_ARGUMENT, appendCommentIdToArgument);
-  }, [appendCommentIdToArgument]);
+    saveToStorage(STORAGE_KEYS.ENABLE_SOURCE_LINK, enableSourceLink);
+  }, [enableSourceLink]);
 
   useEffect(() => {
     if (provider === "openrouter") {
@@ -267,11 +267,11 @@ export function useAISettings() {
   };
 
   /**
-   * コメントID付与設定変更時のハンドラー
+   * ソースリンク設定変更時のハンドラー
    */
-  const handleAppendCommentIdToArgumentChange = (checked: boolean | "indeterminate") => {
+  const handleEnableSourceLinkChange = (checked: boolean | "indeterminate") => {
     if (checked === "indeterminate") return;
-    setAppendCommentIdToArgument(checked);
+    setEnableSourceLink(checked);
   };
 
   /**
@@ -330,7 +330,7 @@ export function useAISettings() {
     setWorkers(30);
     setIsPubcomMode(true);
     setIsEmbeddedAtLocal(false);
-    setAppendCommentIdToArgument(false);
+    setEnableSourceLink(false);
     setLocalLLMAddress(DEFAULT_LOCAL_LLM_ADDRESS);
     setOpenRouterModels([]);
     setLocalLLMModels([]);
@@ -340,7 +340,7 @@ export function useAISettings() {
     saveToStorage(STORAGE_KEYS.WORKERS, 30);
     saveToStorage(STORAGE_KEYS.LOCAL_LLM_ADDRESS, DEFAULT_LOCAL_LLM_ADDRESS);
     saveToStorage(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, false);
-    saveToStorage(STORAGE_KEYS.APPEND_COMMENT_ID_TO_ARGUMENT, false);
+    saveToStorage(STORAGE_KEYS.ENABLE_SOURCE_LINK, false);
   };
 
   return {
@@ -349,7 +349,7 @@ export function useAISettings() {
     workers,
     isPubcomMode,
     isEmbeddedAtLocal,
-    appendCommentIdToArgument,
+    enableSourceLink,
     localLLMAddress,
     handleProviderChange,
     handleModelChange,
@@ -357,7 +357,7 @@ export function useAISettings() {
     increaseWorkers,
     decreaseWorkers,
     handlePubcomModeChange,
-    handleAppendCommentIdToArgumentChange,
+    handleEnableSourceLinkChange,
     setLocalLLMAddress,
     getModelDescription,
     getProviderDescription,
