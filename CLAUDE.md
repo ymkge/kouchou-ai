@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # 広聴AI (Kouchou-AI) - Broadlistening System
 
 ## Overview
@@ -25,25 +29,9 @@
    - Local LLM support for GPU-enabled environments
    - Uses ELYZA-JP model by default
 
-## Key Features
-- CSV upload functionality for non-developers
-- Dense cluster extraction
-- Public comment analysis capabilities
-- Multi-layer hierarchical clustering
-- Interactive data visualization with charts
-- Static file export for hosting
-- Local LLM support with Ollama
-- Google Analytics integration
+## Development Commands
 
-## Development Environment
-
-### Prerequisites
-- Docker and Docker Compose
-- OpenAI API key (or local LLM setup)
-- Node.js (for frontend development)
-- Python 3.x (for backend development)
-
-### Quick Start
+### Local Development Setup
 ```bash
 # Copy environment configuration
 cp .env.example .env
@@ -51,215 +39,157 @@ cp .env.example .env
 # Start all services
 docker compose up
 
+# Client development environment
+make client-setup
+make client-dev -j 3
+
 # Access applications
 # - Main app: http://localhost:3000
 # - Admin panel: http://localhost:4000
 # - API: http://localhost:8000
 ```
 
-### Development Commands
+### Build Commands
 ```bash
-# Lint and format code
-npm run lint
-npm run format
-
-# Client development environment
-make client-setup
-make client-dev -j 3
+# Build all Docker images
+make build
 
 # Static build generation
 make client-build-static
+
+# Client development builds
+cd client && npm run build
+cd client-admin && npm run build
 ```
 
-### Testing
-- E2E tests: `/test/e2e/` (Playwright)
-- Unit tests: Various `__tests__/` directories
-- Server tests: `/server/tests/`
+### Code Quality & Linting
+```bash
+# Root level (all projects)
+npm run lint
+npm run format
 
-## Technologies Used
+# Individual projects
+cd client && npm run lint
+cd client-admin && npm run lint
+cd server && rye run ruff check .
+```
 
-### Backend
-- **Framework**: FastAPI (Python)
-- **AI/ML**: OpenAI GPT models, local LLM support
-- **Data Processing**: Pandas, NumPy
-- **Clustering**: Hierarchical clustering algorithms
-- **Testing**: pytest
+### Testing Commands
+```bash
+# Server tests
+make test/api
+# OR
+cd server && rye run pytest tests/
 
-### Frontend
-- **Framework**: Next.js 15 with TypeScript
-- **UI Components**: Custom component library
-- **Charts**: Plotly.js for data visualization
-- **Testing**: Jest, Playwright for E2E
-- **Styling**: CSS modules
+# Client tests
+cd client && npm test
 
-### DevOps
-- **Containerization**: Docker & Docker Compose
-- **Code Quality**: Biome for linting/formatting
-- **Git Hooks**: Lefthook
-- **CI/CD**: GitHub Actions
+# E2E tests
+cd test/e2e && npm test
+cd test/e2e && npm run test:ui  # with UI
+cd test/e2e && npm run test:debug  # debug mode
+```
 
-## File Structure Highlights
-- `/server/broadlistening/pipeline/` - Core AI processing pipeline
-- `/client/components/charts/` - Data visualization components
+### Server Development
+```bash
+# Run server locally (development)
+cd server && rye run uvicorn src.main:app --reload --port 8000
+
+# Server linting and formatting
+cd server && make lint/check
+cd server && make lint/format
+
+# Using Docker for server operations
+make lint/api-check
+make lint/api-format
+```
+
+## Key Directories
+
+### Core Processing Pipeline
+- `/server/broadlistening/pipeline/` - AI processing pipeline
+  - `steps/` - Individual pipeline steps (embedding, clustering, labeling)
+  - `services/` - Shared services (LLM, category classification)
+  - `hierarchical_main.py` - Main pipeline orchestrator
+
+### Frontend Structure
+- `/client/components/charts/` - Data visualization (Plotly.js)
+- `/client/components/report/` - Report display components
 - `/client-admin/app/create/` - Report creation interface
-- `/server/routers/` - API endpoints
-- `/test/e2e/` - End-to-end test suites
-- `/docs/` - Setup and configuration guides
+- `/client-admin/app/create/hooks/` - React hooks for form state
 
-## Configuration
-Key environment variables (see `.env.example`):
-- `OPENAI_API_KEY` - OpenAI API access
-- `NEXT_PUBLIC_API_BASEPATH` - API base URL
-- `WITH_GPU` - Enable GPU support for local LLM
-- Google Analytics measurement IDs for tracking
+### API Structure
+- `/server/src/routers/` - FastAPI route handlers
+- `/server/src/services/` - Business logic layer
+- `/server/src/schemas/` - Pydantic data models
+- `/server/src/repositories/` - Data access layer
 
-## Deployment Options
-1. **Local Development**: Docker Compose
-2. **Azure Cloud**: See `Azure.md` for setup guide
-3. **Static Export**: Generate static files for web hosting
-4. **GitHub Pages**: Static hosting guide available
-
-## Important Notes
-- The system is in early development stage
-- LLM outputs may contain biases and should be verified
-- Breaking changes may occur between versions
-- Backup important data before updates
-- Requires significant GPU memory (8GB+) for local LLM usage
-
-## Coding Style & Conventions
-
-### Frontend (TypeScript/React)
-
-#### Code Quality Tools
-- **Biome**: Linting and formatting for all JavaScript/TypeScript files
-  - 2-space indentation
-  - 120 character line width
-  - Organized imports enabled
-  - Recommended rules enabled
-
-#### TypeScript Configuration
-- **Target**: ESNext with modern JavaScript features
-- **Strict mode**: Enabled for type safety
-- **Path mapping**: `@/*` for absolute imports
-- **JSX**: Preserve mode for Next.js
-
-#### React Patterns
-- **Component Structure**: Function components with TypeScript
-- **Props**: Inline type definitions for simple components, interfaces for complex ones
-- **State Management**: Custom hooks for complex logic, useState for simple state
-- **Imports**: Absolute imports using `@/` path mapping
-
-#### UI Framework & Styling
-- **Framework**: Chakra UI for consistent design system
-- **Layout**: HStack, VStack, Box components for layout
-- **Responsive**: Breakpoint objects for responsive design
-- **Validation**: Visual feedback with border colors and error states
-
-#### Component Organization
-```
-components/
-├── ui/           # Reusable UI components
-├── charts/       # Data visualization components
-├── report/       # Report-specific components
-└── icons/        # Icon components
-```
-
-#### Example Component Pattern
-```typescript
-import { Box, HStack } from "@chakra-ui/react"
-import type { ComponentProps } from "@/types"
-
-interface Props {
-  title: string
-  isValid?: boolean
-}
-
-export function ExampleComponent({ title, isValid = true }: Props) {
-  return (
-    <Box borderColor={!isValid ? "red.300" : undefined}>
-      <HStack spacing={4}>
-        {/* Component content */}
-      </HStack>
-    </Box>
-  )
-}
-```
+## Technology Stack
 
 ### Backend (Python)
+- **Framework**: FastAPI with uvicorn
+- **AI/ML**: OpenAI GPT models, sentence-transformers
+- **Data**: Pandas, NumPy, scipy
+- **Storage**: Azure Blob Storage support
+- **Testing**: pytest with coverage
 
-#### Code Quality Tools
-- **Ruff**: Linting and formatting
-  - 120 character line width
-  - Python 3.12+ target
-  - pycodestyle, pyflakes, isort, flake8-bugbear rules
-  - Import organization with isort
+### Frontend (TypeScript/React)
+- **Framework**: Next.js 15 with TypeScript
+- **UI**: Chakra UI component library
+- **Charts**: Plotly.js with react-plotly.js
+- **Testing**: Jest + Testing Library, Playwright for E2E
 
-#### Project Structure
-- **Source**: Code in `src/` directory
-- **Tests**: Separate `tests/` directory with pytest
-- **Schemas**: Pydantic models for API validation
-- **Services**: Business logic separation
-- **Repositories**: Data access layer
+### Code Quality Tools
+- **Frontend**: Biome (linting/formatting, 2-space indent, 120 char width)
+- **Backend**: Ruff (linting/formatting, 120 char width, Python 3.12+)
+- **Git Hooks**: Lefthook for pre-push validation
 
-#### Python Conventions
-- **Type Hints**: Required for all function signatures
-  - prohibited: List, Dict, Tuple, Optional
-  - recommended: list, dict, tuple, type | None
-- **Docstrings**: JSDoc-style comments for documentation
-- **Error Handling**: Structured exception handling
-- **Async/Await**: FastAPI async patterns
+## Important Development Notes
 
-#### Dependencies Management
-- **Rye**: Modern Python dependency management
-- **pyproject.toml**: Standard Python project configuration
+### Pipeline Architecture
+The core AI processing happens in `/server/broadlistening/pipeline/`:
+- `hierarchical_main.py` orchestrates the entire analysis
+- Pipeline processes: embedding → clustering → labeling → overview generation
+- Results stored in `/server/broadlistening/pipeline/outputs/{report_id}/`
 
-### Git Workflow
+### Report Data Flow
+1. CSV upload via client-admin → API validation
+2. Pipeline processing (embeddings, hierarchical clustering, LLM labeling)
+3. Results stored with hierarchical structure
+4. Client displays interactive visualizations
 
-#### Pre-commit Hooks (Lefthook)
-- **client-lint**: Biome checks for client code
-- **client-admin-lint**: Biome checks for admin code
-- **dummy-server-lint**: Biome checks for utility code
+### Environment Configuration
+- Local: `.env` files in each service directory
+- Docker: `compose.yaml` orchestrates all services
+- Azure: Complex deployment via Makefile targets
 
-#### Commit Guidelines
-- Clear, descriptive commit messages
-- Separate commits for different concerns
-- Reference issues when applicable
+### Testing Strategy
+- Unit tests: Components and utilities
+- Integration tests: API endpoints and services
+- E2E tests: Full user workflows with Playwright
+- Pipeline tests: Data processing validation
 
-#### Branch Strategy
-- Feature branches from main
-- Pull requests for code review
-- CI/CD validation before merge
+## Azure Deployment
+```bash
+# Complete Azure setup
+make azure-setup-all
 
-### File Naming Conventions
+# Individual operations
+make azure-build          # Build images
+make azure-push           # Push to ACR
+make azure-deploy         # Deploy containers
+make azure-info           # Get service URLs
+```
 
-#### Frontend
-- **Components**: PascalCase (`Header.tsx`, `BasicInfoSection.tsx`)
-- **Hooks**: camelCase with `use` prefix (`useBasicInfo.ts`)
-- **Utils**: camelCase (`validation.ts`, `api.ts`)
-- **Types**: camelCase (`index.ts` in types directories)
+## Configuration Files
+- `/biome.json` - Frontend code style (2-space, 120 char)
+- `/server/pyproject.toml` - Python dependencies and Ruff config
+- `/lefthook.yml` - Git hooks for code quality
+- `/.env.example` - Environment variable template
 
-#### Backend
-- **Modules**: snake_case (`report_launcher.py`)
-- **Classes**: PascalCase
-- **Functions**: snake_case
-- **Constants**: UPPER_SNAKE_CASE
-
-### Testing Standards
-
-#### Frontend Testing
-- **Jest**: Unit tests for components and utilities
-- **Playwright**: E2E tests for user workflows
-- **Test files**: `*.test.ts` or `__tests__/` directories
-
-#### Backend Testing
-- **pytest**: Unit and integration tests
-- **Coverage**: pytest-cov for coverage reporting
-- **Test files**: `test_*.py` pattern
-
-### Documentation
-- **JSDoc**: For complex functions and hooks
-- **README**: Per-service documentation
-- **Type definitions**: Comprehensive TypeScript/Python types
-
-## Contributing
-This is an open-source project welcoming contributions. See `CONTRIBUTING.md` for guidelines. The project also involves collaboration with Devin AI engineer.
+## Important Notes
+- The system requires OpenAI API key or local LLM setup
+- Breaking changes may occur between versions
+- LLM outputs should be verified for bias
+- Backup data before updates
+- GPU memory 8GB+ recommended for local LLM
