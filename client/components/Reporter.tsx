@@ -18,7 +18,7 @@ function EmptyText({ loading }: { loading: boolean }) {
           variant="underline"
           color="currentcolor"
           _hover={{
-            color: "gray.400"
+            color: "gray.400",
           }}
         >
           メタデータをセットアップ
@@ -97,7 +97,7 @@ function MessageText({
               textDecorationColor="currentcolor"
               textDecoration="underline"
               _hover={{
-                color: "gray.400"
+                color: "gray.400",
               }}
               onClick={() => setIsExpanded(true)}
             >
@@ -174,13 +174,15 @@ export function Reporter({ meta }: { meta: Meta }) {
           </Flex>
         </Flex>
       </Skeleton>
-      <MessageText
-        isDefault={meta.isDefault}
-        message={meta.message}
-        reporterImgLoadingStatus={reporterImgLoadingStatus}
-      />
+      {!meta.isDefault && meta.message && (
+        <MessageText
+          isDefault={meta.isDefault}
+          message={meta.message}
+          reporterImgLoadingStatus={reporterImgLoadingStatus}
+        />
+      )}
       <Skeleton loading={reporterImgLoadingStatus === "loading"} asChild>
-        <Flex gap="3" flexWrap="wrap" w="fit-content">
+        <Flex gap="3" flexWrap="wrap" w="fit-content" _empty={{ display: "none" }}>
           {!meta.isDefault && meta.webLink && (
             <Button
               variant="outline"
