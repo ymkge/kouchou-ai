@@ -17,9 +17,7 @@ async function ReporterImage({
     });
 
     if (res.status === 200) {
-      return (
-        <Image src={src} alt={reporterName} maxW="150px" mb={{ base: "4", md: "0" }} mr={{ base: "0", md: "4" }} />
-      );
+      return <Image src={src} alt={reporterName} maxW="150px" />;
     }
   } catch (error) {
     console.error("Failed to fetch reporter image:", error);

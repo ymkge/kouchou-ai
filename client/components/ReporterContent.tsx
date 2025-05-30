@@ -1,9 +1,9 @@
 "use client";
 
 import type { Meta } from "@/type";
-import { Box, Button, Flex, Link, SkeletonText, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Link, Text } from "@chakra-ui/react";
 import { Globe } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 function EmptyText() {
   return (
@@ -26,29 +26,36 @@ function EmptyText() {
   );
 }
 
+function ReadMore({ setIsExpanded }: { setIsExpanded: (isExpanded: boolean) => void }) {
+  return (
+    <Flex display="inline-flex">
+      <Text w="1rem">...</Text>
+      <Button
+        variant="plain"
+        w="fit-content"
+        h="fit-content"
+        p="0"
+        mt="2px"
+        color="blue.500"
+        fontWeight="normal"
+        textDecoration="underline"
+        textUnderlineOffset="2px"
+        _hover={{
+          opacity: 0.75,
+          textDecoration: "none",
+        }}
+        onClick={() => setIsExpanded(true)}
+      >
+        全文表示
+      </Button>
+    </Flex>
+  );
+}
+
 function MessageText({ isDefault, message }: { isDefault: boolean; message: string }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isTruncated, setIsTruncated] = useState(false);
-  const [isCalculating, setIsCalculating] = useState(true);
-  const textRef = useRef<HTMLParagraphElement>(null);
-
-  useEffect(() => {
-    const el = textRef.current;
-    if (!el) return;
-
-    const checkOverflow = () => {
-      const isOverflowing = el.scrollHeight > el.clientHeight + 1; // 多少の誤差を考慮
-      setIsTruncated(isOverflowing);
-    };
-
-    checkOverflow();
-    setIsCalculating(false);
-
-    window.addEventListener("resize", checkOverflow);
-    return () => {
-      window.removeEventListener("resize", checkOverflow);
-    };
-  }, []);
+  const TRUNCATED_TEXT_LENGTH = 55;
+  const isTrancated = message.length > TRUNCATED_TEXT_LENGTH;
+  const [isExpanded, setIsExpanded] = useState(!isTrancated);
 
   // metdataが未設定の場合は、設定方法を案内するテキストを表示
   if (isDefault) {
@@ -56,48 +63,18 @@ function MessageText({ isDefault, message }: { isDefault: boolean; message: stri
   }
 
   return (
-    <Box>
-      <SkeletonText h="26px" noOfLines={2} display={isCalculating ? "block" : "none"} />
-      <Text
-        as="div"
-        ref={textRef}
-        fontSize="sm"
-        position={isCalculating ? "absolute" : "relative"}
-        visibility={isCalculating ? "hidden" : "visible"}
-        lineHeight={2}
-        color="gray.600"
-        textAlign="left"
-        opacity={isCalculating ? 0 : 1}
-        lineClamp={isExpanded ? undefined : 2}
-        whiteSpace={isExpanded || !isTruncated ? "pre-line" : "normal"}
-        wordBreak={isExpanded ? "normal" : "break-all"}
-      >
-        {message}
-        {isTruncated && !isExpanded && (
-          <Flex position="absolute" right="0" bottom="0" zIndex="1" bg="white">
-            <Text w="1rem">...</Text>
-            <Button
-              variant="plain"
-              w="fit-content"
-              h="fit-content"
-              p="0"
-              mt="1px"
-              color="gray.600"
-              fontWeight="normal"
-              textUnderlineOffset="3px"
-              textDecorationColor="currentcolor"
-              textDecoration="underline"
-              _hover={{
-                color: "gray.400",
-              }}
-              onClick={() => setIsExpanded(true)}
-            >
-              全文表示
-            </Button>
-          </Flex>
-        )}
-      </Text>
-    </Box>
+    <Text
+      as="div"
+      fontSize="sm"
+      lineHeight={2}
+      color="gray.600"
+      textAlign="left"
+      whiteSpace={isExpanded ? "pre-line" : "normal"}
+      wordBreak={isExpanded ? "normal" : "break-all"}
+    >
+      {!isExpanded ? message.slice(0, TRUNCATED_TEXT_LENGTH) : message}
+      {!isExpanded && <ReadMore setIsExpanded={setIsExpanded} />}
+    </Text>
   );
 }
 
