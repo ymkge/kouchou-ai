@@ -123,6 +123,7 @@ export function Chart({
             onHover={() => setTimeout(avoidHoverTextCoveringShrinkButton, 500)}
             showClusterLabels={showClusterLabels}
             filteredArgumentIds={filteredArgumentIds}
+            config={result.config}
           />
         )}
         {selectedChart === "treemap" && (
@@ -160,6 +161,7 @@ export function Chart({
             targetLevel={selectedChart === "scatterAll" ? 1 : Math.max(...result.clusters.map((c) => c.level))}
             showClusterLabels={showClusterLabels}
             filteredArgumentIds={filteredArgumentIds}
+            config={result.config}
           />
         )}
       </Box>
