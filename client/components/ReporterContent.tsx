@@ -54,7 +54,8 @@ function ReadMore({ setIsExpanded }: { setIsExpanded: (isExpanded: boolean) => v
 
 function MessageText({ isDefault, message }: { isDefault: boolean; message: string }) {
   const TRUNCATED_TEXT_LENGTH = 55;
-  const isTruncated = message.length > TRUNCATED_TEXT_LENGTH;
+  const messageWithoutNewLines = message.replace(/\n/g, '');
+  const isTruncated = messageWithoutNewLines.length > TRUNCATED_TEXT_LENGTH;
   const [isExpanded, setIsExpanded] = useState(!isTruncated);
 
   // metdataが未設定の場合は、設定方法を案内するテキストを表示
@@ -72,7 +73,7 @@ function MessageText({ isDefault, message }: { isDefault: boolean; message: stri
       whiteSpace={isExpanded ? "pre-line" : "normal"}
       wordBreak={isExpanded ? "normal" : "break-all"}
     >
-      {!isExpanded ? message.slice(0, TRUNCATED_TEXT_LENGTH) : message}
+      {!isExpanded ? messageWithoutNewLines.slice(0, TRUNCATED_TEXT_LENGTH) : message}
       {!isExpanded && <ReadMore setIsExpanded={setIsExpanded} />}
     </Text>
   );
