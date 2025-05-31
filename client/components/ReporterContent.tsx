@@ -54,8 +54,8 @@ function ReadMore({ setIsExpanded }: { setIsExpanded: (isExpanded: boolean) => v
 
 function MessageText({ isDefault, message }: { isDefault: boolean; message: string }) {
   const TRUNCATED_TEXT_LENGTH = 55;
-  const isTrancated = message.length > TRUNCATED_TEXT_LENGTH;
-  const [isExpanded, setIsExpanded] = useState(!isTrancated);
+  const isTruncated = message.length > TRUNCATED_TEXT_LENGTH;
+  const [isExpanded, setIsExpanded] = useState(!isTruncated);
 
   // metdataが未設定の場合は、設定方法を案内するテキストを表示
   if (isDefault) {
