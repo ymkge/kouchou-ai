@@ -3,7 +3,7 @@
 import type { Meta } from "@/type";
 import { Box, Button, Flex, Link, Text } from "@chakra-ui/react";
 import { Globe } from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 function EmptyText() {
   return (
@@ -100,8 +100,9 @@ export function ReporterContent({ meta, children }: { meta: Meta; children: Reac
         {!meta.isDefault && meta.webLink && (
           <Button
             variant="outline"
-            size="md"
-            fontSize="xs"
+            size="xs"
+            rounded="full"
+            px="5"
             color="currentcolor"
             _icon={{
               width: "14px",
@@ -118,14 +119,14 @@ export function ReporterContent({ meta, children }: { meta: Meta; children: Reac
           </Button>
         )}
         {!meta.isDefault && meta.privacyLink && (
-          <Button variant="outline" size="md" fontSize="xs" color="currentcolor" asChild>
+          <Button variant="outline" size="xs" rounded="full" px="5" color="currentcolor" asChild>
             <a href={meta.privacyLink} target="_blank" rel="noopener noreferrer">
               プライバシーポリシー
             </a>
           </Button>
         )}
         {!meta.isDefault && meta.termsLink && (
-          <Button variant="outline" size="md" fontSize="xs" color="currentcolor" asChild>
+          <Button variant="outline" size="xs" rounded="full" px="5" color="currentcolor" asChild>
             <a href={meta.termsLink} target="_blank" rel="noopener noreferrer">
               利用規約
             </a>
