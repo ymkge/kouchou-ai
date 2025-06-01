@@ -14,9 +14,10 @@ function EmptyText() {
         target="_blank"
         rel="noopener noreferrer"
         variant="underline"
-        color="currentcolor"
+        color="blue.500"
         _hover={{
-          color: "gray.400",
+          opacity: 0.75,
+          textDecoration: "none",
         }}
       >
         メタデータをセットアップ
@@ -96,7 +97,7 @@ export function ReporterContent({ meta, children }: { meta: Meta; children: Reac
           )}
         </Flex>
       </Flex>
-      {!meta.isDefault && meta.message && <MessageText isDefault={meta.isDefault} message={meta.message} />}
+      <MessageText isDefault={meta.isDefault} message={meta.message} />
       <Flex gap="3" flexWrap="wrap" w="fit-content" _empty={{ display: "none" }}>
         {!meta.isDefault && meta.webLink && (
           <Button
