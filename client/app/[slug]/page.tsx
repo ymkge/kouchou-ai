@@ -107,7 +107,7 @@ export default async function Page({ params }: PageProps) {
   return (
     <>
       <div className={"container"}>
-        <Header meta={meta} />
+        <Header />
         <Overview result={result} />
         <ClientContainer result={result} />
         <Analysis result={result} />
