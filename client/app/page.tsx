@@ -54,7 +54,7 @@ export default async function Page() {
     return (
       <>
         <div className={"container"}>
-          {meta && <Header meta={meta} />}
+          <Header />
           <Box mx={"auto"} maxW={"900px"} mb={10}>
             <Heading textAlign={"left"} fontSize={"xl"} mb={8}>
               レポート一覧
