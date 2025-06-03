@@ -21,6 +21,7 @@ const STORAGE_KEYS = {
   WORKERS: `${STORAGE_KEY_PREFIX}workers`,
   LOCAL_LLM_ADDRESS: `${STORAGE_KEY_PREFIX}local_llm_address`,
   IS_EMBEDDED_AT_LOCAL: `${STORAGE_KEY_PREFIX}is_embedded_at_local`,
+  ENABLE_SOURCE_LINK: `${STORAGE_KEY_PREFIX}enable_source_link`,
 };
 
 // LocalLLMのデフォルトアドレスを定数化
@@ -113,6 +114,9 @@ export function useAISettings() {
   const [isEmbeddedAtLocal, setIsEmbeddedAtLocal] = useState<boolean>(() =>
     getFromStorage<boolean>(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, false),
   );
+  const [enableSourceLink, setEnableSourceLink] = useState<boolean>(() =>
+    getFromStorage<boolean>(STORAGE_KEYS.ENABLE_SOURCE_LINK, false),
+  );
 
   const [localLLMAddress, setLocalLLMAddress] = useState<string>(() =>
     getFromStorage<string>(STORAGE_KEYS.LOCAL_LLM_ADDRESS, DEFAULT_LOCAL_LLM_ADDRESS),
@@ -140,6 +144,10 @@ export function useAISettings() {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, isEmbeddedAtLocal);
   }, [isEmbeddedAtLocal]);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.ENABLE_SOURCE_LINK, enableSourceLink);
+  }, [enableSourceLink]);
 
   useEffect(() => {
     if (provider === "openrouter") {
@@ -259,6 +267,14 @@ export function useAISettings() {
   };
 
   /**
+   * ソースリンク設定変更時のハンドラー
+   */
+  const handleEnableSourceLinkChange = (checked: boolean | "indeterminate") => {
+    if (checked === "indeterminate") return;
+    setEnableSourceLink(checked);
+  };
+
+  /**
    * モデル説明文を取得
    */
   const getModelDescription = () => {
@@ -314,6 +330,7 @@ export function useAISettings() {
     setWorkers(30);
     setIsPubcomMode(true);
     setIsEmbeddedAtLocal(false);
+    setEnableSourceLink(false);
     setLocalLLMAddress(DEFAULT_LOCAL_LLM_ADDRESS);
     setOpenRouterModels([]);
     setLocalLLMModels([]);
@@ -323,6 +340,7 @@ export function useAISettings() {
     saveToStorage(STORAGE_KEYS.WORKERS, 30);
     saveToStorage(STORAGE_KEYS.LOCAL_LLM_ADDRESS, DEFAULT_LOCAL_LLM_ADDRESS);
     saveToStorage(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, false);
+    saveToStorage(STORAGE_KEYS.ENABLE_SOURCE_LINK, false);
   };
 
   return {
@@ -331,6 +349,7 @@ export function useAISettings() {
     workers,
     isPubcomMode,
     isEmbeddedAtLocal,
+    enableSourceLink,
     localLLMAddress,
     handleProviderChange,
     handleModelChange,
@@ -338,6 +357,7 @@ export function useAISettings() {
     increaseWorkers,
     decreaseWorkers,
     handlePubcomModeChange,
+    handleEnableSourceLinkChange,
     setLocalLLMAddress,
     getModelDescription,
     getProviderDescription,

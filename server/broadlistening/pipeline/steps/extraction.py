@@ -64,9 +64,10 @@ def extraction(config):
                 if arg not in argument_map:
                     # argumentテーブルに追加
                     arg_id = f"A{comment_id}_{j}"
+                    argument = arg
                     argument_map[arg] = {
                         "arg-id": arg_id,
-                        "argument": arg,
+                        "argument": argument,
                     }
                 else:
                     arg_id = argument_map[arg]["arg-id"]

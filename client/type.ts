@@ -48,6 +48,7 @@ export type Argument = {
   p: number; // 追加情報（数値）
   cluster_ids: string[]; // 属するクラスタの ID リスト
   attributes?: Record<string, string | number>; // 属性情報
+  url?: string; // ソースURL（optional）
 };
 
 export type Cluster = {
@@ -86,6 +87,7 @@ export type Config = {
   output_dir: string; // 結果の出力ディレクトリ名
   previous?: Config; // 過去の設定情報
   is_embedded_at_local: boolean; // ローカルで埋め込みを生成するかどうか
+  enable_source_link?: boolean; // ソースリンク機能を有効にするかどうか
   extraction: {
     workers: number; // 並列処理数
     limit: number; // データ抽出の上限数
