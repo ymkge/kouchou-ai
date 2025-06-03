@@ -55,7 +55,7 @@ function ReadMore({ setIsExpanded }: { setIsExpanded: (isExpanded: boolean) => v
 
 function MessageText({ isDefault, message }: { isDefault: boolean; message: string }) {
   const TRUNCATED_TEXT_LENGTH = 55;
-  const messageWithoutNewLines = message.replace(/\n/g, '');
+  const messageWithoutNewLines = message.replace(/\n/g, "");
   const isTruncated = messageWithoutNewLines.length > TRUNCATED_TEXT_LENGTH;
   const [isExpanded, setIsExpanded] = useState(!isTruncated);
 
