@@ -107,11 +107,11 @@ export function Footer({ meta }: Props) {
                 </a>
               </Button>
               <Dialog title="謝辞" trigger={<Button>謝辞</Button>}>
-                このプロジェクトは{" "}
+                広聴AIは{" "}
                 <Link href="https://ai.objectives.institute/" target="_blank" rel="noopener noreferrer">
                   AI Objectives Institute
                 </Link>{" "}
-                開発した{" "}
+                が開発した{" "}
                 <Link
                   href="https://github.com/AIObjectives/talk-to-the-city-reports"
                   target="_blank"
