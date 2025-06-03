@@ -1,6 +1,6 @@
 import type { Meta } from "@/type";
-import { Box, Button as _Button, Flex, HStack, Heading, Stack, Text, Link } from "@chakra-ui/react";
-import { ArrowUpRight, ExternalLinkIcon } from "lucide-react";
+import { Box, Button as _Button, Flex, Text, Link } from "@chakra-ui/react";
+import { ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { DialogActionTrigger, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogRoot, DialogTitle, DialogTrigger } from "./ui/dialog";
 import Image from "next/image";
@@ -41,9 +41,11 @@ const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNod
   );
 };
 
-const Button = ({ children, ...props}) => { 
+import type { ButtonProps as ChakraButtonProps } from "@chakra-ui/react";
+
+const Button = ({ children, ...props }: ChakraButtonProps) => { 
   return (
-    <_Button variant="outline" rounded="full" size="xs" fontWeight="bold" px="5" borderColor="gray.800" {...props}>
+    <_Button variant="outline" rounded="full" size="xs" fontWeight="bold" px="5" borderColor="gray.800" gap="2" {...props}>
       {children}
     </_Button>
   );
@@ -97,9 +99,44 @@ export function Footer({ meta }: Props) {
         </Flex>
       </Box>
       <Box bg="#F1F6F8" py={{ base: "6", md: "10" }} px={{ base: "6", md: "12" }} mx="auto">
-        <Box bg="white" py="8" px="8" borderRadius="3xl" maxW="1024px" mx="auto">
-          デジタル民主主義
-        </Box>
+        <Flex bg="white" py="8" px="8" borderRadius="3xl" maxW="1024px" mx="auto" flexDirection={{ base: "column", lg: "row" }} alignItems={{ base: "center" }} gap="8">
+          <Image src="/images/dd2030-logo-full.svg" alt="デジタル民主主義2030" width={256} height={80} />
+          <Flex flexDirection="column" gap="4">
+            <Text>
+              2030年には、情報技術により民主主義のあり方はアップデートされており、一人ひとりの声が政治・行政に届き、適切に合意形成・政策反映されていくような社会が当たり前になる、──そんな未来を目指して立ち上げられたのがデジタル民主主義2030プロジェクトです。
+            </Text>
+            <Flex gap="3" flexWrap="wrap">
+              <Button asChild>
+                <a href="https://dd2030.org" rel="noopener noreferrer" target="_blank">
+                  プロジェクトサイト
+                  <ArrowUpRight />
+                </a>
+              </Button>
+              <Button asChild>
+                <a href="https://x.com/dd2030jp" rel="noopener noreferrer" target="_blank">
+                  <Image src="/images/icon/x.svg" alt="x" width={16} height={16} />
+                </a>
+              </Button>
+              <Button asChild>
+                <a href="https://note.com/dd2030" rel="noopener noreferrer" target="_blank">
+                  <Image src="/images/icon/note.svg" alt="note" width={42} height={12} />
+                </a>
+              </Button>
+              <Button asChild>
+                <a href="https://dd2030.slack.com" rel="noopener noreferrer" target="_blank">
+                  <Image src="/images/icon/slack.svg" alt="slack" width={16} height={16} />
+                  Slack
+                </a>
+              </Button>
+              <Button asChild>
+                <a href="https://github.com/digitaldemocracy2030" rel="noopener noreferrer" target="_blank">
+                  <Image src="/images/icon/github.svg" alt="github" width={16} height={16} />
+                  GitHub
+                </a>
+              </Button>
+            </Flex>
+          </Flex>
+        </Flex>
       </Box>
       <Box bg="white" py={{ base: "6", lg: "4" }} px={{ base: "6", md: "12" }} textAlign="center">
         <Flex maxW="1024px" mx="auto" justifyContent={{ lg: "space-between"}} alignItems={{ base: "center" }} flexDirection={{ base: "column-reverse", lg: "row" }} gap={{ base: "4" }}>
