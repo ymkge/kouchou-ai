@@ -1,9 +1,19 @@
 import type { Meta } from "@/type";
-import { Box, Button as _Button, Flex, Text, Link } from "@chakra-ui/react";
+import { Box, type ButtonProps as ChakraButtonProps, Flex, Link, Text, Button as _Button } from "@chakra-ui/react";
 import { ArrowUpRight } from "lucide-react";
-import type { ReactNode } from "react";
-import { DialogActionTrigger, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogRoot, DialogTitle, DialogTrigger } from "./ui/dialog";
 import Image from "next/image";
+import type { ReactNode } from "react";
+import {
+  DialogActionTrigger,
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
 
 type Props = {
   meta: Meta;
@@ -12,9 +22,7 @@ type Props = {
 const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNode; children: ReactNode }) => {
   return (
     <DialogRoot size="sm">
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
         color="gray.800"
         bg="linear-gradient(216.39deg, #FCFFDB -0.01%, #F0FDF4 24.99%, #ECFEFF 35%, #FFFFFF 50%);
@@ -26,12 +34,19 @@ const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNod
         <DialogBody px={{ base: "6", md: "8" }}>
           <Text fontSize="sm" lineHeight="2">
             {children}
-           </Text>
+          </Text>
         </DialogBody>
         <DialogCloseTrigger />
         <DialogFooter pb={{ base: "6", md: "8" }} justifyContent="center">
           <DialogActionTrigger asChild>
-            <Button variant="outline" size="md" rounded="full" fontWeight="bold" color="gray.800" borderColor="gray.300">
+            <Button
+              variant="outline"
+              size="md"
+              rounded="full"
+              fontWeight="bold"
+              color="gray.800"
+              borderColor="gray.300"
+            >
               閉じる
             </Button>
           </DialogActionTrigger>
@@ -41,23 +56,51 @@ const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNod
   );
 };
 
-import type { ButtonProps as ChakraButtonProps } from "@chakra-ui/react";
-
-const Button = ({ children, ...props }: ChakraButtonProps) => { 
+const Button = ({ children, ...props }: ChakraButtonProps) => {
   return (
-    <_Button variant="outline" rounded="full" size="xs" fontWeight="bold" px="5" borderColor="gray.800" gap="2" {...props}>
+    <_Button
+      variant="outline"
+      rounded="full"
+      size="xs"
+      fontWeight="bold"
+      px="5"
+      borderColor="gray.800"
+      gap="2"
+      {...props}
+    >
       {children}
     </_Button>
   );
-}
+};
 
 export function Footer({ meta }: Props) {
   return (
     <Box as="footer" fontSize="xs" color="gray.800" lineHeight="2">
-      <Box bg="url('/images/footer-bg.webp')" bgSize="cover" bgPos="center" py={{ base: "6", md: "10" }} px={{ base: "6", md: "12" }}>
-        <Flex bg="white" py="8" px="8" borderRadius="3xl" maxW="1024px" mx="auto" flexDirection={{ base: "column", lg: "row" }} alignItems={{ base: "center", lg: "flex-end" }} gap="8">
-          <Image src="/images/kouchouai-logo.svg" alt="広聴AI すべての声が社会を動かす力になる。" width={256} height={102} />
-          <Flex flexDirection="column" gap={{ base: "4"}}>
+      <Box
+        bg="url('/images/footer-bg.webp')"
+        bgSize="cover"
+        bgPos="center"
+        py={{ base: "6", md: "10" }}
+        px={{ base: "6", md: "12" }}
+      >
+        <Flex
+          bg="white"
+          py="8"
+          px="8"
+          borderRadius="3xl"
+          maxW="1024px"
+          mx="auto"
+          flexDirection={{ base: "column", lg: "row" }}
+          alignItems={{ base: "center", lg: "flex-end" }}
+          gap="8"
+        >
+          <Image
+            src="/images/kouchouai-logo.svg"
+            alt="広聴AI すべての声が社会を動かす力になる。"
+            width={256}
+            height={102}
+          />
+          <Flex flexDirection="column" gap={{ base: "4" }}>
             <Text>
               広聴AIは、デジタル民主主義2030プロジェクトから生まれたオープンソース（OSS）アプリケーションです。
               <Box as="br" display={{ base: "none", lg: "inline" }} />
@@ -70,18 +113,9 @@ export function Footer({ meta }: Props) {
                   <ArrowUpRight />
                 </a>
               </Button>
-              <Dialog
-                title="謝辞"
-                trigger={
-                  <Button>謝辞</Button>
-                }
-              >
+              <Dialog title="謝辞" trigger={<Button>謝辞</Button>}>
                 このプロジェクトは{" "}
-                <Link
-                  href="https://ai.objectives.institute/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <Link href="https://ai.objectives.institute/" target="_blank" rel="noopener noreferrer">
                   AI Objectives Institute
                 </Link>{" "}
                 開発した{" "}
@@ -99,7 +133,17 @@ export function Footer({ meta }: Props) {
         </Flex>
       </Box>
       <Box bg="#F1F6F8" py={{ base: "6", md: "10" }} px={{ base: "6", md: "12" }} mx="auto">
-        <Flex bg="white" py="8" px="8" borderRadius="3xl" maxW="1024px" mx="auto" flexDirection={{ base: "column", lg: "row" }} alignItems={{ base: "center" }} gap="8">
+        <Flex
+          bg="white"
+          py="8"
+          px="8"
+          borderRadius="3xl"
+          maxW="1024px"
+          mx="auto"
+          flexDirection={{ base: "column", lg: "row" }}
+          alignItems={{ base: "center" }}
+          gap="8"
+        >
           <Image src="/images/dd2030-logo-full.svg" alt="デジタル民主主義2030" width={256} height={80} />
           <Flex flexDirection="column" gap="4">
             <Text>
@@ -139,29 +183,42 @@ export function Footer({ meta }: Props) {
         </Flex>
       </Box>
       <Box bg="white" py={{ base: "6", lg: "4" }} px={{ base: "6", md: "12" }} textAlign="center">
-        <Flex maxW="1024px" mx="auto" justifyContent={{ lg: "space-between"}} alignItems={{ base: "center" }} flexDirection={{ base: "column-reverse", lg: "row" }} gap={{ base: "4" }}>
+        <Flex
+          maxW="1024px"
+          mx="auto"
+          justifyContent={{ lg: "space-between" }}
+          alignItems={{ base: "center" }}
+          flexDirection={{ base: "column-reverse", lg: "row" }}
+          gap={{ base: "4" }}
+        >
           <Text display="flex" color="gray.500" fontSize="xs">
             © 2025 デジタル民主主義2030
-            <Box as="span" mx="0.4em" display={{ base: "none", lg: "inline" }}>|</Box>
+            <Box as="span" mx="0.4em" display={{ base: "none", lg: "inline" }}>
+              |
+            </Box>
             <Box as="br" display={{ base: "inline", lg: "none" }} />
             レポート内容はレポーターに帰属します
           </Text>
           <Flex gap="6" alignItems="center" color="gray.800">
             {meta.termsLink && (
               <Link href={meta.termsLink}>
-                <Text fontWeight="bold" fontSize="xs">利用規約</Text>
+                <Text fontWeight="bold" fontSize="xs">
+                  利用規約
+                </Text>
               </Link>
             )}
             <Dialog
               title="免責"
               trigger={
-                <Button variant="plain" border="none">免責</Button>
+                <Button variant="plain" border="none">
+                  免責
+                </Button>
               }
-             >
+            >
               このレポート内容に関する質問や意見はレポート発行責任者へお問い合わせください。
               <br />
               大規模言語モデル（LLM）にはバイアスがあり、信頼性の低い結果を生成することが知られています。私たちはこれらの問題を軽減する方法に積極的に取り組んでいますが、現段階ではいかなる保証も提供することはできません。特に重要な決定を下す際は、本アプリの出力結果のみに依存せず、必ず内容を検証してください。
-             </Dialog>
+            </Dialog>
           </Flex>
         </Flex>
       </Box>
