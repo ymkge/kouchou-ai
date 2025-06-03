@@ -20,7 +20,7 @@ class TestReportEndpoint:
         report_dir.mkdir(parents=True, exist_ok=True)
         report_file = report_dir / "hierarchical_result.json"
         report_data = {"config": {"question": "テスト質問"}, "overview": "テスト概要", "clusters": [], "arguments": []}
-        with open(report_file, "w") as f:
+        with open(report_file, "w", encoding="utf-8") as f:
             json.dump(report_data, f)
 
         # モックレポートステータスを設定
@@ -58,7 +58,7 @@ class TestReportEndpoint:
             "clusters": [],
             "arguments": [],
         }
-        with open(report_file, "w") as f:
+        with open(report_file, "w", encoding="utf-8") as f:
             json.dump(report_data, f)
 
         # モックレポートステータスを設定
@@ -89,7 +89,7 @@ class TestReportEndpoint:
         report_dir.mkdir(parents=True, exist_ok=True)
         report_file = report_dir / "hierarchical_result.json"
         report_data = {"config": {"question": "非公開のレポートの質問"}}
-        with open(report_file, "w") as f:
+        with open(report_file, "w", encoding="utf-8") as f:
             json.dump(report_data, f)
 
         # モックレポートステータスを設定
