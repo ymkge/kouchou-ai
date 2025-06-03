@@ -54,7 +54,7 @@ export default async function Page() {
     return (
       <>
         <div className={"container"}>
-          {meta && <Header meta={meta} />}
+          <Header />
           <Box mx={"auto"} maxW={"1024px"} mb={10}>
             <Box mb="12">
               <Reporter meta={meta} />
