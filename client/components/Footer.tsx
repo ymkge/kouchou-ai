@@ -3,6 +3,7 @@ import { Box, type ButtonProps as ChakraButtonProps, Flex, Link, Text, Button as
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { GitHubIcon, NoteIcon, SlackIcon, XIcon } from "./icons/MediaIcons";
 import {
   DialogActionTrigger,
   DialogBody,
@@ -59,6 +60,10 @@ const Button = ({ children, ...props }: ChakraButtonProps) => {
       px="5"
       borderColor="gray.800"
       gap="2"
+      _icon={{
+        width: "16px",
+        height: "16px",
+      }}
       {...props}
     >
       {children}
@@ -151,23 +156,23 @@ export function Footer({ meta }: Props) {
               </Button>
               <Button asChild>
                 <a href="https://x.com/dd2030jp" rel="noopener noreferrer" target="_blank">
-                  <Image src="/images/icon/x.svg" alt="x" width={16} height={16} />
+                  <XIcon />
                 </a>
               </Button>
-              <Button asChild>
+              <Button asChild _icon={{ width: "42px", height: "12px" }}>
                 <a href="https://note.com/dd2030" rel="noopener noreferrer" target="_blank">
-                  <Image src="/images/icon/note.svg" alt="note" width={42} height={12} />
+                  <NoteIcon />
                 </a>
               </Button>
               <Button asChild>
                 <a href="https://dd2030.slack.com" rel="noopener noreferrer" target="_blank">
-                  <Image src="/images/icon/slack.svg" alt="slack" width={16} height={16} />
+                  <SlackIcon />
                   Slack
                 </a>
               </Button>
               <Button asChild>
                 <a href="https://github.com/digitaldemocracy2030" rel="noopener noreferrer" target="_blank">
-                  <Image src="/images/icon/github.svg" alt="github" width={16} height={16} />
+                  <GitHubIcon />
                   GitHub
                 </a>
               </Button>
