@@ -192,13 +192,15 @@ export function Footer({ meta }: Props) {
             <Box as="br" display={{ base: "inline", lg: "none" }} />
             レポート内容はレポーターに帰属します
           </Text>
-          <Flex gap="6" alignItems="center" color="gray.800">
+          <Flex gap="0" alignItems="center" color="gray.800">
             {meta.termsLink && (
-              <Link href={meta.termsLink}>
-                <Text fontWeight="bold" fontSize="xs">
-                  利用規約
-                </Text>
-              </Link>
+              <Button variant="plain" border="none" asChild>
+                <a href={meta.termsLink} target="_blank" rel="noopener noreferrer">
+                  <Text fontWeight="bold" fontSize="xs">
+                    利用規約
+                  </Text>
+                </a>
+              </Button>
             )}
             <Dialog
               title="免責"
