@@ -199,7 +199,7 @@ export function Footer({ meta }: Props) {
           </Text>
           <Flex gap="0" alignItems="center" color="gray.800">
             {meta.termsLink && (
-              <Button variant="plain" border="none" asChild>
+              <Button variant="ghost" border="none" asChild>
                 <a href={meta.termsLink} target="_blank" rel="noopener noreferrer">
                   <Text fontWeight="bold" fontSize="xs">
                     利用規約
@@ -210,7 +210,7 @@ export function Footer({ meta }: Props) {
             <Dialog
               title="免責"
               trigger={
-                <Button variant="plain" border="none">
+                <Button variant="ghost" border="none">
                   免責
                 </Button>
               }
