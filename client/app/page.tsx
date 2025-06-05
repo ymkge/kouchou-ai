@@ -99,7 +99,7 @@ export default async function Page() {
             )}
           </Box>
         </div>
-        {meta && <Footer meta={meta} />}
+        <Footer meta={meta} />
       </>
     );
   } catch (_e) {
