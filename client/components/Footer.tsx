@@ -25,6 +25,7 @@ const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNod
     <DialogRoot size="sm">
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
+        mx="4"
         color="gray.800"
         bg="linear-gradient(216.39deg, #FCFFDB -0.01%, #F0FDF4 24.99%, #ECFEFF 35%, #FFFFFF 50%);
 "
@@ -113,7 +114,12 @@ export function Footer({ meta }: Props) {
               </Button>
               <Dialog title="謝辞" trigger={<Button>謝辞</Button>}>
                 広聴AIは{" "}
-                <Link href="https://ai.objectives.institute/" target="_blank" rel="noopener noreferrer">
+                <Link
+                  href="https://ai.objectives.institute/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="blue.500"
+                >
                   AI Objectives Institute
                 </Link>{" "}
                 が開発した{" "}
@@ -121,6 +127,7 @@ export function Footer({ meta }: Props) {
                   href="https://github.com/AIObjectives/talk-to-the-city-reports"
                   target="_blank"
                   rel="noopener noreferrer"
+                  color="blue.500"
                 >
                   Talk to the City
                 </Link>{" "}
