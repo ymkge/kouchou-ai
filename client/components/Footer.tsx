@@ -1,8 +1,10 @@
+"use client";
+
 import type { Meta } from "@/type";
 import { Box, type ButtonProps as ChakraButtonProps, Flex, Link, Text, Button as _Button } from "@chakra-ui/react";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
-import type { ReactNode } from "react";
+import { forwardRef, useRef, type ReactNode } from "react";
 import { GitHubIcon, NoteIcon, SlackIcon, XIcon } from "./icons/MediaIcons";
 import {
   DialogActionTrigger,
@@ -21,8 +23,9 @@ type Props = {
 };
 
 const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNode; children: ReactNode }) => {
+  const ref = useRef<HTMLButtonElement>(null);
   return (
-    <DialogRoot size="sm">
+    <DialogRoot size="sm" initialFocusEl={() => ref.current}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
         mx="4"
@@ -41,7 +44,7 @@ const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNod
         <DialogCloseTrigger />
         <DialogFooter pb={{ base: "6", md: "8" }} justifyContent="center">
           <DialogActionTrigger asChild>
-            <Button size="md" borderColor="gray.300">
+            <Button ref={ref} size="md" borderColor="gray.300">
               閉じる
             </Button>
           </DialogActionTrigger>
@@ -51,7 +54,7 @@ const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNod
   );
 };
 
-const Button = ({ children, ...props }: ChakraButtonProps) => {
+const Button = forwardRef<HTMLButtonElement, ChakraButtonProps>(({ children, ...props }, ref) => {
   return (
     <_Button
       variant="outline"
@@ -65,12 +68,13 @@ const Button = ({ children, ...props }: ChakraButtonProps) => {
         width: "16px",
         height: "16px",
       }}
+      ref={ref}
       {...props}
     >
       {children}
     </_Button>
   );
-};
+});
 
 export function Footer({ meta }: Props) {
   return (
