@@ -1,55 +1,59 @@
-import { defineTextStyles } from "@chakra-ui/react"
-
-export const textStyles = defineTextStyles({
-  'heading/3xl': {
+export const textStyles = {
+  "heading/3xl": {
     value: {
+      fontFamily: "heading",
       fontSize: "3xl",
       fontWeight: "bold",
       lineHeight: "tall",
       letterSpacing: "0.9px",
     },
   },
-  'heading/2xl': {
+  "heading/2xl": {
     value: {
+      fontFamily: "heading",
       fontSize: "2xl",
       fontWeight: "bold",
       lineHeight: "tall",
       letterSpacing: "0.75px",
     },
   },
-  'heading/xl': {
+  "heading/xl": {
     value: {
+      fontFamily: "heading",
       fontSize: "xl",
       fontWeight: "bold",
       lineHeight: "tall",
       letterSpacing: "0.6px",
     },
   },
-  'body/lg': {
+  "body/lg": {
     value: {
+      fontFamily: "body",
       fontSize: "lg",
       fontWeight: "normal",
       lineHeight: "taller",
       letterSpacing: "0.5px",
     },
   },
-  'body/md': {
+  "body/md": {
     value: {
+      fontFamily: "body",
       fontSize: "md",
       fontWeight: "normal",
       lineHeight: "taller",
       letterSpacing: "0.4px",
     },
   },
-  'body/sm': {
+  "body/sm": {
     value: {
+      fontFamily: "body",
       fontSize: "xs",
       fontWeight: "normal",
       lineHeight: "taller",
       letterSpacing: "0.3px",
     },
   },
-  'body/lg/bold': {
+  "body/lg/bold": {
     value: {
       fontFamily: "body",
       fontSize: "lg",
@@ -58,7 +62,7 @@ export const textStyles = defineTextStyles({
       letterSpacing: "0.5px",
     },
   },
-  'body/md/bold': {
+  "body/md/bold": {
     value: {
       fontFamily: "body",
       fontSize: "md",
@@ -67,7 +71,7 @@ export const textStyles = defineTextStyles({
       letterSpacing: "0.4px",
     },
   },
-  'body/sm/bold': {
+  "body/sm/bold": {
     value: {
       fontFamily: "body",
       fontSize: "xs",
@@ -76,4 +80,4 @@ export const textStyles = defineTextStyles({
       letterSpacing: "0.3px",
     },
   },
-})
+};
