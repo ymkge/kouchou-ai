@@ -1,6 +1,3 @@
-"use server";
-
-import { getImageFromServerSrc } from "@/app/utils/image-src";
 import type { Meta } from "@/type";
 import { Image } from "@chakra-ui/react";
 import { ReporterContent } from "./ReporterContent";
@@ -10,13 +7,15 @@ async function ReporterImage({
 }: {
   reporterName: string;
 }) {
-  const src: string = getImageFromServerSrc("/meta/reporter.png");
+  const imagePath = "/meta/reporter.png";
   try {
-    const res = await fetch(src, {
-      method: "GET",
-    });
+    // リポータ画像の有無はserver側で確認する
+    const url = new URL(imagePath, process.env.API_BASEPATH).toString();
+    const res = await fetch(url);
 
     if (res.status === 200) {
+      // 画像が存在する場合は、clientから取得できる画像のパスを返す
+      const src = new URL(imagePath, process.env.NEXT_PUBLIC_API_BASEPATH).toString();
       return <Image src={src} alt={reporterName} maxW="150px" />;
     }
   } catch (error) {
