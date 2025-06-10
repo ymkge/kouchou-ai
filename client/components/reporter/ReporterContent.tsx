@@ -1,9 +1,10 @@
 "use client";
 
 import type { Meta } from "@/type";
-import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 import { Globe } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import { Button } from "../ui/button";
 import { Link } from "../ui/link";
 
 function EmptyText() {
@@ -74,16 +75,11 @@ export function ReporterContent({ meta, children }: { meta: Meta; children: Reac
       <Flex gap="3" flexWrap="wrap" w="fit-content" _empty={{ display: "none" }}>
         {!meta.isDefault && meta.webLink && (
           <Button
-            variant="outline"
-            size="xs"
-            rounded="full"
-            px="5"
-            color="currentcolor"
+            variant="tertiary"
             _icon={{
               width: "14px",
               height: "14px",
             }}
-            textStyle="body/sm/bold"
             asChild
           >
             <a href={meta.webLink} target="_blank" rel="noopener noreferrer">
@@ -95,30 +91,14 @@ export function ReporterContent({ meta, children }: { meta: Meta; children: Reac
           </Button>
         )}
         {!meta.isDefault && meta.privacyLink && (
-          <Button
-            variant="outline"
-            size="xs"
-            rounded="full"
-            px="5"
-            color="currentcolor"
-            textStyle="body/sm/bold"
-            asChild
-          >
+          <Button variant="tertiary" asChild>
             <a href={meta.privacyLink} target="_blank" rel="noopener noreferrer">
               プライバシーポリシー
             </a>
           </Button>
         )}
         {!meta.isDefault && meta.termsLink && (
-          <Button
-            variant="outline"
-            size="xs"
-            rounded="full"
-            px="5"
-            color="currentcolor"
-            textStyle="body/sm/bold"
-            asChild
-          >
+          <Button variant="tertiary" asChild>
             <a href={meta.termsLink} target="_blank" rel="noopener noreferrer">
               利用規約
             </a>

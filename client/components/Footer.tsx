@@ -1,11 +1,12 @@
 "use client";
 
 import type { Meta } from "@/type";
-import { Box, type ButtonProps as ChakraButtonProps, Flex, Text, Button as _Button } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
-import { type ReactNode, forwardRef, useRef } from "react";
+import { type ReactNode, useRef } from "react";
 import { GitHubIcon, NoteIcon, SlackIcon, XIcon } from "./icons/MediaIcons";
+import { Button } from "./ui/button";
 import {
   DialogActionTrigger,
   DialogBody,
@@ -43,7 +44,7 @@ const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNod
         <DialogCloseTrigger />
         <DialogFooter pb={{ base: "6", md: "8" }} justifyContent="center">
           <DialogActionTrigger asChild>
-            <Button ref={ref} size="md" borderColor="gray.300" textStyle="body/md/bold">
+            <Button ref={ref} variant="secondary" textStyle="body/md/bold">
               閉じる
             </Button>
           </DialogActionTrigger>
@@ -52,27 +53,6 @@ const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNod
     </DialogRoot>
   );
 };
-
-const Button = forwardRef<HTMLButtonElement, ChakraButtonProps>(({ children, ...props }, ref) => {
-  return (
-    <_Button
-      variant="outline"
-      rounded="full"
-      size="xs"
-      px="5"
-      borderColor="gray.800"
-      gap="2"
-      _icon={{
-        width: "16px",
-        height: "16px",
-      }}
-      ref={ref}
-      {...props}
-    >
-      {children}
-    </_Button>
-  );
-});
 
 export function Footer({ meta }: Props) {
   return (
@@ -108,13 +88,13 @@ export function Footer({ meta }: Props) {
               本ページは、そのOSS成果物を活用して構築されています。
             </Text>
             <Flex gap="3">
-              <Button textStyle="body/sm/bold" asChild>
+              <Button variant="secondary" asChild>
                 <a href="https://dd2030.org/kouchou-ai" target="_blank" rel="noopener noreferrer">
                   広聴AIについて
                   <ArrowUpRight />
                 </a>
               </Button>
-              <Dialog title="謝辞" trigger={<Button textStyle="body/sm/bold">謝辞</Button>}>
+              <Dialog title="謝辞" trigger={<Button variant="secondary">謝辞</Button>}>
                 広聴AIは{" "}
                 <Link href="https://ai.objectives.institute/" target="_blank" rel="noopener noreferrer">
                   AI Objectives Institute
@@ -151,29 +131,29 @@ export function Footer({ meta }: Props) {
               2030年には、情報技術により民主主義のあり方はアップデートされており、一人ひとりの声が政治・行政に届き、適切に合意形成・政策反映されていくような社会が当たり前になる、──そんな未来を目指して立ち上げられたのがデジタル民主主義2030プロジェクトです。
             </Text>
             <Flex gap="3" flexWrap="wrap">
-              <Button textStyle="body/sm/bold" asChild>
+              <Button variant="secondary" asChild>
                 <a href="https://dd2030.org" rel="noopener noreferrer" target="_blank">
                   プロジェクトサイト
                   <ArrowUpRight />
                 </a>
               </Button>
-              <Button asChild>
+              <Button variant="secondary" asChild>
                 <a href="https://x.com/dd2030jp" rel="noopener noreferrer" target="_blank">
                   <XIcon />
                 </a>
               </Button>
-              <Button asChild _icon={{ width: "42px", height: "12px" }}>
+              <Button variant="secondary" asChild _icon={{ width: "42px", height: "12px" }}>
                 <a href="https://note.com/dd2030" rel="noopener noreferrer" target="_blank">
                   <NoteIcon />
                 </a>
               </Button>
-              <Button textStyle="body/sm/bold" asChild>
+              <Button variant="secondary" asChild>
                 <a href="https://dd2030.slack.com" rel="noopener noreferrer" target="_blank">
                   <SlackIcon />
                   slack
                 </a>
               </Button>
-              <Button textStyle="body/sm/bold" asChild>
+              <Button variant="secondary" asChild>
                 <a href="https://github.com/digitaldemocracy2030" rel="noopener noreferrer" target="_blank">
                   <GitHubIcon />
                   GitHub
@@ -202,20 +182,13 @@ export function Footer({ meta }: Props) {
           </Text>
           <Flex gap="0" alignItems="center" color="gray.800">
             {meta.termsLink && (
-              <Button variant="ghost" border="none" textStyle="body/sm/bold" asChild>
+              <Button variant="ghost" asChild>
                 <a href={meta.termsLink} target="_blank" rel="noopener noreferrer">
                   利用規約
                 </a>
               </Button>
             )}
-            <Dialog
-              title="免責"
-              trigger={
-                <Button variant="ghost" border="none" textStyle="body/sm/bold">
-                  免責
-                </Button>
-              }
-            >
+            <Dialog title="免責" trigger={<Button variant="ghost">免責</Button>}>
               このレポート内容に関する質問や意見はレポート発行責任者へお問い合わせください。
               <br />
               大規模言語モデル（LLM）にはバイアスがあり、信頼性の低い結果を生成することが知られています。私たちはこれらの問題を軽減する方法に積極的に取り組んでいますが、現段階ではいかなる保証も提供することはできません。特に重要な決定を下す際は、本アプリの出力結果のみに依存せず、必ず内容を検証してください。
