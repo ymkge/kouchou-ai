@@ -10,5 +10,14 @@ export const semanticTokens = {
       error: { value: "{colors.error.500}" },
       aiTalking: { value: "{colors.purple.600}" },
     },
+    button: {
+      primary: {
+        default: { value: "{colors.gray.800}" },
+        hover: { value: "{colors.gray.600}" },
+        active: { value: "{colors.gray.900}" },
+      },
+      hover: { value: "rgba(0, 0, 0, 0.06)" },
+      active: { value: "rgba(0, 0, 0, 0.08)" },
+    },
   },
 };
