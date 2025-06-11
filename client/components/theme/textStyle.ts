@@ -1,7 +1,7 @@
 export const textStyles = {
   "heading/3xl": {
     value: {
-      fontFamily: "heading",
+      fontFamily: "main",
       fontSize: "3xl",
       fontWeight: "bold",
       lineHeight: "tall",
@@ -10,7 +10,7 @@ export const textStyles = {
   },
   "heading/2xl": {
     value: {
-      fontFamily: "heading",
+      fontFamily: "main",
       fontSize: "2xl",
       fontWeight: "bold",
       lineHeight: "tall",
@@ -19,7 +19,7 @@ export const textStyles = {
   },
   "heading/xl": {
     value: {
-      fontFamily: "heading",
+      fontFamily: "main",
       fontSize: "xl",
       fontWeight: "bold",
       lineHeight: "tall",
@@ -28,7 +28,7 @@ export const textStyles = {
   },
   "body/lg": {
     value: {
-      fontFamily: "body",
+      fontFamily: "main",
       fontSize: "lg",
       fontWeight: "normal",
       lineHeight: "taller",
@@ -37,7 +37,7 @@ export const textStyles = {
   },
   "body/md": {
     value: {
-      fontFamily: "body",
+      fontFamily: "main",
       fontSize: "md",
       fontWeight: "normal",
       lineHeight: "taller",
@@ -46,7 +46,7 @@ export const textStyles = {
   },
   "body/sm": {
     value: {
-      fontFamily: "body",
+      fontFamily: "main",
       fontSize: "xs",
       fontWeight: "normal",
       lineHeight: "taller",
@@ -55,7 +55,7 @@ export const textStyles = {
   },
   "body/lg/bold": {
     value: {
-      fontFamily: "body",
+      fontFamily: "main",
       fontSize: "lg",
       fontWeight: "bold",
       lineHeight: "taller",
@@ -64,7 +64,7 @@ export const textStyles = {
   },
   "body/md/bold": {
     value: {
-      fontFamily: "body",
+      fontFamily: "main",
       fontSize: "md",
       fontWeight: "bold",
       lineHeight: "taller",
@@ -73,7 +73,7 @@ export const textStyles = {
   },
   "body/sm/bold": {
     value: {
-      fontFamily: "body",
+      fontFamily: "main",
       fontSize: "xs",
       fontWeight: "bold",
       lineHeight: "taller",
