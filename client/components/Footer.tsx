@@ -1,7 +1,7 @@
 "use client";
 
 import type { Meta } from "@/type";
-import { Box, type ButtonProps as ChakraButtonProps, Flex, Link, Text, Button as _Button } from "@chakra-ui/react";
+import { Box, type ButtonProps as ChakraButtonProps, Flex, Text, Button as _Button } from "@chakra-ui/react";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import { type ReactNode, forwardRef, useRef } from "react";
@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import { Link } from "./ui/link";
 
 type Props = {
   meta: Meta;
@@ -37,9 +38,7 @@ const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNod
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <DialogBody px={{ base: "6", md: "8" }}>
-          <Text textStyle="body/md">
-            {children}
-          </Text>
+          <Text textStyle="body/md">{children}</Text>
         </DialogBody>
         <DialogCloseTrigger />
         <DialogFooter pb={{ base: "6", md: "8" }} justifyContent="center">
@@ -117,12 +116,7 @@ export function Footer({ meta }: Props) {
               </Button>
               <Dialog title="謝辞" trigger={<Button textStyle="body/sm/bold">謝辞</Button>}>
                 広聴AIは{" "}
-                <Link
-                  href="https://ai.objectives.institute/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  color="blue.500"
-                >
+                <Link href="https://ai.objectives.institute/" target="_blank" rel="noopener noreferrer">
                   AI Objectives Institute
                 </Link>{" "}
                 が開発した{" "}
@@ -130,7 +124,6 @@ export function Footer({ meta }: Props) {
                   href="https://github.com/AIObjectives/talk-to-the-city-reports"
                   target="_blank"
                   rel="noopener noreferrer"
-                  color="blue.500"
                 >
                   Talk to the City
                 </Link>{" "}

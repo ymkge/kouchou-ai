@@ -1,24 +1,19 @@
 "use client";
 
 import type { Meta } from "@/type";
-import { Box, Button, Flex, Link, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { Globe } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import { Link } from "../ui/link";
 
 function EmptyText() {
   return (
-    <Text fontSize="sm" color="gray.500">
+    <Text textStyle="body/md" color="gray.500">
       レポーター情報が未設定です。レポート作成者が
       <Link
         href="https://github.com/digitaldemocracy2030/kouchou-ai/blob/main/README.md#%E3%83%A1%E3%82%BF%E3%83%87%E3%83%BC%E3%82%BF%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE%E3%82%BB%E3%83%83%E3%83%88%E3%82%A2%E3%83%83%E3%83%97"
         target="_blank"
         rel="noopener noreferrer"
-        variant="underline"
-        color="blue.500"
-        _hover={{
-          opacity: 0.75,
-          textDecoration: "none",
-        }}
       >
         メタデータをセットアップ
       </Link>
@@ -29,26 +24,9 @@ function EmptyText() {
 
 function ReadMore({ setIsExpanded }: { setIsExpanded: (isExpanded: boolean) => void }) {
   return (
-    <Flex display="inline-flex">
-      <Text textStyle="body/md" mr="0.2rem">...</Text>
-      <Button
-        variant="plain"
-        w="fit-content"
-        h="fit-content"
-        p="0"
-        mt="-2px"
-        color="blue.500"
-        textDecoration="underline"
-        textUnderlineOffset="2px"
-        _hover={{
-          opacity: 0.75,
-          textDecoration: "none",
-        }}
-        textStyle="body/md"
-        onClick={() => setIsExpanded(true)}
-      >
-        全文表示
-      </Button>
+    <Flex textStyle="body/md" display="inline-flex">
+      <Text mr="0.4rem">...</Text>
+      <Link onClick={() => setIsExpanded(true)}>全文表示</Link>
     </Flex>
   );
 }
