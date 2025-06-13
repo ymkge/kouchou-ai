@@ -1,7 +1,7 @@
 "use client";
 
 import type { Meta } from "@/type";
-import { Box, type ButtonProps as ChakraButtonProps, Flex, Link, Text, Button as _Button } from "@chakra-ui/react";
+import { Box, type ButtonProps as ChakraButtonProps, Flex, Text, Button as _Button } from "@chakra-ui/react";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import { type ReactNode, forwardRef, useRef } from "react";
@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import { Link } from "./ui/link";
 
 type Props = {
   meta: Meta;
@@ -37,14 +38,12 @@ const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNod
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <DialogBody px={{ base: "6", md: "8" }}>
-          <Text fontSize="sm" lineHeight="2">
-            {children}
-          </Text>
+          <Text textStyle="body/md">{children}</Text>
         </DialogBody>
         <DialogCloseTrigger />
         <DialogFooter pb={{ base: "6", md: "8" }} justifyContent="center">
           <DialogActionTrigger asChild>
-            <Button ref={ref} size="md" borderColor="gray.300">
+            <Button ref={ref} size="md" borderColor="gray.300" textStyle="body/md/bold">
               閉じる
             </Button>
           </DialogActionTrigger>
@@ -60,7 +59,6 @@ const Button = forwardRef<HTMLButtonElement, ChakraButtonProps>(({ children, ...
       variant="outline"
       rounded="full"
       size="xs"
-      fontWeight="bold"
       px="5"
       borderColor="gray.800"
       gap="2"
@@ -78,7 +76,7 @@ const Button = forwardRef<HTMLButtonElement, ChakraButtonProps>(({ children, ...
 
 export function Footer({ meta }: Props) {
   return (
-    <Box as="footer" fontSize="xs" color="gray.800" lineHeight="2">
+    <Box as="footer" color="gray.800">
       <Box
         bg="url('/images/footer-bg.webp')"
         bgSize="cover"
@@ -104,26 +102,21 @@ export function Footer({ meta }: Props) {
             height={102}
           />
           <Flex flexDirection="column" gap={{ base: "4" }}>
-            <Text>
+            <Text textStyle="body/sm">
               広聴AIは、デジタル民主主義2030プロジェクトから生まれたオープンソース（OSS）アプリケーションです。
               <Box as="br" display={{ base: "none", lg: "inline" }} />
               本ページは、そのOSS成果物を活用して構築されています。
             </Text>
             <Flex gap="3">
-              <Button asChild>
+              <Button textStyle="body/sm/bold" asChild>
                 <a href="https://dd2030.org/kouchou-ai" target="_blank" rel="noopener noreferrer">
                   広聴AIについて
                   <ArrowUpRight />
                 </a>
               </Button>
-              <Dialog title="謝辞" trigger={<Button>謝辞</Button>}>
+              <Dialog title="謝辞" trigger={<Button textStyle="body/sm/bold">謝辞</Button>}>
                 広聴AIは{" "}
-                <Link
-                  href="https://ai.objectives.institute/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  color="blue.500"
-                >
+                <Link href="https://ai.objectives.institute/" target="_blank" rel="noopener noreferrer">
                   AI Objectives Institute
                 </Link>{" "}
                 が開発した{" "}
@@ -131,7 +124,6 @@ export function Footer({ meta }: Props) {
                   href="https://github.com/AIObjectives/talk-to-the-city-reports"
                   target="_blank"
                   rel="noopener noreferrer"
-                  color="blue.500"
                 >
                   Talk to the City
                 </Link>{" "}
@@ -155,11 +147,11 @@ export function Footer({ meta }: Props) {
         >
           <Image src="/images/dd2030-logo-full.svg" alt="デジタル民主主義2030" width={256} height={80} />
           <Flex flexDirection="column" gap="4">
-            <Text>
+            <Text textStyle="body/sm">
               2030年には、情報技術により民主主義のあり方はアップデートされており、一人ひとりの声が政治・行政に届き、適切に合意形成・政策反映されていくような社会が当たり前になる、──そんな未来を目指して立ち上げられたのがデジタル民主主義2030プロジェクトです。
             </Text>
             <Flex gap="3" flexWrap="wrap">
-              <Button asChild>
+              <Button textStyle="body/sm/bold" asChild>
                 <a href="https://dd2030.org" rel="noopener noreferrer" target="_blank">
                   プロジェクトサイト
                   <ArrowUpRight />
@@ -175,13 +167,13 @@ export function Footer({ meta }: Props) {
                   <NoteIcon />
                 </a>
               </Button>
-              <Button asChild>
+              <Button textStyle="body/sm/bold" asChild>
                 <a href="https://dd2030.slack.com" rel="noopener noreferrer" target="_blank">
                   <SlackIcon />
-                  Slack
+                  slack
                 </a>
               </Button>
-              <Button asChild>
+              <Button textStyle="body/sm/bold" asChild>
                 <a href="https://github.com/digitaldemocracy2030" rel="noopener noreferrer" target="_blank">
                   <GitHubIcon />
                   GitHub
@@ -200,7 +192,7 @@ export function Footer({ meta }: Props) {
           flexDirection={{ base: "column-reverse", lg: "row" }}
           gap={{ base: "4" }}
         >
-          <Text display="flex" color="gray.500" fontSize="xs">
+          <Text display="flex" color="gray.500" textStyle="body/sm">
             © 2025 デジタル民主主義2030
             <Box as="span" mx="0.4em" display={{ base: "none", lg: "inline" }}>
               |
@@ -210,18 +202,16 @@ export function Footer({ meta }: Props) {
           </Text>
           <Flex gap="0" alignItems="center" color="gray.800">
             {meta.termsLink && (
-              <Button variant="ghost" border="none" asChild>
+              <Button variant="ghost" border="none" textStyle="body/sm/bold" asChild>
                 <a href={meta.termsLink} target="_blank" rel="noopener noreferrer">
-                  <Text fontWeight="bold" fontSize="xs">
-                    利用規約
-                  </Text>
+                  利用規約
                 </a>
               </Button>
             )}
             <Dialog
               title="免責"
               trigger={
-                <Button variant="ghost" border="none">
+                <Button variant="ghost" border="none" textStyle="body/sm/bold">
                   免責
                 </Button>
               }
