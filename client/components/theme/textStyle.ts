@@ -2,7 +2,7 @@ export const textStyles = {
   "heading/3xl": {
     value: {
       fontFamily: "main",
-      fontSize: "3xl",
+      fontSize: "4xl",
       fontWeight: "bold",
       lineHeight: "tall",
       letterSpacing: "0.9px",
@@ -11,7 +11,7 @@ export const textStyles = {
   "heading/2xl": {
     value: {
       fontFamily: "main",
-      fontSize: "2xl",
+      fontSize: "3xl",
       fontWeight: "bold",
       lineHeight: "tall",
       letterSpacing: "0.75px",
@@ -20,7 +20,7 @@ export const textStyles = {
   "heading/xl": {
     value: {
       fontFamily: "main",
-      fontSize: "xl",
+      fontSize: "2xl",
       fontWeight: "bold",
       lineHeight: "tall",
       letterSpacing: "0.6px",
@@ -29,7 +29,7 @@ export const textStyles = {
   "body/lg": {
     value: {
       fontFamily: "main",
-      fontSize: "lg",
+      fontSize: "xl",
       fontWeight: "normal",
       lineHeight: "taller",
       letterSpacing: "0.5px",
@@ -56,7 +56,7 @@ export const textStyles = {
   "body/lg/bold": {
     value: {
       fontFamily: "main",
-      fontSize: "lg",
+      fontSize: "xl",
       fontWeight: "bold",
       lineHeight: "taller",
       letterSpacing: "0.5px",
