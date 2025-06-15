@@ -1,7 +1,6 @@
 """Generate a convenient JSON output file."""
 
 import json
-import os
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, TypedDict
