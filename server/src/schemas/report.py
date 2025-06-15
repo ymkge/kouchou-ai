@@ -1,6 +1,7 @@
 from enum import Enum
 
 from pydantic import Field
+
 from src.schemas.base import SchemaBaseModel
 
 
