@@ -44,7 +44,7 @@ const Dialog = ({ title, trigger, children }: { title: string; trigger: ReactNod
         <DialogCloseTrigger />
         <DialogFooter pb={{ base: "6", md: "8" }} justifyContent="center">
           <DialogActionTrigger asChild>
-            <Button ref={ref} variant="secondary" textStyle="body/md/bold">
+            <Button ref={ref} variant="tertiary" size="md">
               閉じる
             </Button>
           </DialogActionTrigger>
