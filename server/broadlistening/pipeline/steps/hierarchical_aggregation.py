@@ -1,10 +1,10 @@
 """Generate a convenient JSON output file."""
 
 import json
+import os
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, TypedDict
-import os
 
 import numpy as np
 import pandas as pd
@@ -136,12 +136,7 @@ def create_custom_intro(config):
         # configからプロバイダー情報を取得（優先）
         provider = config.get("provider", "openai")
         model = config.get("model", "unknown")
-        
-        # 環境変数による判定（後方互換性）
-        use_azure = os.getenv("USE_AZURE", "false").lower() == "true"
-        if use_azure and provider == "openai":
-            provider = "azure"
-        
+
         # プロバイダー名をマッピング
         provider_names = {
             "openai": "OpenAI API",
@@ -152,7 +147,7 @@ def create_custom_intro(config):
         
         provider_name = provider_names.get(provider, f"{provider} API")
         return f"{provider_name} ({model})"
-    
+
     llm_provider = get_llm_provider_display()
 
     base_custom_intro = """{intro}
