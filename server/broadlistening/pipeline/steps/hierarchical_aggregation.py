@@ -143,7 +143,7 @@ def create_custom_intro(config):
             "openrouter": "OpenRouter API",
             "local": "Local LLM",
         }
-        
+
         provider_name = provider_names.get(provider, f"{provider} API")
         return f"{provider_name} ({model})"
 
