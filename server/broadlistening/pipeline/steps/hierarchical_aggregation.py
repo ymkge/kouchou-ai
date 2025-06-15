@@ -139,9 +139,9 @@ def create_custom_intro(config):
         # プロバイダー名をマッピング
         provider_names = {
             "openai": "OpenAI API",
-            "azure": "Azure OpenAI API", 
+            "azure": "Azure OpenAI API",
             "openrouter": "OpenRouter API",
-            "local": "Local LLM"
+            "local": "Local LLM",
         }
         
         provider_name = provider_names.get(provider, f"{provider} API")
@@ -155,10 +155,7 @@ def create_custom_intro(config):
 
     intro = config["intro"]
     custom_intro = base_custom_intro.format(
-        intro=intro,
-        processed_num=processed_num,
-        args_count=args_count,
-        llm_provider=llm_provider
+        intro=intro, processed_num=processed_num, args_count=args_count, llm_provider=llm_provider
     )
 
     with open(result_path) as f:
