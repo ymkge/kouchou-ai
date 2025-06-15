@@ -74,7 +74,6 @@ export const buttonRecipe = defineRecipe({
       primary: {
         bg: "button.primary.default",
         color: "white",
-        border: "none",
         _hover: {
           bg: "button.primary.hover",
           shadow: "lg",
