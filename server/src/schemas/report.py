@@ -1,7 +1,6 @@
 from enum import Enum
 from typing import Literal
 
-
 from src.schemas.base import SchemaBaseModel
 
 
