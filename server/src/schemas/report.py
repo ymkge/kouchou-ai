@@ -1,5 +1,6 @@
 from enum import Enum
 
+from pydantic import Field
 from src.schemas.base import SchemaBaseModel
 
 
@@ -22,7 +23,7 @@ class Report(SchemaBaseModel):
     description: str
     status: ReportStatus
     visibility: ReportVisibility
-    is_pubcom: bool = True  # 常にCSV出力する
+    is_pubcom: bool = Field(True, const=True)  # 常にCSV出力する（変更不可）
     created_at: str | None = None  # 作成日時
     token_usage: int | None = None  # トークン使用量（合計）
     token_usage_input: int | None = None  # 入力トークン使用量
