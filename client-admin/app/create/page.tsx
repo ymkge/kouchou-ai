@@ -162,7 +162,7 @@ export default function Page() {
         model: aiSettings.model,
         workers: aiSettings.workers,
         prompt: promptData,
-        is_pubcom: aiSettings.isPubcomMode,
+        is_pubcom: true,
         inputType: inputData.inputType,
         is_embedded_at_local: aiSettings.isEmbeddedAtLocal,
         enable_source_link: aiSettings.enableSourceLink,
@@ -268,7 +268,6 @@ export default function Page() {
               provider={aiSettings.provider}
               model={aiSettings.model}
               workers={aiSettings.workers}
-              isPubcomMode={aiSettings.isPubcomMode}
               enableSourceLink={aiSettings.enableSourceLink}
               isEmbeddedAtLocal={aiSettings.isEmbeddedAtLocal}
               localLLMAddress={aiSettings.localLLMAddress}
@@ -283,7 +282,6 @@ export default function Page() {
               }}
               onIncreaseWorkers={aiSettings.increaseWorkers}
               onDecreaseWorkers={aiSettings.decreaseWorkers}
-              onPubcomModeChange={aiSettings.handlePubcomModeChange}
               onEnableSourceLinkChange={aiSettings.handleEnableSourceLinkChange}
               onEmbeddedAtLocalChange={(checked) => {
                 if (checked === "indeterminate") return;

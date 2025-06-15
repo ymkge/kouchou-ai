@@ -30,7 +30,7 @@ class ReportInput(SchemaBaseModel):
     workers: int  # LLM APIの並列実行数
     prompt: Prompt  # プロンプト
     comments: list[Comment]  # コメントのリスト
-    is_pubcom: bool = False  # CSV出力モード出力フラグ
+    is_pubcom: bool = True  # CSV出力モード出力フラグ（常にCSV出力する）
     inputType: Literal["file", "spreadsheet"] = "file"  # 入力タイプ
     is_embedded_at_local: bool = False  # エンベデッド処理をローカルで行うかどうか
     provider: str = "openai"  # LLMプロバイダー（openai, azure, openrouter, local）

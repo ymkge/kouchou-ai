@@ -511,7 +511,7 @@ function ReportCard({
             </Box>
           )}
           <HStack position="relative" zIndex="20">
-            {report.status === "ready" && report.isPubcom && (
+            {report.status === "ready" && (
               <Popover.Root>
                 <Popover.Trigger asChild>
                   <Button

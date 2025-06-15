@@ -19,7 +19,7 @@ export type Report = {
   status: string;
   title: string;
   description: string;
-  isPubcom: boolean;
+  // isPubcom: boolean; // 常にCSV出力するため削除
   visibility: ReportVisibility;
   createdAt?: string; // 作成日時（ISO形式の文字列）
   tokenUsage?: number; // トークン使用量（合計）
