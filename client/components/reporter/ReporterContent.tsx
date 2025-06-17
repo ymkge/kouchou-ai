@@ -68,7 +68,7 @@ export function ReporterContent({ meta, children }: { meta: Meta; children: Reac
         <Flex flexDirection="column" justifyContent="space-between" color="gray.600">
           <Text textStyle="body/sm">レポーター</Text>
           {/* metadataが未設定の場合は、レポーター名は非表示 */}
-          {!meta.isDefault && <Text textStyle="body/md/bold">{meta.reporter}</Text>}
+          {<Text textStyle="body/md/bold">{meta.reporter}</Text>}
         </Flex>
       </Flex>
       <MessageText isDefault={meta.isDefault} message={meta.message} />
