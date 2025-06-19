@@ -1,6 +1,6 @@
 {
-  "reporter": "テスト環境",
-  "message": "これは動作確認のためのテスト用のメタデータです。レポートの作成者に関する情報等を、public/meta/custom/metadata.jsonに記載することで、レポート上で情報を表示することができます。",
+  "reporter": "名前未設定ユーザー",
+  "message": "レポーター情報が未設定です。レポート作成者がメタデータをセットアップすることでレポーター情報が表示されます。",
   "webLink": "/",
   "privacyLink": "/",
   "termsLink": null,

@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     const { getBasePath, getRelativeUrl } = await import("@/app/utils/image-src");
 
     const metadata: Metadata = {
-      title: `${meta.reporter} - 広聴AI(デジタル民主主義2030ブロードリスニング)`,
+      title: `${meta.reporter}のレポート一覧 - 広聴AI`,
       description: meta.message || "",
       openGraph: {
         images: [getRelativeUrl("/meta/ogp.png")],
@@ -35,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
   } catch (_e) {
     console.error("Failed to fetch metadata for generateMetadata:", _e);
     return {
-      title: "広聴AI(デジタル民主主義2030ブロードリスニング)",
+      title: "広聴AI",
     };
   }
 }
