@@ -37,5 +37,5 @@ export const useAnalysisInfo = (report: Report) => {
     estimatedCost,
     model,
     tokenUsageTotal: "情報なし",
-  }
+  };
 };
