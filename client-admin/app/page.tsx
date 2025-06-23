@@ -37,7 +37,7 @@ import {
 import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useState } from "react";
-import { ProgressSteps } from "./_components/ProgressSteps";
+import { ProgressSteps } from "./_components/ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./_components/ReportEditDialog/ReportEditDialog";
 import { useAnalysisInfo } from "./_hooks/useAnalysisInfo";
 

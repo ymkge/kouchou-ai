@@ -1,7 +1,7 @@
 import type { Report } from "@/type";
 import { Box, Flex, Steps } from "@chakra-ui/react";
 import { type Dispatch, useEffect, useState } from "react";
-import { useReportProgressPoll } from "../_hooks/useReportProgressPolling";
+import { useReportProgressPoll } from "./useReportProgressPolling";
 
 const steps = [
   { id: 1, title: "抽出", description: "データの抽出" },
