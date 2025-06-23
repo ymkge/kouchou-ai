@@ -232,29 +232,23 @@ function ReportCard({
     if ((progress === "completed" || progress === "error") && progress !== lastProgress) {
       setLastProgress(progress);
 
-      if (progress === "completed" && setReports) {
-        const updatedReports = reports?.map((r) =>
-          r.slug === report.slug
-            ? {
-                ...r,
-                status: "ready",
-              }
-            : r,
-        );
-        setReports(updatedReports);
-      } else if (progress === "error" && setReports) {
-        const updatedReports = reports?.map((r) =>
-          r.slug === report.slug
-            ? {
-                ...r,
-                status: "error",
-              }
-            : r,
-        );
-        setReports(updatedReports);
-      }
+      (async () => {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports`, {
+          method: "GET",
+          headers: {
+            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+          },
+        });
+        if (!response.ok) return;
+        if (setReports) {
+          setReports(await response.json());
+        }
+      })();
     }
-  }, [progress, lastProgress, reports, setReports, report.slug]);
+  }, [progress, lastProgress, setReports]);
 
   const analysisInfo = useAnalysisInfo(report);
 
