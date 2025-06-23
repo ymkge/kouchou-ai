@@ -1,6 +1,6 @@
 import type { Report } from "@/type";
 import { Box, Flex, Steps } from "@chakra-ui/react";
-import { type Dispatch, useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import { useReportProgressPoll } from "./useReportProgressPolling";
 
 const steps = [
@@ -28,7 +28,7 @@ const stepKeys = [
 
 type Props = {
   slug: string;
-  setReports: Dispatch<React.SetStateAction<Report[] | undefined>>;
+  setReports: Dispatch<SetStateAction<Report[] | undefined>>;
 };
 
 export const ProgressSteps = ({ slug, setReports }: Props) => {

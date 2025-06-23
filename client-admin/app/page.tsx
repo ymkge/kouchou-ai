@@ -68,8 +68,6 @@ function getStatusDisplay(status: string) {
   }
 }
 
-// カスタムフック：fetchを用いて指定レポートの進捗を定期ポーリングで取得
-
 // 個々のレポートカードコンポーネント
 function ReportCard({
   report,
