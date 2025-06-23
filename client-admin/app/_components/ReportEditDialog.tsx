@@ -4,21 +4,21 @@ import { Box, Button, Dialog, Input, Portal, Text, Textarea, VStack } from "@cha
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { getApiBaseUrl } from "../utils/api";
 
-type EditDialogProps = {
+type Props = {
   isEditDialogOpen: boolean;
   setIsEditDialogOpen: Dispatch<SetStateAction<boolean>>;
   report: Report;
   reports?: Report[];
-  setReports?: Dispatch<SetStateAction<Report[] | undefined>>;
+  setReports: Dispatch<SetStateAction<Report[] | undefined>>;
 };
 
-export function EditReportDialog({
+export function ReportEditDialog({
   isEditDialogOpen,
   setIsEditDialogOpen,
   report,
   reports,
   setReports,
-}: EditDialogProps) {
+}: Props) {
   const [editTitle, setEditTitle] = useState(report.title);
   const [editDescription, setEditDescription] = useState(report.description || "");
 

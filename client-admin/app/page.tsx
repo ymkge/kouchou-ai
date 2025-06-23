@@ -38,7 +38,7 @@ import {
 import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
-import { EditReportDialog } from "./_components/EditReportDialog";
+import { ReportEditDialog } from "./_components/ReportEditDialog";
 import { useAnalysisInfo } from "./_hooks/useAnalysisInfo";
 
 // ステップの定義
@@ -623,7 +623,7 @@ function ReportCard({
         </HStack>
       </Card.Body>
 
-      <EditReportDialog
+      <ReportEditDialog
         isEditDialogOpen={isEditDialogOpen}
         setIsEditDialogOpen={setIsEditDialogOpen}
         report={report}
