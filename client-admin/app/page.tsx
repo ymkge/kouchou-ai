@@ -95,7 +95,6 @@ function getStatusDisplay(status: string) {
 // カスタムフック：fetchを用いて指定レポートの進捗を定期ポーリングで取得
 function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
   const [progress, setProgress] = useState<string>("loading");
-  const [errorStep, setErrorStep] = useState<string | null>(null);
   const [lastValidStep, setLastValidStep] = useState<string>("loading");
   const [isPolling, setIsPolling] = useState<boolean>(true);
 
@@ -133,14 +132,12 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
           }
 
           if (data.current_step === "error") {
-            setErrorStep(data.error_step || lastValidStep);
             setProgress("error");
             setIsPolling(false);
             return;
           }
 
           setLastValidStep(data.current_step);
-          setErrorStep(null);
           setProgress(data.current_step);
 
           if (data.current_step === "completed") {
@@ -193,7 +190,7 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
     }
   }, [progress, hasReloaded]);
 
-  return { progress, errorStep };
+  return { progress };
 }
 
 // 個々のレポートカードコンポーネント
