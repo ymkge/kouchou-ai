@@ -98,9 +98,6 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
   const [lastValidStep, setLastValidStep] = useState<string>("loading");
   const [isPolling, setIsPolling] = useState<boolean>(true);
 
-  // hasReloaded のデフォルト値を false に設定
-  const [hasReloaded, setHasReloaded] = useState<boolean>(false);
-
   useEffect(() => {
     if (!shouldSubscribe || !isPolling) return;
 
@@ -176,19 +173,6 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
       cancelled = true;
     };
   }, [slug, shouldSubscribe, lastValidStep, isPolling]);
-
-  useEffect(() => {
-    // 完了またはエラーでかつリロード済みでない場合
-    if ((progress === "completed" || progress === "error") && !hasReloaded) {
-      setHasReloaded(true);
-
-      const reloadTimeout = setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-
-      return () => clearTimeout(reloadTimeout);
-    }
-  }, [progress, hasReloaded]);
 
   return { progress };
 }
