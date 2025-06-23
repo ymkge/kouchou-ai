@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useAnalysisInfo } from "./_hooks/useAnalysisInfo";
 
 // ステップの定義
 const stepKeys = [
@@ -257,6 +258,9 @@ function ReportCard({
       }
     }
   }, [progress, lastProgress, reports, setReports, report.slug]);
+
+  const analysisInfo = useAnalysisInfo(report);
+
   return (
     <LinkBox
       as={Card.Root}
@@ -303,19 +307,19 @@ function ReportCard({
                   })}
                 </Text>
               )}
-              {/* トークン使用量の表示を追加 */}
               <Text fontSize="xs" color="gray.500" mb={1}>
                 トークン使用量:{" "}
-                {report.tokenUsageInput != null && report.tokenUsageOutput != null
-                  ? `入力: ${report.tokenUsageInput.toLocaleString()}, 出力: ${report.tokenUsageOutput.toLocaleString()}`
-                  : report.tokenUsage != null
-                    ? `${report.tokenUsage.toLocaleString()} (詳細なし)`
-                    : "情報なし"}
+                {analysisInfo.hasInput ? (
+                  <>
+                    入力: {analysisInfo.tokenUsageInput}, 出力: {analysisInfo.tokenUsageOutput}
+                  </>
+                ) : (
+                  analysisInfo.tokenUsageTotal
+                )}
               </Text>
-              {/* 推定コストの表示を追加 */}
               <Text fontSize="xs" color="gray.500" mb={1}>
-                推定コスト: {report.estimatedCost != null ? `$${report.estimatedCost.toFixed(6)}` : "情報なし"}
-                {report.provider && report.model ? ` (${report.provider}/${report.model})` : ""}
+                推定コスト: {analysisInfo.estimatedCost}
+                {analysisInfo.model && ` (${analysisInfo.model})`}
               </Text>
               {report.status !== "ready" && (
                 <Box mt={2}>
