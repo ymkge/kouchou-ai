@@ -95,7 +95,6 @@ function getStatusDisplay(status: string) {
 // カスタムフック：fetchを用いて指定レポートの進捗を定期ポーリングで取得
 function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
   const [progress, setProgress] = useState<string>("loading");
-  const [lastValidStep, setLastValidStep] = useState<string>("loading");
   const [isPolling, setIsPolling] = useState<boolean>(true);
 
   useEffect(() => {
@@ -134,7 +133,6 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
             return;
           }
 
-          setLastValidStep(data.current_step);
           setProgress(data.current_step);
 
           if (data.current_step === "completed") {
@@ -172,7 +170,7 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
     return () => {
       cancelled = true;
     };
-  }, [slug, shouldSubscribe, lastValidStep, isPolling]);
+  }, [slug, shouldSubscribe, isPolling]);
 
   return { progress };
 }
