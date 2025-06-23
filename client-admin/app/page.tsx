@@ -38,8 +38,8 @@ import {
 import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
-import { ReportEditDialog } from "./_components/ReportEditDialog";
 import { useAnalysisInfo } from "./_hooks/useAnalysisInfo";
+import { ReportEditDialog } from "./_components/ReportEditDialog/ReportEditDialog";
 
 // ステップの定義
 const stepKeys = [
@@ -175,7 +175,6 @@ function useReportProgressPoll(slug: string, shouldSubscribe: boolean) {
 }
 
 // 個々のレポートカードコンポーネント
-
 function ReportCard({
   report,
   reports,

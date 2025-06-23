@@ -13,7 +13,7 @@ jest.mock("@/components/ui/toaster", () => ({
 }));
 
 // Mock getApiBaseUrl
-jest.mock("../utils/api", () => ({
+jest.mock("../../utils/api", () => ({
   getApiBaseUrl: jest.fn(() => "http://localhost:8000"),
 }));
 
