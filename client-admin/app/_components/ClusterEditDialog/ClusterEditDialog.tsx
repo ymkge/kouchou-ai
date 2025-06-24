@@ -113,6 +113,67 @@ export function ClusterEditDialog({ report, isOpen, onClose }: ClusterEditDialog
     }
   }, [fetchInitialClusters, isOpen]);
 
+  async function handleSubmit() {
+    if (!selectedClusterId) return;
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-label`, {
+        method: "PATCH",
+        headers: {
+          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: selectedClusterId,
+          label: editClusterTitle,
+          description: editClusterDescription,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        let errorMessage = errorData.detail || "意見グループ情報の更新に失敗しました";
+        if (response.status === 400) {
+          errorMessage = `入力データが不正です: ${errorMessage}`;
+        } else if (response.status === 404) {
+          errorMessage = "指定されたレポートの意見グループが見つかりません";
+        }
+        throw new Error(errorMessage);
+      }
+      // 意見グループ一覧を再取得して更新
+      const updatedClusters = await fetchClusters();
+      if (updatedClusters) {
+        // 更新された意見グループ情報をフォームに再設定
+        const updatedSelectedCluster = updatedClusters.find((c: ClusterResponse) => c.id === selectedClusterId);
+        if (updatedSelectedCluster) {
+          setEditClusterTitle(updatedSelectedCluster.label);
+          setEditClusterDescription(updatedSelectedCluster.description);
+        }
+      } else {
+        // クラスター一覧取得のエラーを処理
+        console.error("意見グループ一覧の取得に失敗しました");
+        toaster.create({
+          type: "warning",
+          title: "一部データの取得に失敗",
+          description: "最新の意見グループ一覧の取得に失敗しましたが、変更は保存されています",
+        });
+      }
+
+      toaster.create({
+        type: "success",
+        title: "更新完了",
+        description: "意見グループ情報が更新されました",
+      });
+      onClose();
+    } catch (error) {
+      console.error("意見グループ情報の更新に失敗しました:", error);
+      toaster.create({
+        type: "error",
+        title: "更新エラー",
+        description: "意見グループ情報の更新に失敗しました",
+      });
+    }
+  }
+
   return (
     <Dialog.Root open={isOpen} modal={true} closeOnInteractOutside={true} trapFocus={true}>
       <Dialog.Backdrop
@@ -258,72 +319,7 @@ export function ClusterEditDialog({ report, isOpen, onClose }: ClusterEditDialog
             <Button variant="outline" onClick={onClose}>
               キャンセル
             </Button>
-            <Button
-              ml={3}
-              disabled={!selectedClusterId}
-              onClick={async () => {
-                if (!selectedClusterId) return;
-                try {
-                  const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-label`, {
-                    method: "PATCH",
-                    headers: {
-                      "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      id: selectedClusterId,
-                      label: editClusterTitle,
-                      description: editClusterDescription,
-                    }),
-                  });
-
-                  if (!response.ok) {
-                    const errorData = await response.json();
-                    let errorMessage = errorData.detail || "意見グループ情報の更新に失敗しました";
-                    if (response.status === 400) {
-                      errorMessage = `入力データが不正です: ${errorMessage}`;
-                    } else if (response.status === 404) {
-                      errorMessage = "指定されたレポートの意見グループが見つかりません";
-                    }
-                    throw new Error(errorMessage);
-                  }
-                  // 意見グループ一覧を再取得して更新
-                  const updatedClusters = await fetchClusters();
-                  if (updatedClusters) {
-                    // 更新された意見グループ情報をフォームに再設定
-                    const updatedSelectedCluster = updatedClusters.find(
-                      (c: ClusterResponse) => c.id === selectedClusterId,
-                    );
-                    if (updatedSelectedCluster) {
-                      setEditClusterTitle(updatedSelectedCluster.label);
-                      setEditClusterDescription(updatedSelectedCluster.description);
-                    }
-                  } else {
-                    // クラスター一覧取得のエラーを処理
-                    console.error("意見グループ一覧の取得に失敗しました");
-                    toaster.create({
-                      type: "warning",
-                      title: "一部データの取得に失敗",
-                      description: "最新の意見グループ一覧の取得に失敗しましたが、変更は保存されています",
-                    });
-                  }
-
-                  toaster.create({
-                    type: "success",
-                    title: "更新完了",
-                    description: "意見グループ情報が更新されました",
-                  });
-                  onClose();
-                } catch (error) {
-                  console.error("意見グループ情報の更新に失敗しました:", error);
-                  toaster.create({
-                    type: "error",
-                    title: "更新エラー",
-                    description: "意見グループ情報の更新に失敗しました",
-                  });
-                }
-              }}
-            >
+            <Button ml={3} disabled={!selectedClusterId} onClick={handleSubmit}>
               保存
             </Button>
           </Dialog.Footer>
