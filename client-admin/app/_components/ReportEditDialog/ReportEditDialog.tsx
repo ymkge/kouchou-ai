@@ -2,7 +2,7 @@ import { toaster } from "@/components/ui/toaster";
 import type { Report } from "@/type";
 import { Box, Button, Dialog, Input, Portal, Text, Textarea, VStack } from "@chakra-ui/react";
 import { type Dispatch, type SetStateAction, useState } from "react";
-import { getApiBaseUrl } from "../..//utils/api";
+import { getApiBaseUrl } from "../../utils/api";
 
 type Props = {
   isEditDialogOpen: boolean;
@@ -12,15 +12,60 @@ type Props = {
   setReports: Dispatch<SetStateAction<Report[] | undefined>>;
 };
 
-export function ReportEditDialog({
-  isEditDialogOpen,
-  setIsEditDialogOpen,
-  report,
-  reports,
-  setReports,
-}: Props) {
+export function ReportEditDialog({ isEditDialogOpen, setIsEditDialogOpen, report, reports, setReports }: Props) {
   const [editTitle, setEditTitle] = useState(report.title);
   const [editDescription, setEditDescription] = useState(report.description || "");
+
+  async function handleSubmit() {
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/config`, {
+        method: "PATCH",
+        headers: {
+          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question: editTitle,
+          intro: editDescription,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "メタデータの更新に失敗しました");
+      }
+
+      // レポート一覧を更新
+      if (reports) {
+        const updatedReports = reports.map((r) =>
+          r.slug === report.slug
+            ? {
+                ...r,
+                title: editTitle,
+                description: editDescription,
+              }
+            : r,
+        );
+        setReports(updatedReports);
+      }
+
+      // 成功メッセージを表示
+      toaster.create({
+        type: "success",
+        title: "更新完了",
+        description: "レポート情報が更新されました",
+      });
+
+      // ダイアログを閉じる
+      setIsEditDialogOpen(false);
+    } catch (error) {
+      toaster.create({
+        type: "error",
+        title: "更新エラー",
+        description: "メタデータの更新に失敗しました",
+      });
+    }
+  }
 
   return (
     <Dialog.Root
@@ -78,60 +123,7 @@ export function ReportEditDialog({
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                 キャンセル
               </Button>
-              <Button
-                ml={3}
-                onClick={async () => {
-                  try {
-                    const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/config`, {
-                      method: "PATCH",
-                      headers: {
-                        "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        question: editTitle,
-                        intro: editDescription,
-                      }),
-                    });
-
-                    if (!response.ok) {
-                      const errorData = await response.json();
-                      throw new Error(errorData.detail || "メタデータの更新に失敗しました");
-                    }
-
-                    // レポート一覧を更新
-                    if (setReports && reports) {
-                      const updatedReports = reports.map((r) =>
-                        r.slug === report.slug
-                          ? {
-                              ...r,
-                              title: editTitle,
-                              description: editDescription,
-                            }
-                          : r,
-                      );
-                      setReports(updatedReports);
-                    }
-
-                    // 成功メッセージを表示
-                    toaster.create({
-                      type: "success",
-                      title: "更新完了",
-                      description: "レポート情報が更新されました",
-                    });
-
-                    // ダイアログを閉じる
-                    setIsEditDialogOpen(false);
-                  } catch (error) {
-                    console.error("メタデータの更新に失敗しました:", error);
-                    toaster.create({
-                      type: "error",
-                      title: "更新エラー",
-                      description: "メタデータの更新に失敗しました",
-                    });
-                  }
-                }}
-              >
+              <Button ml={3} onClick={handleSubmit}>
                 保存
               </Button>
             </Dialog.Footer>
