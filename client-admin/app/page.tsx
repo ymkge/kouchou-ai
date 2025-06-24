@@ -2,11 +2,10 @@
 
 import { getApiBaseUrl } from "@/app/utils/api";
 import { Header } from "@/components/Header";
-import { ClusterEditDialog } from "@/components/dialogs/ClusterEditDialog";
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
-import type { ClusterResponse, Report } from "@/type";
+import type { Report } from "@/type";
 import {
   Box,
   Button,
@@ -37,6 +36,7 @@ import {
 import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useState } from "react";
+import { ClusterEditDialog } from "./_components/ClusterEditDialog/ClusterEditDialog";
 import { ProgressSteps } from "./_components/ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./_components/ReportEditDialog/ReportEditDialog";
 import { useAnalysisInfo } from "./_hooks/useAnalysisInfo";
@@ -78,22 +78,13 @@ function ReportCard({
   reports?: Report[];
   setReports: Dispatch<SetStateAction<Report[] | undefined>>;
 }) {
-  const statusDisplay = getStatusDisplay(report.status);
-
-  // 編集ダイアログの状態管理
+  // ダイアログの状態管理
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-
-  // クラスタ編集ダイアログの状態管理
   const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
-  const [clusters, setClusters] = useState<ClusterResponse[]>([]);
-  const [selectedClusterId, setSelectedClusterId] = useState<string | undefined>(undefined);
-  const [editClusterTitle, setEditClusterTitle] = useState("");
-  const [editClusterDescription, setEditClusterDescription] = useState("");
 
-  // エラー状態の判定
-  const isErrorState = report.status === "error";
-
+  const statusDisplay = getStatusDisplay(report.status);
   const analysisInfo = useAnalysisInfo(report);
+  const isErrorState = report.status === "error";
 
   return (
     <LinkBox
@@ -377,37 +368,9 @@ function ReportCard({
                 {report.status === "ready" && (
                   <MenuItem
                     value="edit-cluster"
-                    onClick={async (e) => {
+                    onClick={(e) => {
                       e.stopPropagation();
-                      try {
-                        const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`, {
-                          headers: {
-                            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                          },
-                        });
-                        if (!response.ok) {
-                          throw new Error("クラスタ一覧の取得に失敗しました");
-                        }
-                        const data = await response.json();
-                        setClusters(data.clusters || []);
-                        if (data.clusters && data.clusters.length > 0) {
-                          setSelectedClusterId(data.clusters[0].id);
-                          setEditClusterTitle(data.clusters[0].label);
-                          setEditClusterDescription(data.clusters[0].description);
-                        } else {
-                          setSelectedClusterId(undefined);
-                          setEditClusterTitle("");
-                          setEditClusterDescription("");
-                        }
-                        setIsClusterEditDialogOpen(true);
-                      } catch (error) {
-                        console.error(error);
-                        toaster.create({
-                          type: "error",
-                          title: "エラー",
-                          description: "クラスタ一覧の取得に失敗しました。",
-                        });
-                      }
+                      setIsClusterEditDialogOpen(true);
                     }}
                   >
                     意見グループを編集する
@@ -458,20 +421,10 @@ function ReportCard({
         reports={reports}
         setReports={setReports}
       />
-
-      {/* クラスタ編集ダイアログ */}
       <ClusterEditDialog
         report={report}
         isOpen={isClusterEditDialogOpen}
         onClose={() => setIsClusterEditDialogOpen(false)}
-        clusters={clusters}
-        setClusters={setClusters}
-        selectedClusterId={selectedClusterId}
-        setSelectedClusterId={setSelectedClusterId}
-        editClusterTitle={editClusterTitle}
-        setEditClusterTitle={setEditClusterTitle}
-        editClusterDescription={editClusterDescription}
-        setEditClusterDescription={setEditClusterDescription}
       />
     </LinkBox>
   );
