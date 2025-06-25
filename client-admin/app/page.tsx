@@ -42,6 +42,7 @@ import { ReportEditDialog } from "./_components/ReportEditDialog/ReportEditDialo
 import { useAnalysisInfo } from "./_hooks/useAnalysisInfo";
 import { useCsvDownload } from "./_hooks/useCsvDownload";
 import { useCsvDownloadForWindows } from "./_hooks/useCsvDownloadForWindows";
+import { useReportDelete } from "./_hooks/useReportDelete";
 
 // ステータスに応じた表示内容を返す関数
 function getStatusDisplay(status: string) {
@@ -337,29 +338,7 @@ function ReportCard({
                   color="fg.error"
                   onClick={async (e) => {
                     e.stopPropagation();
-                    if (confirm(`レポート「${report.title}」を削除してもよろしいですか？`)) {
-                      try {
-                        const response = await fetch(
-                          `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports/${report.slug}`,
-                          {
-                            method: "DELETE",
-                            headers: {
-                              "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                              "Content-Type": "application/json",
-                            },
-                          },
-                        );
-                        if (response.ok) {
-                          alert("レポートを削除しました");
-                          window.location.reload();
-                        } else {
-                          const errorData = await response.json();
-                          throw new Error(errorData.detail || "レポートの削除に失敗しました");
-                        }
-                      } catch (error) {
-                        console.error(error);
-                      }
-                    }
+                    await useReportDelete(report.title, report.slug);
                   }}
                 >
                   レポートを削除する
