@@ -1,6 +1,5 @@
 "use client";
 
-import { getApiBaseUrl } from "@/app/utils/api";
 import { Header } from "@/components/Header";
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { toaster } from "@/components/ui/toaster";
@@ -23,7 +22,6 @@ import {
   Spinner,
   Text,
   VStack,
-  createListCollection,
 } from "@chakra-ui/react";
 import {
   CircleAlertIcon,
@@ -43,6 +41,7 @@ import { useAnalysisInfo } from "./_hooks/useAnalysisInfo";
 import { useCsvDownload } from "./_hooks/useCsvDownload";
 import { useCsvDownloadForWindows } from "./_hooks/useCsvDownloadForWindows";
 import { useReportDelete } from "./_hooks/useReportDelete";
+import { useVisibilityUpdate, visibilityOptions } from "./_hooks/useVisibilityUpdate";
 
 // ステータスに応じた表示内容を返す関数
 function getStatusDisplay(status: string) {
@@ -238,14 +237,6 @@ function ReportCard({
                 onPointerDown={(e) => e.stopPropagation()}
               >
                 {(() => {
-                  const visibilityOptions = createListCollection({
-                    items: [
-                      { label: "公開", value: "public" },
-                      { label: "限定公開", value: "unlisted" },
-                      { label: "非公開", value: "private" },
-                    ],
-                  });
-
                   return (
                     <Select.Root
                       collection={visibilityOptions}
@@ -256,27 +247,7 @@ function ReportCard({
                         // valueは配列の可能性があるため、最初の要素を取得
                         const selected = Array.isArray(value?.value) ? value?.value[0] : value?.value;
                         if (!selected || selected === report.visibility.toString()) return;
-                        try {
-                          const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/visibility`, {
-                            method: "PATCH",
-                            headers: {
-                              "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                              "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({ visibility: selected }),
-                          });
-                          if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(errorData.detail || "公開状態の変更に失敗しました");
-                          }
-                          const data = await response.json();
-                          const updatedReports = reports?.map((r) =>
-                            r.slug === report.slug ? { ...r, visibility: data.visibility } : r,
-                          );
-                          setReports(updatedReports);
-                        } catch (error) {
-                          console.error(error);
-                        }
+                        await useVisibilityUpdate({ slug: report.slug, visibility: selected, reports, setReports });
                       }}
                     >
                       <Select.HiddenSelect />
