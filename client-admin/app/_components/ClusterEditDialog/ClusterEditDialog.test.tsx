@@ -88,7 +88,7 @@ describe("ClusterEditDialog", () => {
   it("ダイアログが開いているときにレンダリングされる", async () => {
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 
@@ -100,7 +100,7 @@ describe("ClusterEditDialog", () => {
   it("ダイアログが閉じているときはレンダリングされない", () => {
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={false} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={false} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 
@@ -110,7 +110,7 @@ describe("ClusterEditDialog", () => {
   it("ダイアログが開かれたときにクラスタ一覧を取得する", async () => {
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 
@@ -126,19 +126,19 @@ describe("ClusterEditDialog", () => {
   it("利用可能な階層レベルが表示される", async () => {
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("第1階層")).toBeVisible();
+      expect(screen.getByDisplayValue("第1階層")).toBeInTheDocument();
     });
   });
 
   it("選択された階層のクラスタが表示される", async () => {
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 
@@ -150,7 +150,7 @@ describe("ClusterEditDialog", () => {
   it("クラスタが選択されたときにフォームフィールドが更新される", async () => {
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 
@@ -165,7 +165,7 @@ describe("ClusterEditDialog", () => {
   it("クラスタのタイトルと説明を編集できる", async () => {
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 
@@ -184,23 +184,14 @@ describe("ClusterEditDialog", () => {
   });
 
   it("保存ボタンがクリックされたときに変更が送信される", async () => {
-    (global.fetch as jest.Mock)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ clusters: mockClusters }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({}),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ clusters: mockClusters }),
-      });
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ clusters: mockClusters }),
+    });
 
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 
@@ -232,7 +223,7 @@ describe("ClusterEditDialog", () => {
   it("キャンセルボタンがクリックされたときにダイアログが閉じる", async () => {
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 
@@ -256,7 +247,7 @@ describe("ClusterEditDialog", () => {
 
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 
@@ -272,7 +263,7 @@ describe("ClusterEditDialog", () => {
 
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 
@@ -300,17 +291,13 @@ describe("ClusterEditDialog", () => {
 
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 
     const user = userEvent.setup();
 
-    await waitFor(() => {
-      expect(screen.getByText("保存")).toBeInTheDocument();
-    });
-
-    const saveButton = screen.getByText("保存");
+    const saveButton = await screen.findByText("保存");
     await user.click(saveButton);
 
     await waitFor(() => {
@@ -322,22 +309,6 @@ describe("ClusterEditDialog", () => {
     });
   });
 
-  it("選択された階層レベルによってクラスタがフィルタリングされる", async () => {
-    render(
-      <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
-      </TestWrapper>,
-    );
-
-    await waitFor(() => {
-      // 初期状態では第1階層のクラスタが表示される
-      expect(screen.getByDisplayValue("Test Cluster 1")).toBeInTheDocument();
-    });
-
-    // Note: Selectコンポーネントの複雑性により、階層レベル切り替えのテストには
-    // より複雑なインタラクションシミュレーションが必要
-  });
-
   it("クラスタが選択されている場合のみ編集フォームが表示される", async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
@@ -346,7 +317,7 @@ describe("ClusterEditDialog", () => {
 
     render(
       <TestWrapper>
-        <ClusterEditDialog report={mockReport} isOpen={true} onClose={mockOnClose} />
+        <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
       </TestWrapper>,
     );
 

@@ -424,7 +424,7 @@ function ReportCard({
       <ClusterEditDialog
         report={report}
         isOpen={isClusterEditDialogOpen}
-        onClose={() => setIsClusterEditDialogOpen(false)}
+        setIsClusterEditDialogOpen={setIsClusterEditDialogOpen}
       />
     </LinkBox>
   );

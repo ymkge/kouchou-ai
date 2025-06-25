@@ -15,15 +15,15 @@ import {
   VStack,
   createListCollection,
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type ClusterEditDialogProps = {
   report: Report;
   isOpen: boolean;
-  onClose: () => void;
+  setIsClusterEditDialogOpen: Dispatch<SetStateAction<boolean>>;
 };
 
-export function ClusterEditDialog({ report, isOpen, onClose }: ClusterEditDialogProps) {
+export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }: ClusterEditDialogProps) {
   const clusterDialogContentRef = useRef<HTMLDivElement>(null);
   const [selectedClusterId, setSelectedClusterId] = useState<string | undefined>(undefined);
   const [editClusterTitle, setEditClusterTitle] = useState("");
@@ -163,7 +163,7 @@ export function ClusterEditDialog({ report, isOpen, onClose }: ClusterEditDialog
         title: "更新完了",
         description: "意見グループ情報が更新されました",
       });
-      onClose();
+      setIsClusterEditDialogOpen(false);
     } catch (error) {
       console.error("意見グループ情報の更新に失敗しました:", error);
       toaster.create({
@@ -175,156 +175,164 @@ export function ClusterEditDialog({ report, isOpen, onClose }: ClusterEditDialog
   }
 
   return (
-    <Dialog.Root open={isOpen} modal={true} closeOnInteractOutside={true} trapFocus={true}>
-      <Dialog.Backdrop
-        zIndex={1000}
-        position="fixed"
-        inset={0}
-        backgroundColor="blackAlpha.100"
-        backdropFilter="blur(2px)"
-      />
-      <Dialog.Positioner>
-        <Dialog.Content
-          ref={clusterDialogContentRef}
-          pointerEvents="auto"
-          position="relative"
-          zIndex={1001}
-          boxShadow="md"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Dialog.CloseTrigger position="absolute" top={3} right={3} />
-          <Dialog.Header>
-            <Dialog.Title>意見グループを編集</Dialog.Title>
-          </Dialog.Header>
-          <Dialog.Body>
-            <VStack gap={4} align="stretch">
-              <Heading size="md">編集対象の選択</Heading>
-              <Box>
-                <Text mb={2} fontWeight="bold">
-                  意見グループの階層
-                </Text>
-                <Select.Root
-                  collection={createListCollection({
-                    items: availableLevels.map((level) => ({ label: `第${level}階層`, value: level })),
-                  })}
-                  value={[String(selectedLevel)]}
-                  onValueChange={(item) => {
-                    if (item?.value) {
-                      const level = Array.isArray(item.value) ? item.value[0] : item.value;
-                      setSelectedLevel(Number(level));
-                    }
-                  }}
-                >
-                  <Select.HiddenSelect />
-                  <Select.Control>
-                    <Select.Trigger>
-                      <Select.ValueText>{`第${selectedLevel}階層`}</Select.ValueText>
-                    </Select.Trigger>
-                    <Select.IndicatorGroup>
-                      <Select.Indicator />
-                    </Select.IndicatorGroup>
-                  </Select.Control>
-                  <Portal container={clusterDialogContentRef}>
-                    <Select.Positioner zIndex={1002}>
-                      <Select.Content>
-                        {availableLevels.map((level) => (
-                          <Select.Item item={{ label: `第${level}階層`, value: level }} key={level}>
-                            第{level}階層
-                            <Select.ItemIndicator />
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Positioner>
-                  </Portal>
-                </Select.Root>
-              </Box>
-              <Box>
-                <Text mb={2} fontWeight="bold">
-                  編集対象のグループ
-                </Text>
-                <Select.Root
-                  collection={createListCollection({
-                    items: filteredClusters.map((c) => ({ label: c.label, value: c.id })),
-                  })}
-                  value={selectedClusterId ? [selectedClusterId] : []}
-                  onValueChange={(item) => {
-                    if (item?.value) {
-                      const selectedId = Array.isArray(item.value) ? item.value[0] : item.value;
-                      setSelectedClusterId(selectedId);
-                      const selected = clusters.find((c) => c.id === selectedId);
-                      if (selected) {
-                        setEditClusterTitle(selected.label);
-                        setEditClusterDescription(selected.description);
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => setIsClusterEditDialogOpen(open)}
+      modal={true}
+      closeOnInteractOutside={true}
+      trapFocus={true}
+    >
+      <Portal>
+        <Dialog.Backdrop
+          zIndex={1000}
+          position="fixed"
+          inset={0}
+          backgroundColor="blackAlpha.100"
+          backdropFilter="blur(2px)"
+        />
+        <Dialog.Positioner>
+          <Dialog.Content
+            ref={clusterDialogContentRef}
+            pointerEvents="auto"
+            position="relative"
+            zIndex={1001}
+            boxShadow="md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Dialog.CloseTrigger position="absolute" top={3} right={3} />
+            <Dialog.Header>
+              <Dialog.Title>意見グループを編集</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.Body>
+              <VStack gap={4} align="stretch">
+                <Heading size="md">編集対象の選択</Heading>
+                <Box>
+                  <Text mb={2} fontWeight="bold">
+                    意見グループの階層
+                  </Text>
+                  <Select.Root
+                    collection={createListCollection({
+                      items: availableLevels.map((level) => ({ label: `第${level}階層`, value: level })),
+                    })}
+                    value={[String(selectedLevel)]}
+                    onValueChange={(item) => {
+                      if (item?.value) {
+                        const level = Array.isArray(item.value) ? item.value[0] : item.value;
+                        setSelectedLevel(Number(level));
                       }
-                    }
-                  }}
-                >
-                  <Select.HiddenSelect />
-                  <Select.Control>
-                    <Select.Trigger>
-                      <Select.ValueText>
-                        {selectedClusterId
-                          ? clusters.find((c) => c.id === selectedClusterId)?.label || "意見グループを選択"
-                          : "意見グループを選択"}
-                      </Select.ValueText>
-                    </Select.Trigger>
-                    <Select.IndicatorGroup>
-                      <Select.Indicator />
-                    </Select.IndicatorGroup>
-                  </Select.Control>
-                  <Portal container={clusterDialogContentRef}>
-                    <Select.Positioner zIndex={2500}>
-                      <Select.Content>
-                        {filteredClusters.map((c) => (
-                          <Select.Item item={{ label: c.label, value: c.id }} key={c.id}>
-                            {c.label}
-                            <Select.ItemIndicator />
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Positioner>
-                  </Portal>
-                </Select.Root>
-              </Box>
-              {selectedClusterId && (
-                <>
-                  <Separator my={4} />
-                  <Heading size="md">意見グループの編集</Heading>
-                  <Box>
-                    <Text mb={2} fontWeight="bold">
-                      タイトル
-                    </Text>
-                    <Input
-                      value={editClusterTitle}
-                      onChange={(e) => setEditClusterTitle(e.target.value)}
-                      placeholder="タイトルを入力"
-                    />
-                  </Box>
-                  <Box>
-                    <Text mb={2} fontWeight="bold">
-                      説明
-                    </Text>
-                    <Textarea
-                      value={editClusterDescription}
-                      onChange={(e) => setEditClusterDescription(e.target.value)}
-                      placeholder="説明を入力"
-                      height="150px"
-                    />
-                  </Box>
-                </>
-              )}
-            </VStack>
-          </Dialog.Body>
-          <Dialog.Footer>
-            <Button variant="outline" onClick={onClose}>
-              キャンセル
-            </Button>
-            <Button ml={3} disabled={!selectedClusterId} onClick={handleSubmit}>
-              保存
-            </Button>
-          </Dialog.Footer>
-        </Dialog.Content>
-      </Dialog.Positioner>
+                    }}
+                  >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                      <Select.Trigger>
+                        <Select.ValueText>{`第${selectedLevel}階層`}</Select.ValueText>
+                      </Select.Trigger>
+                      <Select.IndicatorGroup>
+                        <Select.Indicator />
+                      </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Portal container={clusterDialogContentRef}>
+                      <Select.Positioner zIndex={1002}>
+                        <Select.Content>
+                          {availableLevels.map((level) => (
+                            <Select.Item item={{ label: `第${level}階層`, value: level }} key={level}>
+                              第{level}階層
+                              <Select.ItemIndicator />
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Positioner>
+                    </Portal>
+                  </Select.Root>
+                </Box>
+                <Box>
+                  <Text mb={2} fontWeight="bold">
+                    編集対象のグループ
+                  </Text>
+                  <Select.Root
+                    collection={createListCollection({
+                      items: filteredClusters.map((c) => ({ label: c.label, value: c.id })),
+                    })}
+                    value={selectedClusterId ? [selectedClusterId] : []}
+                    onValueChange={(item) => {
+                      if (item?.value) {
+                        const selectedId = Array.isArray(item.value) ? item.value[0] : item.value;
+                        setSelectedClusterId(selectedId);
+                        const selected = clusters.find((c) => c.id === selectedId);
+                        if (selected) {
+                          setEditClusterTitle(selected.label);
+                          setEditClusterDescription(selected.description);
+                        }
+                      }
+                    }}
+                  >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                      <Select.Trigger>
+                        <Select.ValueText>
+                          {selectedClusterId
+                            ? clusters.find((c) => c.id === selectedClusterId)?.label || "意見グループを選択"
+                            : "意見グループを選択"}
+                        </Select.ValueText>
+                      </Select.Trigger>
+                      <Select.IndicatorGroup>
+                        <Select.Indicator />
+                      </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Portal container={clusterDialogContentRef}>
+                      <Select.Positioner zIndex={2500}>
+                        <Select.Content>
+                          {filteredClusters.map((c) => (
+                            <Select.Item item={{ label: c.label, value: c.id }} key={c.id}>
+                              {c.label}
+                              <Select.ItemIndicator />
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Positioner>
+                    </Portal>
+                  </Select.Root>
+                </Box>
+                {selectedClusterId && (
+                  <>
+                    <Separator my={4} />
+                    <Heading size="md">意見グループの編集</Heading>
+                    <Box>
+                      <Text mb={2} fontWeight="bold">
+                        タイトル
+                      </Text>
+                      <Input
+                        value={editClusterTitle}
+                        onChange={(e) => setEditClusterTitle(e.target.value)}
+                        placeholder="タイトルを入力"
+                      />
+                    </Box>
+                    <Box>
+                      <Text mb={2} fontWeight="bold">
+                        説明
+                      </Text>
+                      <Textarea
+                        value={editClusterDescription}
+                        onChange={(e) => setEditClusterDescription(e.target.value)}
+                        placeholder="説明を入力"
+                        height="150px"
+                      />
+                    </Box>
+                  </>
+                )}
+              </VStack>
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="outline" onClick={() => setIsClusterEditDialogOpen(false)}>
+                キャンセル
+              </Button>
+              <Button ml={3} disabled={!selectedClusterId} onClick={handleSubmit}>
+                保存
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
     </Dialog.Root>
   );
 }
