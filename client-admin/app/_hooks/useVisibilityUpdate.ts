@@ -1,19 +1,19 @@
-import type { Report } from "@/type";
+import type { Report, ReportVisibility } from "@/type";
+import { createListCollection } from "@chakra-ui/react";
 import type { Dispatch, SetStateAction } from "react";
 import { getApiBaseUrl } from "../utils/api";
-import { createListCollection } from "@chakra-ui/react";
 
-export const visibilityOptions = createListCollection({
-  items: [
-    { label: "公開", value: "public" },
-    { label: "限定公開", value: "unlisted" },
-    { label: "非公開", value: "private" },
-  ],
-});
+const items = [
+  { label: "公開", value: "public" },
+  { label: "限定公開", value: "unlisted" },
+  { label: "非公開", value: "private" },
+] as { label: string; value: ReportVisibility }[];
+
+export const visibilityOptions = createListCollection({ items });
 
 type Props = {
   slug: string;
-  visibility: string;
+  visibility: ReportVisibility;
   reports?: Report[];
   setReports: Dispatch<SetStateAction<Report[] | undefined>>;
 };

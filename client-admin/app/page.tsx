@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
-import type { Report } from "@/type";
+import type { Report, ReportVisibility } from "@/type";
 import {
   Box,
   Button,
@@ -245,9 +245,11 @@ function ReportCard({
                       defaultValue={[report.visibility.toString()]}
                       onValueChange={async (value) => {
                         // valueは配列の可能性があるため、最初の要素を取得
-                        const selected = Array.isArray(value?.value) ? value?.value[0] : value?.value;
-                        if (!selected || selected === report.visibility.toString()) return;
-                        await useVisibilityUpdate({ slug: report.slug, visibility: selected, reports, setReports });
+                        const visibility = (
+                          Array.isArray(value?.value) ? value?.value[0] : value?.value
+                        ) as ReportVisibility;
+                        if (!visibility || visibility === report.visibility.toString()) return;
+                        await useVisibilityUpdate({ slug: report.slug, visibility, reports, setReports });
                       }}
                     >
                       <Select.HiddenSelect />
