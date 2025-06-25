@@ -40,6 +40,7 @@ import { ClusterEditDialog } from "./_components/ClusterEditDialog/ClusterEditDi
 import { ProgressSteps } from "./_components/ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./_components/ReportEditDialog/ReportEditDialog";
 import { useAnalysisInfo } from "./_hooks/useAnalysisInfo";
+import { useCsvDownload } from "./_hooks/useCsvDownload";
 
 // ステータスに応じた表示内容を返す関数
 function getStatusDisplay(status: string) {
@@ -204,27 +205,7 @@ function ReportCard({
                             py={2}
                             onClick={async (e) => {
                               e.stopPropagation();
-                              try {
-                                const response = await fetch(`${getApiBaseUrl()}/admin/comments/${report.slug}/csv`, {
-                                  headers: {
-                                    "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                                    "Content-Type": "application/json",
-                                  },
-                                });
-                                if (!response.ok) {
-                                  const errorData = await response.json();
-                                  throw new Error(errorData.detail || "CSV ダウンロードに失敗しました");
-                                }
-                                const blob = await response.blob();
-                                const url = window.URL.createObjectURL(blob);
-                                const link = document.createElement("a");
-                                link.href = url;
-                                link.download = `kouchou_${report.slug}.csv`;
-                                link.click();
-                                window.URL.revokeObjectURL(url);
-                              } catch (error) {
-                                console.error(error);
-                              }
+                              await useCsvDownload(report.slug);
                             }}
                           >
                             CSV
