@@ -41,6 +41,7 @@ import { ProgressSteps } from "./_components/ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./_components/ReportEditDialog/ReportEditDialog";
 import { useAnalysisInfo } from "./_hooks/useAnalysisInfo";
 import { useCsvDownload } from "./_hooks/useCsvDownload";
+import { useCsvDownloadForWindows } from "./_hooks/useCsvDownloadForWindows";
 
 // ステータスに応じた表示内容を返す関数
 function getStatusDisplay(status: string) {
@@ -217,33 +218,7 @@ function ReportCard({
                             py={2}
                             onClick={async (e) => {
                               e.stopPropagation();
-                              try {
-                                const response = await fetch(`${getApiBaseUrl()}/admin/comments/${report.slug}/csv`, {
-                                  headers: {
-                                    "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                                    "Content-Type": "application/json",
-                                  },
-                                });
-                                if (!response.ok) {
-                                  const errorData = await response.json();
-                                  throw new Error(errorData.detail || "CSV ダウンロードに失敗しました");
-                                }
-                                const blob = await response.blob();
-                                const text = await blob.text();
-                                // UTF-8 BOMを追加
-                                const bom = "\uFEFF";
-                                const bomBlob = new Blob([bom + text], {
-                                  type: "text/csv;charset=utf-8",
-                                });
-                                const url = window.URL.createObjectURL(bomBlob);
-                                const link = document.createElement("a");
-                                link.href = url;
-                                link.download = `kouchou_${report.slug}_excel.csv`;
-                                link.click();
-                                window.URL.revokeObjectURL(url);
-                              } catch (error) {
-                                console.error(error);
-                              }
+                              await useCsvDownloadForWindows(report.slug);
                             }}
                           >
                             CSV for Excel(Windows)
