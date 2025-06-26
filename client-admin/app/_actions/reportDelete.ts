@@ -1,6 +1,6 @@
 import { getApiBaseUrl } from "../utils/api";
 
-export const useReportDelete = async (title: string, slug: string) => {
+export async function reportDelete(title: string, slug: string) {
   if (confirm(`レポート「${title}」を削除してもよろしいですか？`)) {
     try {
       const response = await fetch(`${getApiBaseUrl()}/admin/reports/${slug}`, {
@@ -21,4 +21,4 @@ export const useReportDelete = async (title: string, slug: string) => {
       console.error(error);
     }
   }
-};
+}

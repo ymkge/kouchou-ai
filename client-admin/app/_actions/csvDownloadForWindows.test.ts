@@ -1,5 +1,5 @@
 import { getApiBaseUrl } from "../utils/api";
-import { useCsvDownloadForWindows } from "./useCsvDownloadForWindows";
+import { csvDownloadForWindows } from "./csvDownloadForWindows";
 
 // Mock API関数
 jest.mock("../utils/api", () => ({
@@ -8,7 +8,7 @@ jest.mock("../utils/api", () => ({
 
 const mockGetApiBaseUrl = getApiBaseUrl as jest.MockedFunction<typeof getApiBaseUrl>;
 
-describe("useCsvDownloadForWindows", () => {
+describe("csvDownloadForWindows", () => {
   beforeEach(() => {
     // fetchのモック
     global.fetch = jest.fn();
@@ -51,7 +51,7 @@ describe("useCsvDownloadForWindows", () => {
     const mockBomBlob = new Blob(["test-bom-content"]);
     global.Blob = jest.fn(() => mockBomBlob) as unknown as typeof Blob;
 
-    await useCsvDownloadForWindows("test-slug");
+    await csvDownloadForWindows("test-slug");
 
     expect(global.fetch).toHaveBeenCalledWith("http://localhost:8000/admin/comments/test-slug/csv", {
       headers: {
@@ -82,7 +82,7 @@ describe("useCsvDownloadForWindows", () => {
       json: () => Promise.resolve({ detail: errorDetail }),
     });
 
-    await useCsvDownloadForWindows("test-slug");
+    await csvDownloadForWindows("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(new Error(errorDetail));
   });
@@ -93,7 +93,7 @@ describe("useCsvDownloadForWindows", () => {
       json: () => Promise.resolve({}),
     });
 
-    await useCsvDownloadForWindows("test-slug");
+    await csvDownloadForWindows("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(new Error("CSV ダウンロードに失敗しました"));
   });
@@ -103,7 +103,7 @@ describe("useCsvDownloadForWindows", () => {
 
     (global.fetch as jest.Mock).mockRejectedValueOnce(networkError);
 
-    await useCsvDownloadForWindows("test-slug");
+    await csvDownloadForWindows("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(networkError);
   });
@@ -116,7 +116,7 @@ describe("useCsvDownloadForWindows", () => {
       blob: () => Promise.reject(blobError),
     });
 
-    await useCsvDownloadForWindows("test-slug");
+    await csvDownloadForWindows("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(blobError);
   });
@@ -132,7 +132,7 @@ describe("useCsvDownloadForWindows", () => {
       blob: () => Promise.resolve(mockBlob),
     });
 
-    await useCsvDownloadForWindows("test-slug");
+    await csvDownloadForWindows("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(textError);
   });

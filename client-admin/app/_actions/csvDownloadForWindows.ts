@@ -1,6 +1,6 @@
 import { getApiBaseUrl } from "../utils/api";
 
-export const useCsvDownloadForWindows = async (slug: string) => {
+export async function csvDownloadForWindows(slug: string) {
   try {
     const response = await fetch(`${getApiBaseUrl()}/admin/comments/${slug}/csv`, {
       headers: {
@@ -28,4 +28,4 @@ export const useCsvDownloadForWindows = async (slug: string) => {
   } catch (error) {
     console.error(error);
   }
-};
+}

@@ -34,14 +34,14 @@ import {
 import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useState } from "react";
+import { csvDownload } from "./_actions/csvDownload";
+import { csvDownloadForWindows } from "./_actions/csvDownloadForWindows";
+import { reportDelete } from "./_actions/reportDelete";
+import { visibilityOptions, visibilityUpdate } from "./_actions/visibilityUpdate";
 import { ClusterEditDialog } from "./_components/ClusterEditDialog/ClusterEditDialog";
 import { ProgressSteps } from "./_components/ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./_components/ReportEditDialog/ReportEditDialog";
-import { useAnalysisInfo } from "./_hooks/useAnalysisInfo";
-import { useCsvDownload } from "./_hooks/useCsvDownload";
-import { useCsvDownloadForWindows } from "./_hooks/useCsvDownloadForWindows";
-import { useReportDelete } from "./_hooks/useReportDelete";
-import { useVisibilityUpdate, visibilityOptions } from "./_hooks/useVisibilityUpdate";
+import { analysisInfo } from "./utils/analysisInfo/analysisInfo";
 
 // ステータスに応じた表示内容を返す関数
 function getStatusDisplay(status: string) {
@@ -85,7 +85,7 @@ function ReportCard({
   const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
 
   const statusDisplay = getStatusDisplay(report.status);
-  const analysisInfo = useAnalysisInfo(report);
+  const info = analysisInfo(report);
   const isErrorState = report.status === "error";
 
   return (
@@ -136,17 +136,17 @@ function ReportCard({
               )}
               <Text fontSize="xs" color="gray.500" mb={1}>
                 トークン使用量:{" "}
-                {analysisInfo.hasInput ? (
+                {info.hasInput ? (
                   <>
-                    入力: {analysisInfo.tokenUsageInput}, 出力: {analysisInfo.tokenUsageOutput}
+                    入力: {info.tokenUsageInput}, 出力: {info.tokenUsageOutput}
                   </>
                 ) : (
-                  analysisInfo.tokenUsageTotal
+                  info.tokenUsageTotal
                 )}
               </Text>
               <Text fontSize="xs" color="gray.500" mb={1}>
-                推定コスト: {analysisInfo.estimatedCost}
-                {analysisInfo.model && ` (${analysisInfo.model})`}
+                推定コスト: {info.estimatedCost}
+                {info.model && ` (${info.model})`}
               </Text>
               {report.status !== "ready" && <ProgressSteps slug={report.slug} setReports={setReports} />}
             </Box>
@@ -206,7 +206,7 @@ function ReportCard({
                             py={2}
                             onClick={async (e) => {
                               e.stopPropagation();
-                              await useCsvDownload(report.slug);
+                              await csvDownload(report.slug);
                             }}
                           >
                             CSV
@@ -218,7 +218,7 @@ function ReportCard({
                             py={2}
                             onClick={async (e) => {
                               e.stopPropagation();
-                              await useCsvDownloadForWindows(report.slug);
+                              await csvDownloadForWindows(report.slug);
                             }}
                           >
                             CSV for Excel(Windows)
@@ -249,7 +249,7 @@ function ReportCard({
                           Array.isArray(value?.value) ? value?.value[0] : value?.value
                         ) as ReportVisibility;
                         if (!visibility || visibility === report.visibility.toString()) return;
-                        await useVisibilityUpdate({ slug: report.slug, visibility, reports, setReports });
+                        await visibilityUpdate({ slug: report.slug, visibility, reports, setReports });
                       }}
                     >
                       <Select.HiddenSelect />
@@ -311,7 +311,7 @@ function ReportCard({
                   color="fg.error"
                   onClick={async (e) => {
                     e.stopPropagation();
-                    await useReportDelete(report.title, report.slug);
+                    await reportDelete(report.title, report.slug);
                   }}
                 >
                   レポートを削除する

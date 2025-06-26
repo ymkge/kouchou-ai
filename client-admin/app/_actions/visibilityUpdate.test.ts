@@ -1,5 +1,5 @@
-import { ReportVisibility, type Report } from "@/type";
-import { useVisibilityUpdate } from "./useVisibilityUpdate";
+import { type Report, ReportVisibility } from "@/type";
+import { visibilityUpdate } from "./visibilityUpdate";
 
 // Mock getApiBaseUrl
 jest.mock("../utils/api", () => ({
@@ -13,7 +13,7 @@ const mockConsoleError = jest.spyOn(console, "error").mockImplementation(() => {
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-describe("useVisibilityUpdate", () => {
+describe("visibilityUpdate", () => {
   const mockSetReports = jest.fn();
   const mockReports: Report[] = [
     {
@@ -23,7 +23,7 @@ describe("useVisibilityUpdate", () => {
       description: "This is a test report",
       isPubcom: false,
       visibility: ReportVisibility.PRIVATE,
-      createdAt: "2024-01-01T00:00:00Z"
+      createdAt: "2024-01-01T00:00:00Z",
     },
     {
       slug: "test-report-2",
@@ -52,24 +52,21 @@ describe("useVisibilityUpdate", () => {
     };
     mockFetch.mockResolvedValue(mockResponse);
 
-    await useVisibilityUpdate({
+    await visibilityUpdate({
       slug: "test-report-1",
       visibility: ReportVisibility.PUBLIC,
       reports: mockReports,
       setReports: mockSetReports,
     });
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      "http://localhost:8000/admin/reports/test-report-1/visibility",
-      {
-        method: "PATCH",
-        headers: {
-          "x-api-key": "test-api-key",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ visibility: "public" }),
+    expect(mockFetch).toHaveBeenCalledWith("http://localhost:8000/admin/reports/test-report-1/visibility", {
+      method: "PATCH",
+      headers: {
+        "x-api-key": "test-api-key",
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({ visibility: "public" }),
+    });
 
     expect(mockSetReports).toHaveBeenCalledWith([
       {
@@ -100,16 +97,14 @@ describe("useVisibilityUpdate", () => {
     };
     mockFetch.mockResolvedValue(mockResponse);
 
-    await useVisibilityUpdate({
+    await visibilityUpdate({
       slug: "test-report-1",
       visibility: ReportVisibility.PUBLIC,
       reports: mockReports,
       setReports: mockSetReports,
     });
 
-    expect(mockConsoleError).toHaveBeenCalledWith(
-      new Error("Custom error message"),
-    );
+    expect(mockConsoleError).toHaveBeenCalledWith(new Error("Custom error message"));
     expect(mockSetReports).not.toHaveBeenCalled();
   });
 
@@ -120,16 +115,14 @@ describe("useVisibilityUpdate", () => {
     };
     mockFetch.mockResolvedValue(mockResponse);
 
-    await useVisibilityUpdate({
+    await visibilityUpdate({
       slug: "test-report-1",
       visibility: ReportVisibility.PUBLIC,
       reports: mockReports,
       setReports: mockSetReports,
     });
 
-    expect(mockConsoleError).toHaveBeenCalledWith(
-      new Error("公開状態の変更に失敗しました"),
-    );
+    expect(mockConsoleError).toHaveBeenCalledWith(new Error("公開状態の変更に失敗しました"));
     expect(mockSetReports).not.toHaveBeenCalled();
   });
 
@@ -137,7 +130,7 @@ describe("useVisibilityUpdate", () => {
     const mockError = new Error("Network error");
     mockFetch.mockRejectedValue(mockError);
 
-    await useVisibilityUpdate({
+    await visibilityUpdate({
       slug: "test-report-1",
       visibility: ReportVisibility.PUBLIC,
       reports: mockReports,
@@ -155,7 +148,7 @@ describe("useVisibilityUpdate", () => {
     };
     mockFetch.mockResolvedValue(mockResponse);
 
-    await useVisibilityUpdate({
+    await visibilityUpdate({
       slug: "test-report-1",
       visibility: ReportVisibility.PUBLIC,
       reports: undefined,
@@ -172,7 +165,7 @@ describe("useVisibilityUpdate", () => {
     };
     mockFetch.mockResolvedValue(mockResponse);
 
-    await useVisibilityUpdate({
+    await visibilityUpdate({
       slug: "test-report-2",
       visibility: ReportVisibility.UNLISTED,
       reports: mockReports,

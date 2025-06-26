@@ -1,5 +1,5 @@
 import { getApiBaseUrl } from "../utils/api";
-import { useCsvDownload } from "./useCsvDownload";
+import { csvDownload } from "./csvDownload";
 
 // Mock API関数
 jest.mock("../utils/api", () => ({
@@ -8,7 +8,7 @@ jest.mock("../utils/api", () => ({
 
 const mockGetApiBaseUrl = getApiBaseUrl as jest.MockedFunction<typeof getApiBaseUrl>;
 
-describe("useCsvDownload", () => {
+describe("csvDownload", () => {
   beforeEach(() => {
     // fetchのモック
     global.fetch = jest.fn();
@@ -45,7 +45,7 @@ describe("useCsvDownload", () => {
       blob: () => Promise.resolve(mockBlob),
     });
 
-    await useCsvDownload("test-slug");
+    await csvDownload("test-slug");
 
     expect(global.fetch).toHaveBeenCalledWith("http://localhost:8000/admin/comments/test-slug/csv", {
       headers: {
@@ -72,7 +72,7 @@ describe("useCsvDownload", () => {
       json: () => Promise.resolve({ detail: errorDetail }),
     });
 
-    await useCsvDownload("test-slug");
+    await csvDownload("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(new Error(errorDetail));
   });
@@ -83,7 +83,7 @@ describe("useCsvDownload", () => {
       json: () => Promise.resolve({}),
     });
 
-    await useCsvDownload("test-slug");
+    await csvDownload("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(new Error("CSV ダウンロードに失敗しました"));
   });
@@ -93,7 +93,7 @@ describe("useCsvDownload", () => {
 
     (global.fetch as jest.Mock).mockRejectedValueOnce(networkError);
 
-    await useCsvDownload("test-slug");
+    await csvDownload("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(networkError);
   });
@@ -106,7 +106,7 @@ describe("useCsvDownload", () => {
       blob: () => Promise.reject(blobError),
     });
 
-    await useCsvDownload("test-slug");
+    await csvDownload("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(blobError);
   });

@@ -1,5 +1,5 @@
 import { getApiBaseUrl } from "../utils/api";
-import { useReportDelete } from "./useReportDelete";
+import { reportDelete } from "./reportDelete";
 
 // モック設定
 jest.mock("../utils/api");
@@ -22,7 +22,7 @@ Object.defineProperty(window, "location", {
 global.fetch = jest.fn();
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
 
-describe("useReportDelete", () => {
+describe("reportDelete", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetApiBaseUrl.mockReturnValue("http://localhost:8000");
@@ -40,7 +40,7 @@ describe("useReportDelete", () => {
   it("削除確認でキャンセルした場合、APIを呼び出さない", async () => {
     mockConfirm.mockReturnValue(false);
 
-    await useReportDelete("テストレポート", "test-slug");
+    await reportDelete("テストレポート", "test-slug");
 
     expect(mockConfirm).toHaveBeenCalledWith("レポート「テストレポート」を削除してもよろしいですか？");
     expect(mockFetch).not.toHaveBeenCalled();
@@ -53,7 +53,7 @@ describe("useReportDelete", () => {
       ok: true,
     } as Response);
 
-    await useReportDelete("テストレポート", "test-slug");
+    await reportDelete("テストレポート", "test-slug");
 
     expect(mockConfirm).toHaveBeenCalledWith("レポート「テストレポート」を削除してもよろしいですか？");
     expect(mockFetch).toHaveBeenCalledWith("http://localhost:8000/admin/reports/test-slug", {
@@ -75,7 +75,7 @@ describe("useReportDelete", () => {
       json: jest.fn().mockResolvedValue({ detail: errorDetail }),
     } as unknown as Response);
 
-    await useReportDelete("テストレポート", "test-slug");
+    await reportDelete("テストレポート", "test-slug");
 
     expect(mockFetch).toHaveBeenCalledWith("http://localhost:8000/admin/reports/test-slug", {
       method: "DELETE",
@@ -95,7 +95,7 @@ describe("useReportDelete", () => {
       json: jest.fn().mockResolvedValue({}),
     } as unknown as Response);
 
-    await useReportDelete("テストレポート", "test-slug");
+    await reportDelete("テストレポート", "test-slug");
 
     expect(mockConsoleError).toHaveBeenCalledWith(new Error("レポートの削除に失敗しました"));
   });
@@ -104,7 +104,7 @@ describe("useReportDelete", () => {
     const networkError = new Error("Network error");
     mockFetch.mockRejectedValue(networkError);
 
-    await useReportDelete("テストレポート", "test-slug");
+    await reportDelete("テストレポート", "test-slug");
 
     expect(mockConsoleError).toHaveBeenCalledWith(networkError);
     expect(mockAlert).not.toHaveBeenCalled();

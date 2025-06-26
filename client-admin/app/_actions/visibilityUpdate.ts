@@ -18,7 +18,7 @@ type Props = {
   setReports: Dispatch<SetStateAction<Report[] | undefined>>;
 };
 
-export const useVisibilityUpdate = async ({ slug, visibility, reports, setReports }: Props) => {
+export async function visibilityUpdate({ slug, visibility, reports, setReports }: Props) {
   try {
     const response = await fetch(`${getApiBaseUrl()}/admin/reports/${slug}/visibility`, {
       method: "PATCH",
@@ -40,4 +40,4 @@ export const useVisibilityUpdate = async ({ slug, visibility, reports, setReport
   } catch (error) {
     console.error(error);
   }
-};
+}
