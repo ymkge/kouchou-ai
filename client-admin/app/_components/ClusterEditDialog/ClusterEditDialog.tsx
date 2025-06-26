@@ -31,37 +31,6 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
   const [clusters, setClusters] = useState<ClusterResponse[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<number>(1); // デフォルトの階層は1
 
-  const fetchInitialClusters = useCallback(async () => {
-    try {
-      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`, {
-        headers: {
-          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-        },
-      });
-      if (!response.ok) {
-        throw new Error("クラスタ一覧の取得に失敗しました");
-      }
-      const data = await response.json();
-      setClusters(data.clusters || []);
-      if (data.clusters && data.clusters.length > 0) {
-        setSelectedClusterId(data.clusters[0].id);
-        setEditClusterTitle(data.clusters[0].label);
-        setEditClusterDescription(data.clusters[0].description);
-      } else {
-        setSelectedClusterId(undefined);
-        setEditClusterTitle("");
-        setEditClusterDescription("");
-      }
-    } catch (error) {
-      console.error(error);
-      toaster.create({
-        type: "error",
-        title: "エラー",
-        description: "クラスタ一覧の取得に失敗しました。",
-      });
-    }
-  }, [report.slug]);
-
   // 利用可能な階層レベルを取得
   const availableLevels = useMemo(() => {
     const levels = [...new Set(clusters.map((c) => c.level))].sort((a, b) => a - b);
@@ -74,7 +43,7 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
   }, [clusters, selectedLevel]);
 
   // クラスター一覧を取得する共通関数
-  const fetchClusters = async () => {
+  const fetchClusters = useCallback(async () => {
     try {
       const clusterResponse = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/cluster-labels`, {
         headers: {
@@ -91,21 +60,37 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
       console.error("意見グループ情報の取得に失敗しました:", error);
       return null;
     }
-  };
+  }, [report.slug]);
 
-  // 階層が変更されたら意見グループの先頭を自動選択
-  useEffect(() => {
-    if (filteredClusters.length > 0) {
-      const firstCluster = filteredClusters[0];
-      setSelectedClusterId(firstCluster.id);
-      setEditClusterTitle(firstCluster.label);
-      setEditClusterDescription(firstCluster.description);
+  const fetchInitialClusters = useCallback(async () => {
+    const clusters = await fetchClusters();
+    if (clusters === null) {
+      toaster.create({
+        type: "error",
+        title: "エラー",
+        description: "クラスタ一覧の取得に失敗しました。",
+      });
+      return;
+    }
+    setClusterData(clusters);
+  }, [fetchClusters]);
+
+  const setClusterData = useCallback((clusters: ClusterResponse[]) => {
+    if (clusters && clusters.length > 0) {
+      setSelectedClusterId(clusters[0].id);
+      setEditClusterTitle(clusters[0].label);
+      setEditClusterDescription(clusters[0].description);
     } else {
       setSelectedClusterId(undefined);
       setEditClusterTitle("");
       setEditClusterDescription("");
     }
-  }, [filteredClusters]);
+  }, []);
+
+  // 階層が変更されたら意見グループの先頭を自動選択
+  useEffect(() => {
+    setClusterData(filteredClusters);
+  }, [filteredClusters, setClusterData]);
 
   useEffect(() => {
     if (isOpen) {
