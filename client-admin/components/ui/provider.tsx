@@ -1,16 +1,6 @@
 "use client";
-import { ChakraProvider, createSystem, defaultConfig } from "@chakra-ui/react";
-
-const system = createSystem(defaultConfig, {
-  theme: {
-    tokens: {
-      fonts: {
-        heading: { value: "var(--font-mplus1)" },
-        body: { value: "var(--font-mplus1)" },
-      },
-    },
-  },
-});
+import { ChakraProvider } from "@chakra-ui/react";
+import { system } from "../theme/system";
 
 export function Provider({ children }: { children: React.ReactNode }) {
   return <ChakraProvider value={system}>{children}</ChakraProvider>;
