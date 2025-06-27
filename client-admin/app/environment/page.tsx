@@ -46,7 +46,7 @@ export default function Page() {
   return (
     <div className="container">
       <Header />
-      <Box mx="auto" maxW="800px" mb={5}>
+      <Box mx="auto" maxW="800px" mb={5} px="6">
         <Heading textAlign="center" fontSize="xl" mb={5}>
           環境検証
         </Heading>

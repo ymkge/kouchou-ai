@@ -187,7 +187,7 @@ export default function Page() {
   return (
     <div className={"container"}>
       <Header />
-      <Box mx={"auto"} maxW={"800px"}>
+      <Box mx={"auto"} maxW={"800px"} px="6">
         <Heading textAlign={"center"} my={10}>
           新しいレポートを作成する
         </Heading>
