@@ -525,7 +525,7 @@ export default function Page() {
   return (
     <div className="container">
       <Header />
-      <Box mx="auto" maxW="1000px">
+      <Box mx="auto" maxW="1000px" px="6" py="12">
         <Heading textAlign="left" fontSize="xl" mb={8}>
           レポート一覧
         </Heading>
