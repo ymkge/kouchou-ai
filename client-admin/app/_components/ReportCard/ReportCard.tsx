@@ -224,46 +224,42 @@ export function ReportCard({ report, reports, setReports }: Props) {
                 onMouseDown={(e) => e.stopPropagation()}
                 onPointerDown={(e) => e.stopPropagation()}
               >
-                {(() => {
-                  return (
-                    <Select.Root
-                      collection={visibilityOptions}
-                      size="sm"
-                      width="150px"
-                      defaultValue={[report.visibility.toString()]}
-                      onValueChange={async (value) => {
-                        // valueは配列の可能性があるため、最初の要素を取得
-                        const visibility = (
-                          Array.isArray(value?.value) ? value?.value[0] : value?.value
-                        ) as ReportVisibility;
-                        if (!visibility || visibility === report.visibility.toString()) return;
-                        await visibilityUpdate({ slug: report.slug, visibility, reports, setReports });
-                      }}
-                    >
-                      <Select.HiddenSelect />
-                      <Select.Control>
-                        <Select.Trigger>
-                          <Select.ValueText placeholder="公開状態" />
-                        </Select.Trigger>
-                        <Select.IndicatorGroup>
-                          <Select.Indicator />
-                        </Select.IndicatorGroup>
-                      </Select.Control>
-                      <Portal>
-                        <Select.Positioner>
-                          <Select.Content>
-                            {visibilityOptions.items.map((option) => (
-                              <Select.Item item={option} key={option.value}>
-                                {option.label}
-                                <Select.ItemIndicator />
-                              </Select.Item>
-                            ))}
-                          </Select.Content>
-                        </Select.Positioner>
-                      </Portal>
-                    </Select.Root>
-                  );
-                })()}
+                <Select.Root
+                  collection={visibilityOptions}
+                  size="sm"
+                  width="150px"
+                  defaultValue={[report.visibility.toString()]}
+                  onValueChange={async (value) => {
+                    // valueは配列の可能性があるため、最初の要素を取得
+                    const visibility = (
+                      Array.isArray(value?.value) ? value?.value[0] : value?.value
+                    ) as ReportVisibility;
+                    if (!visibility || visibility === report.visibility.toString()) return;
+                    await visibilityUpdate({ slug: report.slug, visibility, reports, setReports });
+                  }}
+                >
+                  <Select.HiddenSelect />
+                  <Select.Control>
+                    <Select.Trigger>
+                      <Select.ValueText placeholder="公開状態" />
+                    </Select.Trigger>
+                    <Select.IndicatorGroup>
+                      <Select.Indicator />
+                    </Select.IndicatorGroup>
+                  </Select.Control>
+                  <Portal>
+                    <Select.Positioner>
+                      <Select.Content>
+                        {visibilityOptions.items.map((option) => (
+                          <Select.Item item={option} key={option.value}>
+                            {option.label}
+                            <Select.ItemIndicator />
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Positioner>
+                  </Portal>
+                </Select.Root>
               </Box>
             )}
             <MenuRoot>
