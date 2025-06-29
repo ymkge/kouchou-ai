@@ -29,7 +29,7 @@ export async function Footer() {
       </Box>
     );
   } catch (_error) {
-    (
+    return (
       <p>
         エラー：データの取得に失敗しました
         <br />
