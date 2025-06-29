@@ -1,6 +1,6 @@
 import { Header } from "@/components/Header";
 import type { Report } from "@/type";
-import { Box, Button, HStack, Heading, Spinner, VStack } from "@chakra-ui/react";
+import { Box, Button, HStack, Heading } from "@chakra-ui/react";
 import Link from "next/link";
 import { BuildDownloadButton } from "./_components/BuildDownloadButton/BuildDownloadButton";
 import { Empty } from "./_components/Empty";
@@ -26,13 +26,9 @@ export default async function Page() {
         <Heading textAlign="left" fontSize="xl" mb={8}>
           レポート一覧
         </Heading>
-        {!reports && (
-          <VStack>
-            <Spinner />
-          </VStack>
-        )}
-        {reports && reports.length === 0 && <Empty />}
-        {reports && reports.length > 0 && (
+        {reports.length === 0 ? (
+          <Empty />
+        ) : (
           <>
             <ReportCardList reports={reports} />
             <HStack justify="center" mt={10}>
