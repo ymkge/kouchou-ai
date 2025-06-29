@@ -3,7 +3,7 @@
 import { toaster } from "@/components/ui/toaster";
 import { useState } from "react";
 
-export function buildDownload() {
+export function useBuildDownload() {
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleDownload() {

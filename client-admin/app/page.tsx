@@ -5,13 +5,12 @@ import type { Report } from "@/type";
 import { Box, Button, HStack, Heading, Spinner, VStack } from "@chakra-ui/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { buildDownload } from "./_actions/buildDownload";
+import { BuildDownloadButton } from "./_components/BuildDownloadButton/BuildDownloadButton";
 import { Empty } from "./_components/Empty";
 import { ReportCard } from "./_components/ReportCard/ReportCard";
 
 export default function Page() {
   const [reports, setReports] = useState<Report[]>();
-  const { isLoading, handleDownload } = buildDownload();
 
   useEffect(() => {
     (async () => {
@@ -49,9 +48,7 @@ export default function Page() {
               <Link href="/create">
                 <Button size="xl">新しいレポートを作成する</Button>
               </Link>
-              <Button size="xl" onClick={handleDownload} loading={isLoading} loadingText="エクスポート中">
-                全レポートをエクスポート
-              </Button>
+              <BuildDownloadButton />
               <Link href="/environment">
                 <Button size="xl" variant="outline">
                   環境検証
