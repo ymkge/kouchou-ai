@@ -2,7 +2,6 @@
 
 import { Header } from "@/components/Header";
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
-import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { Report, ReportVisibility } from "@/type";
 import {
@@ -34,6 +33,7 @@ import {
 import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useState } from "react";
+import { buildDownload } from "./_actions/buildDownload";
 import { csvDownload } from "./_actions/csvDownload";
 import { csvDownloadForWindows } from "./_actions/csvDownloadForWindows";
 import { reportDelete } from "./_actions/reportDelete";
@@ -338,57 +338,6 @@ function ReportCard({
   );
 }
 
-function DownloadBuildButton() {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleDownload = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/download");
-
-      if (!res.ok) {
-        throw new Error("ビルドに失敗しました");
-      }
-
-      const blob = await res.blob();
-      const contentDisposition = res.headers.get("Content-Disposition");
-      const match = contentDisposition?.match(/filename="?(.+)"?/);
-      const filename = match?.[1] ?? "kouchou-ai.zip";
-
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-
-      toaster.create({
-        type: "success",
-        duration: 5000,
-        title: "エクスポート完了",
-        description: "ダウンロードフォルダに保存されました。",
-      });
-    } catch (error) {
-      toaster.create({
-        type: "error",
-        duration: 5000,
-        title: "エクスポート失敗",
-        description: "問題が解決しない場合は、管理者に問い合わせてください。",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <Button size="xl" onClick={handleDownload} loading={isLoading} loadingText="エクスポート中">
-      全レポートをエクスポート
-    </Button>
-  );
-}
-
 const EmptyState = () => {
   return (
     <VStack mt={8} gap={0} lineHeight={2}>
@@ -415,6 +364,7 @@ const EmptyState = () => {
 
 export default function Page() {
   const [reports, setReports] = useState<Report[]>();
+  const { isLoading, handleDownload } = buildDownload();
 
   useEffect(() => {
     (async () => {
@@ -452,7 +402,9 @@ export default function Page() {
               <Link href="/create">
                 <Button size="xl">新しいレポートを作成する</Button>
               </Link>
-              <DownloadBuildButton />
+              <Button size="xl" onClick={handleDownload} loading={isLoading} loadingText="エクスポート中">
+                全レポートをエクスポート
+              </Button>
               <Link href="/environment">
                 <Button size="xl" variant="outline">
                   環境検証
