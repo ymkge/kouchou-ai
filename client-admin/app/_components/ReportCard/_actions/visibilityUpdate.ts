@@ -14,8 +14,8 @@ export const visibilityOptions = createListCollection({ items });
 type Props = {
   slug: string;
   visibility: ReportVisibility;
-  reports?: Report[];
-  setReports: Dispatch<SetStateAction<Report[] | undefined>>;
+  reports: Report[];
+  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
 export async function visibilityUpdate({ slug, visibility, reports, setReports }: Props) {

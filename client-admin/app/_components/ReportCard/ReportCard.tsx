@@ -63,8 +63,8 @@ function getStatusDisplay(status: string) {
 
 type Props = {
   report: Report;
-  reports?: Report[];
-  setReports: Dispatch<SetStateAction<Report[] | undefined>>;
+  reports: Report[];
+  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
 export function ReportCard({ report, reports, setReports }: Props) {
