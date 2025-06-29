@@ -1,8 +1,8 @@
-import { getApiBaseUrl } from "../utils/api";
+import { getApiBaseUrl } from "../../../utils/api";
 import { reportDelete } from "./reportDelete";
 
 // モック設定
-jest.mock("../utils/api");
+jest.mock("../../../utils/api");
 const mockGetApiBaseUrl = getApiBaseUrl as jest.MockedFunction<typeof getApiBaseUrl>;
 
 // グローバルオブジェクトのモック

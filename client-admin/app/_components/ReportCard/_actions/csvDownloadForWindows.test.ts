@@ -1,14 +1,14 @@
-import { getApiBaseUrl } from "../utils/api";
-import { csvDownload } from "./csvDownload";
+import { getApiBaseUrl } from "../../../utils/api";
+import { csvDownloadForWindows } from "./csvDownloadForWindows";
 
 // Mock API関数
-jest.mock("../utils/api", () => ({
+jest.mock("../../../utils/api", () => ({
   getApiBaseUrl: jest.fn(),
 }));
 
 const mockGetApiBaseUrl = getApiBaseUrl as jest.MockedFunction<typeof getApiBaseUrl>;
 
-describe("csvDownload", () => {
+describe("csvDownloadForWindows", () => {
   beforeEach(() => {
     // fetchのモック
     global.fetch = jest.fn();
@@ -37,15 +37,21 @@ describe("csvDownload", () => {
     jest.clearAllMocks();
   });
 
-  it("CSVダウンロードが正常に実行される", async () => {
-    const mockBlob = new Blob(["test,data"], { type: "text/csv" });
+  it("Windows用CSVダウンロードが正常に実行される", async () => {
+    const mockCsvText = "test,data\n値1,値2";
+    const mockBlob = {
+      text: () => Promise.resolve(mockCsvText),
+    };
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       blob: () => Promise.resolve(mockBlob),
     });
 
-    await csvDownload("test-slug");
+    const mockBomBlob = new Blob(["test-bom-content"]);
+    global.Blob = jest.fn(() => mockBomBlob) as unknown as typeof Blob;
+
+    await csvDownloadForWindows("test-slug");
 
     expect(global.fetch).toHaveBeenCalledWith("http://localhost:8000/admin/comments/test-slug/csv", {
       headers: {
@@ -54,12 +60,16 @@ describe("csvDownload", () => {
       },
     });
 
-    expect(global.URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
+    expect(global.Blob).toHaveBeenCalledWith([`\uFEFF${mockCsvText}`], {
+      type: "text/csv;charset=utf-8",
+    });
+
+    expect(global.URL.createObjectURL).toHaveBeenCalledWith(mockBomBlob);
     expect(document.createElement).toHaveBeenCalledWith("a");
 
     const mockLink = document.createElement("a");
     expect(mockLink.href).toBe("mocked-blob-url");
-    expect(mockLink.download).toBe("kouchou_test-slug.csv");
+    expect(mockLink.download).toBe("kouchou_test-slug_excel.csv");
     expect(mockLink.click).toHaveBeenCalled();
     expect(global.URL.revokeObjectURL).toHaveBeenCalledWith("mocked-blob-url");
   });
@@ -72,7 +82,7 @@ describe("csvDownload", () => {
       json: () => Promise.resolve({ detail: errorDetail }),
     });
 
-    await csvDownload("test-slug");
+    await csvDownloadForWindows("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(new Error(errorDetail));
   });
@@ -83,7 +93,7 @@ describe("csvDownload", () => {
       json: () => Promise.resolve({}),
     });
 
-    await csvDownload("test-slug");
+    await csvDownloadForWindows("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(new Error("CSV ダウンロードに失敗しました"));
   });
@@ -93,7 +103,7 @@ describe("csvDownload", () => {
 
     (global.fetch as jest.Mock).mockRejectedValueOnce(networkError);
 
-    await csvDownload("test-slug");
+    await csvDownloadForWindows("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(networkError);
   });
@@ -106,8 +116,24 @@ describe("csvDownload", () => {
       blob: () => Promise.reject(blobError),
     });
 
-    await csvDownload("test-slug");
+    await csvDownloadForWindows("test-slug");
 
     expect(console.error).toHaveBeenCalledWith(blobError);
+  });
+
+  it("テキスト取得に失敗した場合、適切にエラーハンドリングされる", async () => {
+    const textError = new Error("Text extraction failed");
+    const mockBlob = {
+      text: () => Promise.reject(textError),
+    };
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      blob: () => Promise.resolve(mockBlob),
+    });
+
+    await csvDownloadForWindows("test-slug");
+
+    expect(console.error).toHaveBeenCalledWith(textError);
   });
 });

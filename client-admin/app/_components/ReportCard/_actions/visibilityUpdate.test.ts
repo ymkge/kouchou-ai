@@ -2,7 +2,7 @@ import { type Report, ReportVisibility } from "@/type";
 import { visibilityUpdate } from "./visibilityUpdate";
 
 // Mock getApiBaseUrl
-jest.mock("../utils/api", () => ({
+jest.mock("../../../utils/api", () => ({
   getApiBaseUrl: () => "http://localhost:8000",
 }));
 

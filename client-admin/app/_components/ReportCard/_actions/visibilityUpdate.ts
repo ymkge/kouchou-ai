@@ -1,7 +1,7 @@
 import type { Report, ReportVisibility } from "@/type";
 import { createListCollection } from "@chakra-ui/react";
 import type { Dispatch, SetStateAction } from "react";
-import { getApiBaseUrl } from "../utils/api";
+import { getApiBaseUrl } from "../../../utils/api";
 
 const items = [
   { label: "公開", value: "public" },

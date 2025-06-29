@@ -1,8 +1,3 @@
-import { csvDownload } from "@/app/_actions/csvDownload";
-import { csvDownloadForWindows } from "@/app/_actions/csvDownloadForWindows";
-import { reportDelete } from "@/app/_actions/reportDelete";
-import { visibilityOptions, visibilityUpdate } from "@/app/_actions/visibilityUpdate";
-import { analysisInfo } from "@/app/utils/analysisInfo/analysisInfo";
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { Report, ReportVisibility } from "@/type";
@@ -30,11 +25,16 @@ import {
   ExternalLinkIcon,
 } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
-import { ClusterEditDialog } from "../ClusterEditDialog/ClusterEditDialog";
-import { ProgressSteps } from "../ProgressSteps/ProgressSteps";
-import { ReportEditDialog } from "../ReportEditDialog/ReportEditDialog";
-// ステータスに応じた表示内容を返す関数
+import { ClusterEditDialog } from "./ClusterEditDialog/ClusterEditDialog";
+import { ProgressSteps } from "./ProgressSteps/ProgressSteps";
+import { ReportEditDialog } from "./ReportEditDialog/ReportEditDialog";
+import { csvDownload } from "./_actions/csvDownload";
+import { csvDownloadForWindows } from "./_actions/csvDownloadForWindows";
+import { reportDelete } from "./_actions/reportDelete";
+import { visibilityOptions, visibilityUpdate } from "./_actions/visibilityUpdate";
+import { analysisInfo } from "./analysisInfo/analysisInfo";
 
+// ステータスに応じた表示内容を返す関数
 function getStatusDisplay(status: string) {
   switch (status) {
     case "ready":

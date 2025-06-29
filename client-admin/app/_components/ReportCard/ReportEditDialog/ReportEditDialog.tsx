@@ -2,7 +2,7 @@ import { toaster } from "@/components/ui/toaster";
 import type { Report } from "@/type";
 import { Box, Button, Dialog, Input, Portal, Text, Textarea, VStack } from "@chakra-ui/react";
 import { type Dispatch, type SetStateAction, useState } from "react";
-import { getApiBaseUrl } from "../../utils/api";
+import { getApiBaseUrl } from "../../../utils/api";
 
 type Props = {
   isEditDialogOpen: boolean;

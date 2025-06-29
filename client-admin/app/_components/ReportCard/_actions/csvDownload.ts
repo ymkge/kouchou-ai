@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from "../utils/api";
+import { getApiBaseUrl } from "../../../utils/api";
 
 export async function csvDownload(slug: string) {
   try {
