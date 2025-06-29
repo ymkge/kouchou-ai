@@ -1,6 +1,6 @@
 import type { Report } from "@/type";
 
-export const useAnalysisInfo = (report: Report) => {
+export function analysisInfo(report: Report) {
   const tokenUsageInput = report.tokenUsageInput?.toLocaleString();
   const tokenUsageOutput = report.tokenUsageOutput?.toLocaleString();
   const tokenUsageTotal = report.tokenUsage?.toLocaleString();
@@ -38,4 +38,4 @@ export const useAnalysisInfo = (report: Report) => {
     model,
     tokenUsageTotal: "情報なし",
   };
-};
+}

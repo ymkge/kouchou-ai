@@ -1,8 +1,8 @@
 import type { Report } from "@/type";
 import { ReportVisibility } from "@/type";
-import { useAnalysisInfo } from "./useAnalysisInfo";
+import { analysisInfo } from "./analysisInfo";
 
-describe("useAnalysisInfo", () => {
+describe("analysisInfo", () => {
   const baseReport: Report = {
     slug: "test-report",
     status: "completed",
@@ -24,7 +24,7 @@ describe("useAnalysisInfo", () => {
         model: "gpt-4",
       };
 
-      const result = useAnalysisInfo(report);
+      const result = analysisInfo(report);
 
       expect(result).toEqual({
         hasInput: true,
@@ -44,7 +44,7 @@ describe("useAnalysisInfo", () => {
         model: "gpt-4",
       };
 
-      const result = useAnalysisInfo(reportWithoutProvider);
+      const result = analysisInfo(reportWithoutProvider);
 
       expect(result.model).toBeNull();
 
@@ -55,7 +55,7 @@ describe("useAnalysisInfo", () => {
         provider: "OpenAI",
       };
 
-      const result2 = useAnalysisInfo(reportWithoutModel);
+      const result2 = analysisInfo(reportWithoutModel);
 
       expect(result2.model).toBeNull();
     });
@@ -71,7 +71,7 @@ describe("useAnalysisInfo", () => {
         model: "gpt-4",
       };
 
-      const result = useAnalysisInfo(report);
+      const result = analysisInfo(report);
 
       expect(result).toEqual({
         hasInput: false,
@@ -92,7 +92,7 @@ describe("useAnalysisInfo", () => {
         model: "gpt-4",
       };
 
-      const result = useAnalysisInfo(report);
+      const result = analysisInfo(report);
 
       expect(result).toEqual({
         hasInput: false,
@@ -114,7 +114,7 @@ describe("useAnalysisInfo", () => {
         model: "gpt-4",
       };
 
-      const result = useAnalysisInfo(report);
+      const result = analysisInfo(report);
 
       expect(result.estimatedCost).toBe("情報なし");
     });
@@ -129,7 +129,7 @@ describe("useAnalysisInfo", () => {
         model: "gpt-4",
       };
 
-      const result = useAnalysisInfo(report);
+      const result = analysisInfo(report);
 
       expect(result.estimatedCost).toBe("0.000000");
     });
@@ -146,7 +146,7 @@ describe("useAnalysisInfo", () => {
         model: "gpt-4",
       };
 
-      const result = useAnalysisInfo(report);
+      const result = analysisInfo(report);
 
       expect(result.tokenUsageInput).toBe("123,456");
       expect(result.tokenUsageOutput).toBe("654,321");
@@ -160,7 +160,7 @@ describe("useAnalysisInfo", () => {
         tokenUsageInput: 1000,
       };
 
-      const result = useAnalysisInfo(report);
+      const result = analysisInfo(report);
 
       expect(result.hasInput).toBe(false);
       expect(result.tokenUsageTotal).toBe("情報なし");
@@ -172,7 +172,7 @@ describe("useAnalysisInfo", () => {
         tokenUsageOutput: 500,
       };
 
-      const result = useAnalysisInfo(report);
+      const result = analysisInfo(report);
 
       expect(result.hasInput).toBe(false);
       expect(result.tokenUsageTotal).toBe("情報なし");

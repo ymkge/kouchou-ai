@@ -1,11 +1,10 @@
 "use client";
 
-import { getApiBaseUrl } from "@/app/utils/api";
 import { Header } from "@/components/Header";
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
-import type { Report } from "@/type";
+import type { Report, ReportVisibility } from "@/type";
 import {
   Box,
   Button,
@@ -23,7 +22,6 @@ import {
   Spinner,
   Text,
   VStack,
-  createListCollection,
 } from "@chakra-ui/react";
 import {
   CircleAlertIcon,
@@ -36,10 +34,14 @@ import {
 import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useState } from "react";
+import { csvDownload } from "./_actions/csvDownload";
+import { csvDownloadForWindows } from "./_actions/csvDownloadForWindows";
+import { reportDelete } from "./_actions/reportDelete";
+import { visibilityOptions, visibilityUpdate } from "./_actions/visibilityUpdate";
 import { ClusterEditDialog } from "./_components/ClusterEditDialog/ClusterEditDialog";
 import { ProgressSteps } from "./_components/ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./_components/ReportEditDialog/ReportEditDialog";
-import { useAnalysisInfo } from "./_hooks/useAnalysisInfo";
+import { analysisInfo } from "./utils/analysisInfo/analysisInfo";
 
 // ステータスに応じた表示内容を返す関数
 function getStatusDisplay(status: string) {
@@ -83,7 +85,7 @@ function ReportCard({
   const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
 
   const statusDisplay = getStatusDisplay(report.status);
-  const analysisInfo = useAnalysisInfo(report);
+  const info = analysisInfo(report);
   const isErrorState = report.status === "error";
 
   return (
@@ -134,17 +136,17 @@ function ReportCard({
               )}
               <Text fontSize="xs" color="gray.500" mb={1}>
                 トークン使用量:{" "}
-                {analysisInfo.hasInput ? (
+                {info.hasInput ? (
                   <>
-                    入力: {analysisInfo.tokenUsageInput}, 出力: {analysisInfo.tokenUsageOutput}
+                    入力: {info.tokenUsageInput}, 出力: {info.tokenUsageOutput}
                   </>
                 ) : (
-                  analysisInfo.tokenUsageTotal
+                  info.tokenUsageTotal
                 )}
               </Text>
               <Text fontSize="xs" color="gray.500" mb={1}>
-                推定コスト: {analysisInfo.estimatedCost}
-                {analysisInfo.model && ` (${analysisInfo.model})`}
+                推定コスト: {info.estimatedCost}
+                {info.model && ` (${info.model})`}
               </Text>
               {report.status !== "ready" && <ProgressSteps slug={report.slug} setReports={setReports} />}
             </Box>
@@ -204,27 +206,7 @@ function ReportCard({
                             py={2}
                             onClick={async (e) => {
                               e.stopPropagation();
-                              try {
-                                const response = await fetch(`${getApiBaseUrl()}/admin/comments/${report.slug}/csv`, {
-                                  headers: {
-                                    "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                                    "Content-Type": "application/json",
-                                  },
-                                });
-                                if (!response.ok) {
-                                  const errorData = await response.json();
-                                  throw new Error(errorData.detail || "CSV ダウンロードに失敗しました");
-                                }
-                                const blob = await response.blob();
-                                const url = window.URL.createObjectURL(blob);
-                                const link = document.createElement("a");
-                                link.href = url;
-                                link.download = `kouchou_${report.slug}.csv`;
-                                link.click();
-                                window.URL.revokeObjectURL(url);
-                              } catch (error) {
-                                console.error(error);
-                              }
+                              await csvDownload(report.slug);
                             }}
                           >
                             CSV
@@ -236,33 +218,7 @@ function ReportCard({
                             py={2}
                             onClick={async (e) => {
                               e.stopPropagation();
-                              try {
-                                const response = await fetch(`${getApiBaseUrl()}/admin/comments/${report.slug}/csv`, {
-                                  headers: {
-                                    "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                                    "Content-Type": "application/json",
-                                  },
-                                });
-                                if (!response.ok) {
-                                  const errorData = await response.json();
-                                  throw new Error(errorData.detail || "CSV ダウンロードに失敗しました");
-                                }
-                                const blob = await response.blob();
-                                const text = await blob.text();
-                                // UTF-8 BOMを追加
-                                const bom = "\uFEFF";
-                                const bomBlob = new Blob([bom + text], {
-                                  type: "text/csv;charset=utf-8",
-                                });
-                                const url = window.URL.createObjectURL(bomBlob);
-                                const link = document.createElement("a");
-                                link.href = url;
-                                link.download = `kouchou_${report.slug}_excel.csv`;
-                                link.click();
-                                window.URL.revokeObjectURL(url);
-                              } catch (error) {
-                                console.error(error);
-                              }
+                              await csvDownloadForWindows(report.slug);
                             }}
                           >
                             CSV for Excel(Windows)
@@ -281,14 +237,6 @@ function ReportCard({
                 onPointerDown={(e) => e.stopPropagation()}
               >
                 {(() => {
-                  const visibilityOptions = createListCollection({
-                    items: [
-                      { label: "公開", value: "public" },
-                      { label: "限定公開", value: "unlisted" },
-                      { label: "非公開", value: "private" },
-                    ],
-                  });
-
                   return (
                     <Select.Root
                       collection={visibilityOptions}
@@ -297,29 +245,11 @@ function ReportCard({
                       defaultValue={[report.visibility.toString()]}
                       onValueChange={async (value) => {
                         // valueは配列の可能性があるため、最初の要素を取得
-                        const selected = Array.isArray(value?.value) ? value?.value[0] : value?.value;
-                        if (!selected || selected === report.visibility.toString()) return;
-                        try {
-                          const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/visibility`, {
-                            method: "PATCH",
-                            headers: {
-                              "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                              "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({ visibility: selected }),
-                          });
-                          if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(errorData.detail || "公開状態の変更に失敗しました");
-                          }
-                          const data = await response.json();
-                          const updatedReports = reports?.map((r) =>
-                            r.slug === report.slug ? { ...r, visibility: data.visibility } : r,
-                          );
-                          setReports(updatedReports);
-                        } catch (error) {
-                          console.error(error);
-                        }
+                        const visibility = (
+                          Array.isArray(value?.value) ? value?.value[0] : value?.value
+                        ) as ReportVisibility;
+                        if (!visibility || visibility === report.visibility.toString()) return;
+                        await visibilityUpdate({ slug: report.slug, visibility, reports, setReports });
                       }}
                     >
                       <Select.HiddenSelect />
@@ -381,29 +311,7 @@ function ReportCard({
                   color="fg.error"
                   onClick={async (e) => {
                     e.stopPropagation();
-                    if (confirm(`レポート「${report.title}」を削除してもよろしいですか？`)) {
-                      try {
-                        const response = await fetch(
-                          `${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports/${report.slug}`,
-                          {
-                            method: "DELETE",
-                            headers: {
-                              "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-                              "Content-Type": "application/json",
-                            },
-                          },
-                        );
-                        if (response.ok) {
-                          alert("レポートを削除しました");
-                          window.location.reload();
-                        } else {
-                          const errorData = await response.json();
-                          throw new Error(errorData.detail || "レポートの削除に失敗しました");
-                        }
-                      } catch (error) {
-                        console.error(error);
-                      }
-                    }
+                    await reportDelete(report.title, report.slug);
                   }}
                 >
                   レポートを削除する
