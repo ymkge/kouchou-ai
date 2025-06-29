@@ -12,7 +12,6 @@ import {
   HStack,
   Heading,
   Icon,
-  Image,
   LinkBox,
   LinkOverlay,
   Popover,
@@ -39,6 +38,7 @@ import { csvDownloadForWindows } from "./_actions/csvDownloadForWindows";
 import { reportDelete } from "./_actions/reportDelete";
 import { visibilityOptions, visibilityUpdate } from "./_actions/visibilityUpdate";
 import { ClusterEditDialog } from "./_components/ClusterEditDialog/ClusterEditDialog";
+import { Empty } from "./_components/Empty";
 import { ProgressSteps } from "./_components/ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./_components/ReportEditDialog/ReportEditDialog";
 import { analysisInfo } from "./utils/analysisInfo/analysisInfo";
@@ -338,30 +338,6 @@ function ReportCard({
   );
 }
 
-const EmptyState = () => {
-  return (
-    <VStack mt={8} gap={0} lineHeight={2}>
-      <Text fontSize="18px" fontWeight="bold">
-        レポートが0件です
-      </Text>
-      <Text fontSize="14px" textAlign={{ md: "center" }} mt={5}>
-        レポートが作成されるとここに一覧が表示され、
-        <Box as="br" display={{ base: "none", md: "block" }} />
-        公開やダウンロードなどの操作が行えるようになります。
-      </Text>
-      <Text fontSize="12px" color="gray.500" mt={3}>
-        レポート作成が開始済みの場合は、AI分析が完了するまでしばらくお待ちください。
-      </Text>
-      <Image src="images/report-empty.png" mt={8} />
-      <Box mt={8}>
-        <Link href="/create">
-          <Button size="xl">新しいレポートを作成する</Button>
-        </Link>
-      </Box>
-    </VStack>
-  );
-};
-
 export default function Page() {
   const [reports, setReports] = useState<Report[]>();
   const { isLoading, handleDownload } = buildDownload();
@@ -392,7 +368,7 @@ export default function Page() {
             <Spinner />
           </VStack>
         )}
-        {reports && reports.length === 0 && <EmptyState />}
+        {reports && reports.length === 0 && <Empty />}
         {reports && reports.length > 0 && (
           <>
             {reports.map((report) => (
