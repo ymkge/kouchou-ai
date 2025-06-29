@@ -1,16 +1,21 @@
 "use client";
 
-import {
-  Box,
-  Flex,
-  Portal,
-  Text,
-} from "@chakra-ui/react";
+import { Portal, Text } from "@chakra-ui/react";
 import { useRef } from "react";
-import { Button } from "./ui/button";
-import { DialogActionTrigger, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogRoot, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Button } from "../ui/button";
+import {
+  DialogActionTrigger,
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
 
-const Dialog = () => {
+export const Dialog = () => {
   const ref = useRef<HTMLButtonElement>(null);
   return (
     <DialogRoot size="sm" initialFocusEl={() => ref.current}>
@@ -47,19 +52,3 @@ const Dialog = () => {
     </DialogRoot>
   );
 };
-
-export function Footer() {
-  return (
-    <Box as="footer" bg="white" py="5" px="6">
-      <Flex maxW="1200px" mx="auto" justifyContent="space-between" alignItems="center">
-        <Text textStyle="body/sm" color="font.secondary">
-          © 2025 デジタル民主主義2030 | レポート内容はレポーターに帰属します
-        </Text>
-        <Flex>
-          <Button variant="ghost">利用規約</Button>
-          <Dialog />
-        </Flex>
-      </Flex>
-    </Box>
-  );
-}
