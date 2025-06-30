@@ -6,7 +6,7 @@ import { Dialog } from "./Dialog";
 
 export async function Footer() {
   try {
-    const metaResponse = await fetch(`${getApiBaseUrl()}/meta/metadata.json`);
+    const metaResponse = await fetch(`${getApiBaseUrl()}/meta/metadata.json`, { cache: "no-store" });
     const meta: Meta = await metaResponse.json();
 
     return (
