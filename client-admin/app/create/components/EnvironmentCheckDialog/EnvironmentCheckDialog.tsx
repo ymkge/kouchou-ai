@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   DialogBackdrop,
@@ -11,29 +13,16 @@ import {
 } from "@/components/ui/dialog";
 import { Box, DialogActionTrigger, DialogFooter, Image, Text } from "@chakra-ui/react";
 import { SquareArrowOutUpRight } from "lucide-react";
-import { startTransition, useActionState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import { ErrorIcon } from "./ErrorIcon";
 import { GradiendCheckIcon } from "./GradiendCheckIcon";
 import { verifyChatGptApiKey } from "./verifyChatGptApiKey";
 
-export const EnvironmentCheckDialog = () => {
+function Dialog() {
   const [state, action, isPending] = useActionState(verifyChatGptApiKey, { result: null, error: false });
 
   return (
-    <DialogRoot size="sm">
-      <DialogBackdrop
-        zIndex={1000}
-        position="fixed"
-        inset={0}
-        backgroundColor="blackAlpha.100"
-        backdropFilter="blur(2px)"
-      />
-      <DialogTrigger asChild>
-        <Button variant="ghost">
-          API接続チェック <SquareArrowOutUpRight />
-        </Button>
-      </DialogTrigger>
-
+    <>
       {!state.result && !state.error ? (
         // 初期状態のダイアログ
         <DialogContent
@@ -143,6 +132,36 @@ export const EnvironmentCheckDialog = () => {
           </DialogFooter>
         </DialogContent>
       )}
+    </>
+  );
+}
+
+export function EnvironmentCheckDialog() {
+  const [uuid, setUUID] = useState(crypto.randomUUID());
+
+  return (
+    <DialogRoot
+      key={uuid}
+      size="sm"
+      onOpenChange={(e) => {
+        if (!e.open) {
+          setUUID(crypto.randomUUID());
+        }
+      }}
+    >
+      <DialogBackdrop
+        zIndex={1000}
+        position="fixed"
+        inset={0}
+        backgroundColor="blackAlpha.100"
+        backdropFilter="blur(2px)"
+      />
+      <DialogTrigger asChild>
+        <Button variant="ghost">
+          API接続チェック <SquareArrowOutUpRight />
+        </Button>
+      </DialogTrigger>
+      <Dialog />
     </DialogRoot>
   );
-};
+}
