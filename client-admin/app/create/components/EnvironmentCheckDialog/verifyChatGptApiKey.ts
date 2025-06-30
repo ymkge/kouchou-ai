@@ -1,15 +1,19 @@
+"use server";
+
 import { getApiBaseUrl } from "@/app/utils/api";
+
+type ErrorType = "authentication_error" | "insufficient_quota" | "rate_limit_error" | "unknown_error";
 
 type VerificationResult = {
   success: boolean;
   message: string;
   use_azure: boolean;
   available_models?: string[];
-  error_type?: string;
+  error_type?: ErrorType;
   error_detail?: string;
 };
 
-export const verifyChatGptApiKey = async (): Promise<VerificationResult | null> => {
+export const verifyChatGptApiKey = async () => {
   try {
     const response = await fetch(`${getApiBaseUrl()}/admin/environment/verify-chatgpt`, {
       method: "GET",
@@ -19,9 +23,16 @@ export const verifyChatGptApiKey = async (): Promise<VerificationResult | null> 
       },
     });
 
-    return await response.json() as VerificationResult;
+    const result = (await response.json()) as VerificationResult;
+    return {
+      result,
+      error: !!result.error_type,
+    };
   } catch (error) {
     console.error("Error verifying API key:", error);
-    return null;
+    return {
+      result: null,
+      error: true,
+    };
   }
 };
