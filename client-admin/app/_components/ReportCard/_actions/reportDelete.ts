@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from "../utils/api";
+import { getApiBaseUrl } from "../../../utils/api";
 
 export async function reportDelete(title: string, slug: string) {
   if (confirm(`レポート「${title}」を削除してもよろしいですか？`)) {
