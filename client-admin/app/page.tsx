@@ -18,7 +18,18 @@ export default async function Page() {
       cache: "no-store",
     });
 
-    if (!response.ok) return;
+    if (!response.ok) {
+      return (
+        <div className="container">
+          <Header />
+          <Box mx="auto" maxW="1000px" px="6" py="12">
+            <Heading textAlign="center" fontSize="xl" mb={8}>
+              レポートの取得に失敗しました
+            </Heading>
+          </Box>
+        </div>
+      );
+    }
 
     const reports: Report[] = await response.json();
 
