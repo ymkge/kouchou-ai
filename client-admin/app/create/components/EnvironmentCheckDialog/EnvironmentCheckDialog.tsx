@@ -143,6 +143,7 @@ export function EnvironmentCheckDialog() {
     <DialogRoot
       key={uuid}
       size="sm"
+      placement="center"
       onOpenChange={(e) => {
         if (!e.open) {
           // Dialogが閉じられたときにkeyを更新して再レンダリングをトリガー
