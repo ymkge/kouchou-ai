@@ -14,7 +14,7 @@ export function ReportCardList({ reports: _reports }: Props) {
 
   return (
     <Grid templateColumns={"repeat(8, 1fr)"} rowGap={2}>
-      <GridItem textStyle="body/sm" bg="blue.100" py="3" px="6">
+      <GridItem textStyle="body/sm" bg="blue.100" py="3" px="6" borderLeftRadius="sm">
         作成日時
       </GridItem>
       <GridItem textStyle="body/sm" bg="blue.100" py="3">
@@ -31,7 +31,7 @@ export function ReportCardList({ reports: _reports }: Props) {
       {/* アクション */}
       <GridItem bg="blue.100" py="3" />
       {/* 公開状態 */}
-      <GridItem bg="blue.100" py="3" />
+      <GridItem bg="blue.100" py="3" borderRightRadius="sm" />
       {reports.map((report) => (
         <GridItem key={report.slug} colSpan={8}>
           <ReportCard key={report.slug} report={report} reports={reports} setReports={setReports} />
