@@ -80,7 +80,6 @@ export function ReportCard({ report, reports, setReports }: Props) {
     <LinkBox
       as={Card.Root}
       key={report.slug}
-      mb={4}
       borderLeftWidth={10}
       borderLeftColor={isErrorState ? "red.600" : statusDisplay.borderColor}
       position="relative"
