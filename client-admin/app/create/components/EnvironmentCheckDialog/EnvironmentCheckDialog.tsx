@@ -15,7 +15,7 @@ import { Box, DialogActionTrigger, DialogFooter, Image, Text } from "@chakra-ui/
 import { SquareArrowOutUpRight } from "lucide-react";
 import { startTransition, useActionState, useState } from "react";
 import { ErrorIcon } from "./ErrorIcon";
-import { GradiendCheckIcon } from "./GradiendCheckIcon";
+import { GradientCheckIcon } from "./GradientCheckIcon";
 import { verifyChatGptApiKey } from "./verifyChatGptApiKey";
 
 function Dialog() {
@@ -62,7 +62,7 @@ function Dialog() {
         <DialogContent color="font.primary">
           <DialogHeader justifyContent="center" pb="0">
             <DialogTitle textStyle="body/lg/bold">
-              <GradiendCheckIcon />
+              <GradientCheckIcon />
             </DialogTitle>
           </DialogHeader>
           <DialogBody
