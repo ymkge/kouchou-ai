@@ -1,7 +1,7 @@
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { Report, ReportVisibility } from "@/type";
-import { Box, Button, HStack, Icon, Popover, Portal, Select, Text, VStack } from "@chakra-ui/react";
+import { Box, Button, Grid, GridItem, HStack, Icon, Popover, Portal, Select, Text, VStack } from "@chakra-ui/react";
 import { DownloadIcon, EllipsisIcon } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { ClusterEditDialog } from "./ClusterEditDialog/ClusterEditDialog";
@@ -28,19 +28,23 @@ export function ReportCard({ report, reports, setReports }: Props) {
   const isErrorState = report.status === "error";
 
   return (
-    <Box p="6" bgColor="white" borderRadius="sm">
-      <HStack justify="space-between">
-        <HStack>
-          <Box>
-            {report.createdAt && (
-              <Text fontSize="xs" color="gray.500" mb={1}>
-                作成日時:{" "}
-                {new Date(report.createdAt).toLocaleString("ja-JP", {
+    <>
+      <Grid p="6" bgColor="white" borderRadius="sm" color="font.primary">
+        <GridItem>
+          <Text textStyle="body/sm">
+            {report.createdAt
+              ? new Date(report.createdAt).toLocaleString("ja-JP", {
                   timeZone: "Asia/Tokyo",
-                })}
-              </Text>
-            )}
-            <Text fontSize="xs" color="gray.500" mb={1}>
+                  year: "numeric",
+                  month: "numeric",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                })
+              : "-"}
+          </Text>
+          {/* <Text fontSize="xs" color="gray.500" mb={1}>
               トークン使用量:{" "}
               {info.hasInput ? (
                 <>
@@ -53,10 +57,8 @@ export function ReportCard({ report, reports, setReports }: Props) {
             <Text fontSize="xs" color="gray.500" mb={1}>
               推定コスト: {info.estimatedCost}
               {info.model && ` (${info.model})`}
-            </Text>
-            {report.status !== "ready" && <ProgressSteps slug={report.slug} setReports={setReports} />}
-          </Box>
-        </HStack>
+            </Text> */}
+        </GridItem>
         <HStack position="relative" zIndex="20">
           {report.status === "ready" && report.isPubcom && (
             <Popover.Root>
@@ -189,9 +191,9 @@ export function ReportCard({ report, reports, setReports }: Props) {
               </MenuItem>
             </MenuContent>
           </MenuRoot>
+          {report.status !== "ready" && <ProgressSteps slug={report.slug} setReports={setReports} />}
         </HStack>
-      </HStack>
-
+      </Grid>
       <ReportEditDialog
         isEditDialogOpen={isEditDialogOpen}
         setIsEditDialogOpen={setIsEditDialogOpen}
@@ -204,6 +206,6 @@ export function ReportCard({ report, reports, setReports }: Props) {
         isOpen={isClusterEditDialogOpen}
         setIsClusterEditDialogOpen={setIsClusterEditDialogOpen}
       />
-    </Box>
+    </>
   );
 }
