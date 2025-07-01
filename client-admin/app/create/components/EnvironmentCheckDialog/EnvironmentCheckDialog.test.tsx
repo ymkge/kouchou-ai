@@ -51,7 +51,7 @@ describe("EnvironmentCheckDialog", () => {
       </TestWrapper>,
     );
 
-    userEvent.click(screen.getAllByRole("button", { name: /API接続チェック/i })[0]);
+    userEvent.click(screen.getByRole("button", { name: /API接続チェック/i }));
 
     expect(await screen.findByText("APIキー設定とデポジット残高を確認します。")).toBeInTheDocument();
     expect(await screen.findByRole("button", { name: "チェックする" })).toBeInTheDocument();

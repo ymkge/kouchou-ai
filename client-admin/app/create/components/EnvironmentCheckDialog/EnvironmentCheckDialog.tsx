@@ -145,6 +145,7 @@ export function EnvironmentCheckDialog() {
       size="sm"
       onOpenChange={(e) => {
         if (!e.open) {
+          // Dialogが閉じられたときにkeyを更新して再レンダリングをトリガー
           setUUID(crypto.randomUUID());
         }
       }}
