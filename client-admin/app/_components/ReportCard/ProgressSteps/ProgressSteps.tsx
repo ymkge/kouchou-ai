@@ -28,7 +28,7 @@ const stepKeys = [
 
 type Props = {
   slug: string;
-  setReports: Dispatch<SetStateAction<Report[] | undefined>>;
+  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
 export const ProgressSteps = ({ slug, setReports }: Props) => {

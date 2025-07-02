@@ -8,8 +8,8 @@ type Props = {
   isEditDialogOpen: boolean;
   setIsEditDialogOpen: Dispatch<SetStateAction<boolean>>;
   report: Report;
-  reports?: Report[];
-  setReports: Dispatch<SetStateAction<Report[] | undefined>>;
+  reports: Report[];
+  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
 export function ReportEditDialog({ isEditDialogOpen, setIsEditDialogOpen, report, reports, setReports }: Props) {
