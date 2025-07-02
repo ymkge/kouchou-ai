@@ -28,7 +28,7 @@ export const semanticTokens = {
       error: { value: "{colors.red.50}" },
       public: { value: "{colors.yellow.50}" },
       private: { value: "{colors.red.50}" },
-      processing: { value: "{colors.pupurple.50}" },
+      processing: { value: "{colors.purple.50}" },
     },
   },
 };
