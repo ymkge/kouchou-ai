@@ -19,5 +19,16 @@ export const semanticTokens = {
       hover: { value: "rgba(0, 0, 0, 0.06)" },
       active: { value: "rgba(0, 0, 0, 0.08)" },
     },
+    bg: {
+      white: { value: "{colors.white}" },
+      secondary: { value: "{colors.blue.50}" },
+      disable: { value: "{colors.gray.50}" },
+      tooltip: { value: "{colors.gray.700}" },
+      overlay: { value: "rgba(39, 39, 42, 1)" },
+      error: { value: "{colors.red.50}" },
+      public: { value: "{colors.yellow.50}" },
+      private: { value: "{colors.red.50}" },
+      processing: { value: "{colors.pupurple.50}" },
+    },
   },
 };
