@@ -2,13 +2,14 @@
 
 import { Header } from "@/components/Header";
 import { toaster } from "@/components/ui/toaster";
-import { Box, Button, Field, HStack, Heading, Presence, Tabs, VStack, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, Field, HStack, Heading, Presence, Tabs, Text, VStack, useDisclosure } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createReport } from "./api/report";
 import { AISettingsSection } from "./components/AISettingsSection";
 import { BasicInfoSection } from "./components/BasicInfoSection";
 import { CsvFileTab } from "./components/CsvFileTab";
+import { EnvironmentCheckDialog } from "./components/EnvironmentCheckDialog/EnvironmentCheckDialog";
 import { SpreadsheetTab } from "./components/SpreadsheetTab";
 import { WarningSection } from "./components/WarningSection";
 import { useAISettings } from "./hooks/useAISettings";
@@ -83,13 +84,13 @@ export default function Page() {
         const parsed = await parseCsv(inputData.csv);
         comments = parsed.map((row, index) => {
           const rowData = row as unknown as Record<string, unknown>;
-          
+
           // コメントオブジェクトの作成（基本フィールド）
           const comment: CsvData = {
             id: row.id || `csv-${index + 1}`,
             comment: rowData[inputData.selectedCommentColumn] as string,
-            source: rowData.source as string || null,
-            url: rowData.url as string || null,
+            source: (rowData.source as string) || null,
+            url: (rowData.url as string) || null,
           };
 
           // 選択された属性カラムの値を直接追加（"attribute" プレフィックス付き）
@@ -302,10 +303,16 @@ export default function Page() {
           {/* 警告メッセージ */}
           <WarningSection />
 
-          {/* 送信ボタン */}
-          <Button mt={10} className={"gradientBg shadow"} size={"2xl"} w={"300px"} onClick={onSubmit} loading={loading}>
-            レポート作成を開始
-          </Button>
+          <VStack mt="11" gap="6">
+            <EnvironmentCheckDialog />
+            {/* 送信ボタン */}
+            <Button className={"gradientBg shadow"} size={"2xl"} w={"300px"} onClick={onSubmit} loading={loading}>
+              レポート作成を開始
+            </Button>
+            <Text textStyle="body/sm" color="font.secondary">
+              有料のAIプロバイダーの場合は作成する度にAPI利用料がかかります。
+            </Text>
+          </VStack>
         </VStack>
       </Box>
     </div>
