@@ -1,13 +1,15 @@
 import { IconButton } from "@/components/ui/icon-button";
-import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
+import { MenuContent, MenuItem, MenuPositioner, MenuRoot, MenuTrigger, MenuTriggerItem } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { Report, ReportVisibility } from "@/type";
-import { Box, Button, GridItem, Portal, Select, Text, VStack } from "@chakra-ui/react";
-import { EllipsisIcon, InfoIcon } from "lucide-react";
+import { Box, GridItem, Portal, Select, Text, VStack } from "@chakra-ui/react";
+import { Ellipsis, FileSpreadsheet, InfoIcon, Pencil, TextIcon, Trash2 } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { ClusterEditDialog } from "./ClusterEditDialog/ClusterEditDialog";
 import { ProgressSteps } from "./ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./ReportEditDialog/ReportEditDialog";
+import { csvDownload } from "./_actions/csvDownload";
+import { csvDownloadForWindows } from "./_actions/csvDownloadForWindows";
 import { reportDelete } from "./_actions/reportDelete";
 import { visibilityOptions, visibilityUpdate } from "./_actions/visibilityUpdate";
 import { analysisInfo } from "./analysisInfo/analysisInfo";
@@ -48,7 +50,6 @@ export function ReportCard({ report, reports, setReports }: Props) {
           {report.title}
         </Text>
       </GridItem>
-
       <GridItem>
         <Tooltip
           content={
@@ -69,100 +70,96 @@ export function ReportCard({ report, reports, setReports }: Props) {
             <InfoIcon />
           </IconButton>
         </Tooltip>
-        {/* {report.status === "ready" && report.isPubcom && (
-          <Popover.Root>
-            <Popover.Trigger asChild>
-              <Button
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <Tooltip content="CSVファイルをダウンロード" openDelay={0} closeDelay={0}>
-                  <Icon>
-                    <DownloadIcon />
-                  </Icon>
-                </Tooltip>
-              </Button>
-            </Popover.Trigger>
-            <Portal>
-              <Popover.Positioner>
-                <Popover.Content>
-                  <Popover.Arrow />
-                  <Popover.Body p={0}>
-                    <VStack align="stretch" gap={0}>
-                      <Button
-                        variant="ghost"
-                        justifyContent="flex-start"
-                        borderRadius={0}
-                        py={2}
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          await csvDownload(report.slug);
-                        }}
-                      >
-                        CSV
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        justifyContent="flex-start"
-                        borderRadius={0}
-                        py={2}
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          await csvDownloadForWindows(report.slug);
-                        }}
-                      >
-                        CSV for Excel(Windows)
-                      </Button>
-                    </VStack>
-                  </Popover.Body>
-                </Popover.Content>
-              </Popover.Positioner>
-            </Portal>
-          </Popover.Root>
-        )} */}
       </GridItem>
       <GridItem>
         <MenuRoot>
           <MenuTrigger asChild>
-            <Button variant="ghost" size="lg" onClick={(e) => e.stopPropagation()}>
-              <EllipsisIcon />
-            </Button>
+            <IconButton variant="ghost" size="lg">
+              <Ellipsis />
+            </IconButton>
           </MenuTrigger>
-          <MenuContent>
-            <MenuItem value="duplicate">レポートを複製して新規作成(開発中)</MenuItem>
-            <MenuItem
-              value="edit"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsEditDialogOpen(true);
-              }}
-            >
-              レポートを編集する
-            </MenuItem>
-            {report.status === "ready" && (
+          <Portal>
+            <MenuContent textStyle="body/md/bold">
               <MenuItem
-                value="edit-cluster"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsClusterEditDialogOpen(true);
+                value="edit"
+                onClick={() => {
+                  setIsEditDialogOpen(true);
+                }}
+                _icon={{
+                  w: 5,
+                  h: 5,
                 }}
               >
-                意見グループを編集する
+                <Pencil />
+                レポート名編集
               </MenuItem>
-            )}
-            <MenuItem
-              value="delete"
-              color="fg.error"
-              onClick={async (e) => {
-                e.stopPropagation();
-                await reportDelete(report.title, report.slug);
-              }}
-            >
-              レポートを削除する
-            </MenuItem>
-          </MenuContent>
+              {report.status === "ready" && (
+                <MenuItem
+                  value="edit-cluster"
+                  onClick={() => {
+                    setIsClusterEditDialogOpen(true);
+                  }}
+                  _icon={{
+                    w: 5,
+                    h: 5,
+                  }}
+                >
+                  <TextIcon />
+                  意見グループ編集
+                </MenuItem>
+              )}
+              {report.status === "ready" && (
+                <MenuRoot positioning={{ placement: "right-start", gutter: 4 }}>
+                  <MenuTriggerItem
+                    value="csv-download"
+                    _icon={{
+                      w: 5,
+                      h: 5,
+                    }}
+                  >
+                    <FileSpreadsheet />
+                    CSVダウンロード
+                  </MenuTriggerItem>
+                  <Portal>
+                    <MenuPositioner>
+                      <MenuContent textStyle="body/md/bold">
+                        <MenuItem
+                          value="csv-download"
+                          onClick={async () => {
+                            await csvDownload(report.slug);
+                          }}
+                        >
+                          CSVダウンロード
+                        </MenuItem>
+                        <MenuItem
+                          value="csv-download-for-windows"
+                          onClick={async () => {
+                            await csvDownloadForWindows(report.slug);
+                          }}
+                        >
+                          CSV for Excelダウンロード
+                        </MenuItem>
+                      </MenuContent>
+                    </MenuPositioner>
+                  </Portal>
+                </MenuRoot>
+              )}
+              <MenuItem
+                value="delete"
+                color="fg.error"
+                onClick={async (e) => {
+                  await reportDelete(report.title, report.slug);
+                }}
+                _icon={{
+                  w: 5,
+                  h: 5,
+                }}
+              >
+                <Trash2 />
+                削除
+              </MenuItem>
+            </MenuContent>
+          </Portal>
         </MenuRoot>
       </GridItem>
       <GridItem>
