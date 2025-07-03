@@ -1,6 +1,8 @@
 import type { Report } from "@/type";
-import { Box, Flex, Steps } from "@chakra-ui/react";
+import { Box, Steps } from "@chakra-ui/react";
+import { Check, TriangleAlert } from "lucide-react";
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import { Processing } from "./Processing";
 import { useReportProgressPoll } from "./useReportProgressPolling";
 
 const steps = [
@@ -15,7 +17,7 @@ const steps = [
 ] as const;
 
 // ステップの定義
-const stepKeys = [
+export const stepKeys = [
   "extraction",
   "embedding",
   "hierarchical_clustering",
@@ -24,7 +26,20 @@ const stepKeys = [
   "hierarchical_overview",
   "hierarchical_aggregation",
   "hierarchical_visualization",
-];
+] as const;
+
+const stepItemstyle = {
+  error: {
+    completed: "font.error",
+    processing: "bg.error",
+    currentStepIcon: <TriangleAlert />,
+  },
+  processing: {
+    completed: "font.processing",
+    processing: "bg.processing",
+    currentStepIcon: <Processing />,
+  },
+} as const;
 
 type Props = {
   slug: string;
@@ -32,15 +47,17 @@ type Props = {
 };
 
 export const ProgressSteps = ({ slug, setReports }: Props) => {
-  const { progress } = useReportProgressPoll(slug);
+  const { progress, isError } = useReportProgressPoll(slug);
   const [lastProgress, setLastProgress] = useState<string | null>(null);
 
-  const currentStepIndex =
-    progress === "completed" ? steps.length : stepKeys.indexOf(progress) === -1 ? 0 : stepKeys.indexOf(progress);
+  const isLoading = progress === "loading";
+  const isCompleted = progress === "completed";
+  const currentStepIndex = isCompleted ? steps.length : isLoading ? 0 : stepKeys.indexOf(progress);
+  const status = isError ? "error" : "processing";
 
-  // progress が変更されたときにレポート状態を更新
+  // レポートが作成完了orエラーになった際に画面を更新する
   useEffect(() => {
-    if ((progress === "completed" || progress === "error") && progress !== lastProgress) {
+    if ((progress === "completed" || isError) && progress !== lastProgress) {
       setLastProgress(progress);
 
       (async () => {
@@ -57,39 +74,67 @@ export const ProgressSteps = ({ slug, setReports }: Props) => {
         setReports(await response.json());
       })();
     }
-  }, [progress, lastProgress, setReports]);
+  }, [progress, isError, lastProgress, setReports]);
 
   return (
     <Box mt={2}>
-      <Steps.Root defaultStep={currentStepIndex} count={steps.length}>
-        <Steps.List>
+      <Steps.Root defaultStep={currentStepIndex} count={steps.length} bg={stepItemstyle[status].processing} p="6">
+        <Steps.List gap="2">
           {steps.map((step, index) => {
-            const isCompleted = index < currentStepIndex;
-
-            const stepColor = (() => {
-              if (progress === "error" && index === currentStepIndex) {
-                return "red.500";
-              }
-              if (isCompleted) return "green.500";
-              return "gray.300";
-            })();
-
             return (
-              <Steps.Item key={step.id} index={index} title={step.title}>
-                <Flex direction="column" align="center">
-                  <Steps.Indicator boxSize="24px" bg={stepColor} position="relative" />
+              <Steps.Item key={step.id} index={index} gap="2" flex="auto" textStyle="body/sm">
+                <Box w="6" h="6" borderRadius="full" display="flex" alignItems="center" justifyContent="center">
+                  {index < currentStepIndex ? (
+                    <>
+                      <Box
+                        w="6"
+                        h="6"
+                        bg={stepItemstyle[status].completed}
+                        borderRadius="full"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Check size="16" color="white" />
+                      </Box>
+                    </>
+                  ) : index === currentStepIndex ? (
+                    <Box color={stepItemstyle[status].completed}>{stepItemstyle[status].currentStepIcon}</Box>
+                  ) : (
+                    <Box
+                      w="6"
+                      h="6"
+                      bg={stepItemstyle[status].completed}
+                      opacity="0.16"
+                      borderRadius="full"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                    />
+                  )}
+                </Box>
+                {index < currentStepIndex ? (
+                  <Steps.Title whiteSpace="nowrap" textStyle="body/sm" color="font.primary">
+                    {step.title}
+                  </Steps.Title>
+                ) : index === currentStepIndex ? (
                   <Steps.Title
-                    mt={1}
-                    fontSize="sm"
                     whiteSpace="nowrap"
-                    textAlign="center"
-                    color={stepColor}
-                    fontWeight={progress === "error" && index === currentStepIndex ? "bold" : "normal"}
+                    textStyle={isError ? "body/sm/bold" : "body/sm"}
+                    color={isError ? "font.error" : "font.primary"}
                   >
                     {step.title}
                   </Steps.Title>
-                </Flex>
-                <Steps.Separator borderColor={stepColor} />
+                ) : (
+                  <Steps.Title
+                    whiteSpace="nowrap"
+                    textStyle="body/sm"
+                    color={isError ? "font.secondary" : "font.primary"}
+                  >
+                    {step.title}
+                  </Steps.Title>
+                )}
+                <Steps.Separator m="0" bg="blackAlpha.500" h="1px" />
               </Steps.Item>
             );
           })}

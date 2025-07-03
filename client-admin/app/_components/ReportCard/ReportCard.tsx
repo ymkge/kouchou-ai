@@ -3,11 +3,11 @@ import { GridItem, Text } from "@chakra-ui/react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { ActionMenu } from "./ActionMenu/ActionMenu";
 import { ClusterEditDialog } from "./ClusterEditDialog/ClusterEditDialog";
+import { DeleteButton } from "./DeleteButton";
 import { ProgressSteps } from "./ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./ReportEditDialog/ReportEditDialog";
 import { TokenUsage } from "./TokenUasge/TokenUsage";
 import { VisibilityUpdate } from "./VisibilityUpdate/VisibilityUpdate";
-import { DeleteButton } from "./DeleteButton";
 
 type Props = {
   report: Report;
@@ -19,8 +19,6 @@ export function ReportCard({ report, reports, setReports }: Props) {
   // ダイアログの状態管理
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
-
-  const isErrorState = report.status === "error";
 
   return (
     <>
@@ -59,7 +57,9 @@ export function ReportCard({ report, reports, setReports }: Props) {
         {report.status === "error" && <DeleteButton report={report} />}
       </GridItem>
       <GridItem gridColumn="span 5">
-        {report.status !== "ready" && <ProgressSteps slug={report.slug} setReports={setReports} />}
+        {(report.status === "processing" || report.status === "error") && (
+          <ProgressSteps slug={report.slug} setReports={setReports} />
+        )}
       </GridItem>
 
       <ReportEditDialog
