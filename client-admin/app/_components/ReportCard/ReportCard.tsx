@@ -1,7 +1,9 @@
+import { IconButton } from "@/components/ui/icon-button";
 import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "@/components/ui/menu";
+import { Tooltip } from "@/components/ui/tooltip";
 import type { Report, ReportVisibility } from "@/type";
-import { Box, Button, GridItem, Portal, Select, Text } from "@chakra-ui/react";
-import { EllipsisIcon } from "lucide-react";
+import { Box, Button, GridItem, Portal, Select, Text, VStack } from "@chakra-ui/react";
+import { EllipsisIcon, InfoIcon } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { ClusterEditDialog } from "./ClusterEditDialog/ClusterEditDialog";
 import { ProgressSteps } from "./ProgressSteps/ProgressSteps";
@@ -48,20 +50,25 @@ export function ReportCard({ report, reports, setReports }: Props) {
       </GridItem>
 
       <GridItem>
-        <Text fontSize="xs" color="gray.500" mb={1}>
-          トークン使用量:{" "}
-          {info.hasInput ? (
-            <>
-              入力: {info.tokenUsageInput}, 出力: {info.tokenUsageOutput}
-            </>
-          ) : (
-            info.tokenUsageTotal
-          )}
-        </Text>
-        <Text fontSize="xs" color="gray.500" mb={1}>
-          推定コスト: {info.estimatedCost}
-          {info.model && ` (${info.model})`}
-        </Text>
+        <Tooltip
+          content={
+            <VStack alignItems="flex-start">
+              {info.hasInput ? (
+                <>
+                  <Text>入力トークン/{info.tokenUsageInput}</Text>
+                  <Text>出力トークン/{info.tokenUsageOutput}</Text>
+                </>
+              ) : (
+                <Text>トークン使用量/{info.tokenUsageTotal}</Text>
+              )}
+              <Text>推定コスト/${info.estimatedCost}</Text>
+            </VStack>
+          }
+        >
+          <IconButton variant="ghost" size="lg">
+            <InfoIcon />
+          </IconButton>
+        </Tooltip>
         {/* {report.status === "ready" && report.isPubcom && (
           <Popover.Root>
             <Popover.Trigger asChild>
