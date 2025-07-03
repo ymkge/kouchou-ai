@@ -7,6 +7,7 @@ import { ProgressSteps } from "./ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./ReportEditDialog/ReportEditDialog";
 import { TokenUsage } from "./TokenUasge/TokenUsage";
 import { VisibilityUpdate } from "./VisibilityUpdate/VisibilityUpdate";
+import { DeleteButton } from "./DeleteButton";
 
 type Props = {
   report: Report;
@@ -55,6 +56,7 @@ export function ReportCard({ report, reports, setReports }: Props) {
       </GridItem>
       <GridItem>
         {report.status === "ready" && <VisibilityUpdate report={report} reports={reports} setReports={setReports} />}
+        {report.status === "error" && <DeleteButton report={report} />}
       </GridItem>
       <GridItem gridColumn="span 5">
         {report.status !== "ready" && <ProgressSteps slug={report.slug} setReports={setReports} />}

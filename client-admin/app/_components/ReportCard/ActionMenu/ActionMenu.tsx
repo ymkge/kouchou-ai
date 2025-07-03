@@ -3,9 +3,9 @@ import type { Report } from "@/type";
 import { IconButton, Portal } from "@chakra-ui/react";
 import { Ellipsis, FileSpreadsheet, Pencil, TextIcon, Trash2 } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
+import { reportDelete } from "../_actions/reportDelete";
 import { csvDownload } from "./csvDownload";
 import { csvDownloadForWindows } from "./csvDownloadForWindows";
-import { reportDelete } from "./reportDelete";
 
 type Props = {
   report: Report;
