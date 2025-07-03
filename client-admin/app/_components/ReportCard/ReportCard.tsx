@@ -1,18 +1,17 @@
 import { IconButton } from "@/components/ui/icon-button";
 import { MenuContent, MenuItem, MenuPositioner, MenuRoot, MenuTrigger, MenuTriggerItem } from "@/components/ui/menu";
-import { Tooltip } from "@/components/ui/tooltip";
 import type { Report } from "@/type";
-import { GridItem, Portal, Text, VStack } from "@chakra-ui/react";
-import { Ellipsis, FileSpreadsheet, InfoIcon, Pencil, TextIcon, Trash2 } from "lucide-react";
+import { GridItem, Portal, Text } from "@chakra-ui/react";
+import { Ellipsis, FileSpreadsheet, Pencil, TextIcon, Trash2 } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { ClusterEditDialog } from "./ClusterEditDialog/ClusterEditDialog";
 import { ProgressSteps } from "./ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./ReportEditDialog/ReportEditDialog";
+import { TokenUsage } from "./TokenUasge/TokenUsage";
 import { VisibilityUpdate } from "./VisibilityUpdate/VisibilityUpdate";
 import { csvDownload } from "./_actions/csvDownload";
 import { csvDownloadForWindows } from "./_actions/csvDownloadForWindows";
 import { reportDelete } from "./_actions/reportDelete";
-import { analysisInfo } from "./analysisInfo/analysisInfo";
 
 type Props = {
   report: Report;
@@ -25,7 +24,6 @@ export function ReportCard({ report, reports, setReports }: Props) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
 
-  const info = analysisInfo(report);
   const isErrorState = report.status === "error";
 
   return (
@@ -50,27 +48,7 @@ export function ReportCard({ report, reports, setReports }: Props) {
           {report.title}
         </Text>
       </GridItem>
-      <GridItem>
-        <Tooltip
-          content={
-            <VStack alignItems="flex-start">
-              {info.hasInput ? (
-                <>
-                  <Text>入力トークン/{info.tokenUsageInput}</Text>
-                  <Text>出力トークン/{info.tokenUsageOutput}</Text>
-                </>
-              ) : (
-                <Text>トークン使用量/{info.tokenUsageTotal}</Text>
-              )}
-              <Text>推定コスト/${info.estimatedCost}</Text>
-            </VStack>
-          }
-        >
-          <IconButton variant="ghost" size="lg">
-            <InfoIcon />
-          </IconButton>
-        </Tooltip>
-      </GridItem>
+      <GridItem>{report.status === "ready" && <TokenUsage report={report} />}</GridItem>
       <GridItem>
         <MenuRoot>
           <MenuTrigger asChild>
