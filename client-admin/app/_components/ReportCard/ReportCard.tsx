@@ -1,17 +1,17 @@
 import { IconButton } from "@/components/ui/icon-button";
 import { MenuContent, MenuItem, MenuPositioner, MenuRoot, MenuTrigger, MenuTriggerItem } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/tooltip";
-import type { Report, ReportVisibility } from "@/type";
-import { Box, GridItem, Portal, Select, Text, VStack } from "@chakra-ui/react";
+import type { Report } from "@/type";
+import { GridItem, Portal, Text, VStack } from "@chakra-ui/react";
 import { Ellipsis, FileSpreadsheet, InfoIcon, Pencil, TextIcon, Trash2 } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { ClusterEditDialog } from "./ClusterEditDialog/ClusterEditDialog";
 import { ProgressSteps } from "./ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./ReportEditDialog/ReportEditDialog";
+import { VisibilityUpdate } from "./VisibilityUpdate/VisibilityUpdate";
 import { csvDownload } from "./_actions/csvDownload";
 import { csvDownloadForWindows } from "./_actions/csvDownloadForWindows";
 import { reportDelete } from "./_actions/reportDelete";
-import { visibilityOptions, visibilityUpdate } from "./_actions/visibilityUpdate";
 import { analysisInfo } from "./analysisInfo/analysisInfo";
 
 type Props = {
@@ -147,7 +147,7 @@ export function ReportCard({ report, reports, setReports }: Props) {
               <MenuItem
                 value="delete"
                 color="fg.error"
-                onClick={async (e) => {
+                onClick={async () => {
                   await reportDelete(report.title, report.slug);
                 }}
                 _icon={{
@@ -163,44 +163,7 @@ export function ReportCard({ report, reports, setReports }: Props) {
         </MenuRoot>
       </GridItem>
       <GridItem>
-        {report.status === "ready" && (
-          <Box>
-            <Select.Root
-              collection={visibilityOptions}
-              size="sm"
-              width="150px"
-              defaultValue={[report.visibility.toString()]}
-              onValueChange={async (value) => {
-                // valueは配列の可能性があるため、最初の要素を取得
-                const visibility = (Array.isArray(value?.value) ? value?.value[0] : value?.value) as ReportVisibility;
-                if (!visibility || visibility === report.visibility.toString()) return;
-                await visibilityUpdate({ slug: report.slug, visibility, reports, setReports });
-              }}
-            >
-              <Select.HiddenSelect />
-              <Select.Control>
-                <Select.Trigger>
-                  <Select.ValueText placeholder="公開状態" />
-                </Select.Trigger>
-                <Select.IndicatorGroup>
-                  <Select.Indicator />
-                </Select.IndicatorGroup>
-              </Select.Control>
-              <Portal>
-                <Select.Positioner>
-                  <Select.Content>
-                    {visibilityOptions.items.map((option) => (
-                      <Select.Item item={option} key={option.value}>
-                        {option.label}
-                        <Select.ItemIndicator />
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Positioner>
-              </Portal>
-            </Select.Root>
-          </Box>
-        )}
+        {report.status === "ready" && <VisibilityUpdate report={report} reports={reports} setReports={setReports} />}
       </GridItem>
       <GridItem gridColumn="span 5">
         {report.status !== "ready" && <ProgressSteps slug={report.slug} setReports={setReports} />}

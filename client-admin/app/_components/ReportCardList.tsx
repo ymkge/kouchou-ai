@@ -13,7 +13,7 @@ export function ReportCardList({ reports: _reports }: Props) {
   const [reports, setReports] = useState<Report[]>(_reports);
 
   return (
-    <Grid gridTemplateColumns="1fr 400px repeat(2, min-content) 200px" rowGap="2">
+    <Grid gridTemplateColumns="140px minmax(400px, 1fr) repeat(3, min-content)" rowGap="2">
       <Grid gridTemplateColumns="subgrid" gridColumn="span 5">
         <GridItem textStyle="body/sm" bg="blue.100" py="3" px="6" borderLeftRadius="sm">
           作成日時
@@ -44,6 +44,7 @@ export function ReportCardList({ reports: _reports }: Props) {
           bgColor="white"
           borderRadius="sm"
           color="font.primary"
+          alignItems="center"
         >
           <ReportCard report={report} reports={reports} setReports={setReports} />
         </Grid>
