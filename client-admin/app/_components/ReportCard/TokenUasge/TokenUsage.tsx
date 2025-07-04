@@ -27,7 +27,7 @@ export function TokenUsage({ report }: Props) {
           ) : (
             <Text>トークン使用量/{info.tokenUsageTotal}</Text>
           )}
-          <Text>推定コスト/${info.estimatedCost}</Text>
+          <Text>推定コスト/{info.estimatedCost}</Text>
         </VStack>
       }
     >
