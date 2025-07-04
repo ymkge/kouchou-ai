@@ -6,6 +6,7 @@ import { ClusterEditDialog } from "./ClusterEditDialog/ClusterEditDialog";
 import { DeleteButton } from "./DeleteButton";
 import { ProgressSteps } from "./ProgressSteps/ProgressSteps";
 import { ReportEditDialog } from "./ReportEditDialog/ReportEditDialog";
+import { ReportTtile } from "./ReportTitle";
 import { TokenUsage } from "./TokenUasge/TokenUsage";
 import { VisibilityUpdate } from "./VisibilityUpdate/VisibilityUpdate";
 
@@ -16,7 +17,6 @@ type Props = {
 };
 
 export function ReportCard({ report, reports, setReports }: Props) {
-  // ダイアログの状態管理
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
 
@@ -37,10 +37,8 @@ export function ReportCard({ report, reports, setReports }: Props) {
             : "-"}
         </Text>
       </GridItem>
-      <GridItem>
-        <Text textStyle="body/md/bold" truncate>
-          {report.title}
-        </Text>
+      <GridItem ml="2">
+        <ReportTtile report={report} />
       </GridItem>
       <GridItem>{report.status === "ready" && <TokenUsage report={report} />}</GridItem>
       <GridItem>
