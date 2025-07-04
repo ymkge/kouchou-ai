@@ -45,6 +45,9 @@ export function ReportCardList({ reports: _reports }: Props) {
           borderRadius="sm"
           color="font.primary"
           alignItems="center"
+          _hover={{
+            shadow: "lg",
+          }}
         >
           <ReportCard report={report} reports={reports} setReports={setReports} />
         </Grid>

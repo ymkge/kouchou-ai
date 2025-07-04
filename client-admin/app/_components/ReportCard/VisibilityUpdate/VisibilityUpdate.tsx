@@ -55,6 +55,9 @@ export function VisibilityUpdate({ report, reports, setReports }: Props) {
             w: 5,
             h: 5,
           }}
+          _hover={{
+            shadow: 'inset 0 0 0 44px rgba(0, 0, 0, 0.06)'
+          }}
         >
           {iconStyles[report.visibility].icon}
         </IconButton>

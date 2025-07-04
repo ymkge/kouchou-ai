@@ -15,6 +15,8 @@ export function TokenUsage({ report }: Props) {
     <Tooltip
       showArrow
       closeOnPointerDown={false}
+      openDelay={100}
+      closeDelay={100}
       content={
         <VStack alignItems="flex-start">
           {info.hasInput ? (

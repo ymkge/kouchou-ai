@@ -17,7 +17,7 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
   return (
     <MenuRoot>
       <MenuTrigger asChild>
-        <IconButton variant="ghost" size="lg">
+        <IconButton variant="ghost" size="lg" _hover={{ bg: "blue.50" }} _expanded={{ bg: "blue.50" }}>
           <Ellipsis />
         </IconButton>
       </MenuTrigger>
