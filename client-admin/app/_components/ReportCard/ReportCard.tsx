@@ -28,8 +28,8 @@ export function ReportCard({ report, reports, setReports }: Props) {
             ? new Date(report.createdAt).toLocaleString("ja-JP", {
                 timeZone: "Asia/Tokyo",
                 year: "numeric",
-                month: "numeric",
-                day: "numeric",
+                month: "2-digit",
+                day: "2-digit",
                 hour: "2-digit",
                 minute: "2-digit",
                 hour12: false,

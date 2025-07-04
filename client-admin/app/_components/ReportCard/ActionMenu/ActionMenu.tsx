@@ -51,7 +51,7 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
               意見グループ編集
             </MenuItem>
           )}
-          {report.status === "ready" && (
+          {report.status === "ready" && report.isPubcom && (
             <MenuRoot positioning={{ placement: "right-start", gutter: 4 }}>
               <MenuTriggerItem
                 value="csv-download"

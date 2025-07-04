@@ -1,5 +1,5 @@
 import type { Report } from "@/type";
-import { Box, Steps } from "@chakra-ui/react";
+import { Box, Center, Steps } from "@chakra-ui/react";
 import { Check, TriangleAlert } from "lucide-react";
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import { Processing } from "./Processing";
@@ -57,7 +57,7 @@ export const ProgressSteps = ({ slug, setReports }: Props) => {
 
   // レポートが作成完了orエラーになった際に画面を更新する
   useEffect(() => {
-    if ((progress === "completed" || isError) && progress !== lastProgress) {
+    if ((isCompleted || isError) && progress !== lastProgress) {
       setLastProgress(progress);
 
       (async () => {
@@ -74,72 +74,44 @@ export const ProgressSteps = ({ slug, setReports }: Props) => {
         setReports(await response.json());
       })();
     }
-  }, [progress, isError, lastProgress, setReports]);
+  }, [progress, isCompleted, isError, lastProgress, setReports]);
 
   return (
-    <Box mt={2}>
-      <Steps.Root defaultStep={currentStepIndex} count={steps.length} bg={stepItemstyle[status].processing} p="6">
-        <Steps.List gap="2">
-          {steps.map((step, index) => {
-            return (
-              <Steps.Item key={step.id} index={index} gap="2" flex="auto" textStyle="body/sm">
-                <Box w="6" h="6" borderRadius="full" display="flex" alignItems="center" justifyContent="center">
-                  {index < currentStepIndex ? (
-                    <>
-                      <Box
-                        w="6"
-                        h="6"
-                        bg={stepItemstyle[status].completed}
-                        borderRadius="full"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        <Check size="16" color="white" />
-                      </Box>
-                    </>
-                  ) : index === currentStepIndex ? (
-                    <Box color={stepItemstyle[status].completed}>{stepItemstyle[status].currentStepIcon}</Box>
-                  ) : (
-                    <Box
-                      w="6"
-                      h="6"
-                      bg={stepItemstyle[status].completed}
-                      opacity="0.16"
-                      borderRadius="full"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                    />
-                  )}
-                </Box>
-                {index < currentStepIndex ? (
-                  <Steps.Title whiteSpace="nowrap" textStyle="body/sm" color="font.primary">
-                    {step.title}
-                  </Steps.Title>
-                ) : index === currentStepIndex ? (
-                  <Steps.Title
-                    whiteSpace="nowrap"
-                    textStyle={isError ? "body/sm/bold" : "body/sm"}
-                    color={isError ? "font.error" : "font.primary"}
-                  >
-                    {step.title}
-                  </Steps.Title>
-                ) : (
-                  <Steps.Title
-                    whiteSpace="nowrap"
-                    textStyle="body/sm"
-                    color={isError ? "font.secondary" : "font.primary"}
-                  >
-                    {step.title}
-                  </Steps.Title>
-                )}
-                <Steps.Separator m="0" bg="blackAlpha.500" h="1px" />
-              </Steps.Item>
-            );
-          })}
-        </Steps.List>
-      </Steps.Root>
-    </Box>
+    <Steps.Root defaultStep={currentStepIndex} count={steps.length} bg={stepItemstyle[status].processing} mt="2" p="6">
+      <Steps.List gap="2">
+        {steps.map((step, index) => (
+          <Steps.Item key={step.id} index={index} gap="2" flex="auto" textStyle="body/sm">
+            {index < currentStepIndex ? (
+              <>
+                <Center w="6" h="6" bg={stepItemstyle[status].completed} borderRadius="full">
+                  <Check size="16" color="white" />
+                </Center>
+                <Steps.Title textStyle="body/sm" color="font.primary">
+                  {step.title}
+                </Steps.Title>
+              </>
+            ) : index === currentStepIndex ? (
+              <>
+                <Box color={stepItemstyle[status].completed}>{stepItemstyle[status].currentStepIcon}</Box>
+                <Steps.Title
+                  textStyle={isError ? "body/sm/bold" : "body/sm"}
+                  color={isError ? "font.error" : "font.primary"}
+                >
+                  {step.title}
+                </Steps.Title>
+              </>
+            ) : (
+              <>
+                <Center w="6" h="6" bg={stepItemstyle[status].completed} opacity="0.16" borderRadius="full" />
+                <Steps.Title textStyle="body/sm" color={isError ? "font.secondary" : "font.primary"}>
+                  {step.title}
+                </Steps.Title>
+              </>
+            )}
+            <Steps.Separator m="0" bg="blackAlpha.500" h="1px" />
+          </Steps.Item>
+        ))}
+      </Steps.List>
+    </Steps.Root>
   );
 };

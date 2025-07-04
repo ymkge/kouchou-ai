@@ -16,18 +16,21 @@ const iconStyles = {
     bg: "bg.public",
     color: "font.public",
     borderColor: "border.public",
+    text: "公開",
     icon: <Eye />,
   },
   unlisted: {
     bg: "bg.limitedPublic",
     color: "font.limitedPublic",
     borderColor: "border.limitedPublic",
+    text: "限定公開",
     icon: <LockKeyhole />,
   },
   private: {
     bg: "bg.private",
     color: "font.private",
     borderColor: "border.private",
+    text: "非公開",
     icon: <EyeClosedIcon />,
   },
 };
@@ -48,15 +51,15 @@ export function VisibilityUpdate({ report, reports, setReports }: Props) {
     >
       <MenuTrigger asChild>
         <IconButton
+          size="lg"
           border="1px solid"
           {...iconStyles[report.visibility]}
-          size="lg"
           _icon={{
             w: 5,
             h: 5,
           }}
           _hover={{
-            shadow: 'inset 0 0 0 44px rgba(0, 0, 0, 0.06)'
+            shadow: "inset 0 0 0 44px rgba(0, 0, 0, 0.06)",
           }}
         >
           {iconStyles[report.visibility].icon}
@@ -64,57 +67,26 @@ export function VisibilityUpdate({ report, reports, setReports }: Props) {
       </MenuTrigger>
       <Portal>
         <MenuContent textStyle="body/md/bold">
-          <MenuItem
-            value="public"
-            color="font.public"
-            border="1px solid"
-            borderColor="transparent"
-            _icon={{
-              w: 5,
-              h: 5,
-            }}
-            _hover={{
-              borderColor: "border.public",
-              bg: "bg.public",
-            }}
-          >
-            <Eye />
-            公開
-          </MenuItem>
-          <MenuItem
-            value="unlisted"
-            color="font.limitedPublic"
-            border="1px solid"
-            borderColor="transparent"
-            _icon={{
-              w: 5,
-              h: 5,
-            }}
-            _hover={{
-              borderColor: "border.limitedPublic",
-              bg: "bg.limitedPublic",
-            }}
-          >
-            <LockKeyhole />
-            限定公開
-          </MenuItem>
-          <MenuItem
-            value="private"
-            color="font.private"
-            border="1px solid"
-            borderColor="transparent"
-            _icon={{
-              w: 5,
-              h: 5,
-            }}
-            _hover={{
-              borderColor: "border.private",
-              bg: "bg.private",
-            }}
-          >
-            <EyeClosedIcon />
-            非公開
-          </MenuItem>
+          {Object.entries(iconStyles).map(([key, style]) => (
+            <MenuItem
+              key={key}
+              value={key}
+              color={style.color}
+              border="1px solid"
+              borderColor="transparent"
+              _icon={{
+                w: 5,
+                h: 5,
+              }}
+              _hover={{
+                borderColor: style.borderColor,
+                bg: style.bg
+              }}
+            >
+              {style.icon}
+              {style.text}
+            </MenuItem>
+          ))}
         </MenuContent>
       </Portal>
     </MenuRoot>
