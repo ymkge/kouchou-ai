@@ -1,5 +1,7 @@
+from collections import defaultdict
 import json
 import os
+from typing import Any, Dict
 
 import openai
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
@@ -40,7 +42,30 @@ async def verify_admin_api_key(api_key: str = Security(api_key_header)):
 
 @router.get("/admin/reports")
 async def get_reports(api_key: str = Depends(verify_admin_api_key)) -> list[Report]:
-    return load_status_as_reports()
+    def add_analysis_data(report: Report):
+        if (report.status == ReportStatus.READY):
+            new_report_dict = report.__dict__.copy()
+            report_path = settings.REPORT_DIR / report.slug / "hierarchical_result.json"
+            with open(report_path) as f:
+                report_result = json.load(f)
+                new_report_dict["analysis"] = {
+                    "comment_num": report_result["comment_num"],
+                    "arguments_num": len(report_result["arguments"]),
+                    "cluster_num": get_cluster_num(report_result)
+                }
+            return new_report_dict
+        else:
+            return report
+
+    def get_cluster_num(result: dict) -> Dict[int, int]:
+        array = [c["level"] for c in result["clusters"]]
+        acc = defaultdict(int)
+        for num in array:
+            acc[num] += 1
+        return dict(acc)[2]
+
+    all_reports = load_status_as_reports()
+    return list(map(add_analysis_data, all_reports))
 
 
 @router.post("/admin/reports", status_code=202)
