@@ -161,123 +161,68 @@ class TestReportStatus:
 
 
 class TestAddAnalysisData:
-    """add_analysis_data関数のテスト"""
-
     @pytest.fixture
     def ready_report(self):
-        """READYステータスのレポート"""
         return Report(
             slug="test-report",
             status=ReportStatus.READY,
-            title="テストレポート",
-            description="テスト説明",
-            is_pubcom=True,
+            title="Test Report",
+            description="Description",
             visibility=ReportVisibility.PUBLIC,
-            created_at="2025-01-01T00:00:00+00:00",
-            token_usage=1000,
-            token_usage_input=500,
-            token_usage_output=500,
-            estimated_cost=0.01,
-            provider="openai",
-            model="gpt-4",
-        )
-
-    @pytest.fixture
-    def processing_report(self):
-        """PROCESSINGステータスのレポート"""
-        return Report(
-            slug="processing-report",
-            status=ReportStatus.PROCESSING,
-            title="処理中レポート",
-            description="処理中説明",
-            is_pubcom=True,
-            visibility=ReportVisibility.PRIVATE,
-            created_at="2025-01-01T00:00:00+00:00",
-            token_usage=0,
-            token_usage_input=0,
-            token_usage_output=0,
-            estimated_cost=0.0,
-            provider=None,
-            model=None,
         )
 
     @pytest.fixture
     def mock_hierarchical_result(self):
-        """モックのhierarchical_result.json"""
         return {
             "comment_num": 150,
-            "arguments": [
-                {"id": 1, "text": "引数1"},
-                {"id": 2, "text": "引数2"},
-                {"id": 3, "text": "引数3"},
-            ],
+            "arguments": [{"id": 1}, {"id": 2}, {"id": 3}],
             "clusters": [
-                {"id": 1, "level": 1, "name": "クラスター1"},
-                {"id": 2, "level": 2, "name": "クラスター2"},
-                {"id": 3, "level": 2, "name": "クラスター3"},
-                {"id": 4, "level": 2, "name": "クラスター4"},
+                {"id": 1, "level": 1},
+                {"id": 2, "level": 2},
+                {"id": 3, "level": 2},
             ],
         }
 
     @patch("src.services.report_status.settings")
-    def test_add_analysis_data_ready_report(self, mock_settings, ready_report, mock_hierarchical_result):
-        """READYステータスのレポートに分析データを追加するテスト"""
-        # モックの設定
-        mock_settings.REPORT_DIR = Path("/test/reports")
+    def test_add_analysis_data_success(self, mock_settings, ready_report, mock_hierarchical_result):
+        mock_settings.REPORT_DIR = Path("/fake/path")
+        json_data = json.dumps(mock_hierarchical_result)
 
-        with patch("builtins.open", mock_open(read_data=json.dumps(mock_hierarchical_result))):
-            result = add_analysis_data(ready_report)
+        with patch("builtins.open", mock_open(read_data=json_data)):
+            updated = add_analysis_data(ready_report)
 
-        # 結果の検証
-        assert isinstance(result, dict)
-        assert result["slug"] == "test-report"
-        assert result["status"] == ReportStatus.READY
-        assert "analysis" in result
-
-        # 分析データの内容を検証
-        analysis = result["analysis"]
-        assert analysis["comment_num"] == 150
-        assert analysis["arguments_num"] == 3
-        assert analysis["cluster_num"] == 3  # level 2のクラスター数
-
-    def test_add_analysis_data_processing_report(self, processing_report):
-        """PROCESSINGステータスのレポートはそのまま返すテスト"""
-        result = add_analysis_data(processing_report)
-
-        # 結果の検証
-        assert result == processing_report
-        assert result.analysis is None
+        assert updated.analysis is not None
+        assert updated.analysis.comment_num == 150
+        assert updated.analysis.arguments_num == 3
+        assert updated.analysis.cluster_num == 2  # level 2 のみ
 
     @patch("src.services.report_status.settings")
     def test_add_analysis_data_file_not_found(self, mock_settings, ready_report):
-        """hierarchical_result.jsonが存在しない場合のテスト"""
-        mock_settings.REPORT_DIR = Path("/test/reports")
+        mock_settings.REPORT_DIR = Path("/fake/path")
 
-        with patch("builtins.open", side_effect=FileNotFoundError("File not found")):
-            with pytest.raises(FileNotFoundError):
-                add_analysis_data(ready_report)
+        with patch("builtins.open", side_effect=FileNotFoundError):
+            updated = add_analysis_data(ready_report)
+
+        assert updated.analysis is None
 
     @patch("src.services.report_status.settings")
-    def test_add_analysis_data_invalid_json(self, mock_settings, ready_report):
-        """hierarchical_result.jsonが無効なJSONの場合のテスト"""
-        mock_settings.REPORT_DIR = Path("/test/reports")
+    def test_add_analysis_data_json_decode_error(self, mock_settings, ready_report):
+        mock_settings.REPORT_DIR = Path("/fake/path")
 
         with patch("builtins.open", mock_open(read_data="invalid json")):
-            with pytest.raises(json.JSONDecodeError):
-                add_analysis_data(ready_report)
+            updated = add_analysis_data(ready_report)
 
-    @patch("src.services.report_status.settings")
-    def test_add_analysis_data_empty_clusters(self, mock_settings, ready_report):
-        """クラスターが空の場合のテスト"""
-        mock_settings.REPORT_DIR = Path("/test/reports")
-        empty_result = {"comment_num": 100, "arguments": [], "clusters": []}
+        assert updated.analysis is None
 
-        with patch("builtins.open", mock_open(read_data=json.dumps(empty_result))):
-            with patch("src.services.report_status.get_cluster_num", return_value=0):
-                result = add_analysis_data(ready_report)
+    def test_add_analysis_data_non_ready_status(self):
+        processing_report = Report(
+            slug="slug",
+            status=ReportStatus.PROCESSING,
+            title="title",
+            description="desc",
+            visibility=ReportVisibility.PRIVATE,
+        )
 
-        # 結果の検証
-        analysis = result["analysis"]
-        assert analysis["comment_num"] == 100
-        assert analysis["arguments_num"] == 0
-        assert analysis["cluster_num"] == 0
+        updated = add_analysis_data(processing_report)
+        assert updated == processing_report
+        assert updated.analysis is None

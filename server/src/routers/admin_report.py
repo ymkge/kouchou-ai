@@ -41,8 +41,7 @@ async def verify_admin_api_key(api_key: str = Security(api_key_header)):
 
 @router.get("/admin/reports")
 async def get_reports(api_key: str = Depends(verify_admin_api_key)) -> list[Report]:
-    all_reports = load_status_as_reports()
-    return list(map(add_analysis_data, all_reports))
+    return list(map(add_analysis_data, load_status_as_reports()))
 
 
 @router.post("/admin/reports", status_code=202)
