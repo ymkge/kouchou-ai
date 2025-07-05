@@ -1,9 +1,8 @@
-from collections import defaultdict
 import json
 import logging
 import threading
+from collections import defaultdict
 from datetime import UTC, datetime
-from typing import Dict
 
 import requests
 
@@ -238,7 +237,7 @@ def update_report_config(slug: str, updated_config: ReportConfigUpdate) -> dict:
 
 
 def add_analysis_data(report: Report):
-    if (report.status == ReportStatus.READY):
+    if report.status == ReportStatus.READY:
         new_report_dict = report.__dict__.copy()
         report_path = settings.REPORT_DIR / report.slug / "hierarchical_result.json"
         with open(report_path) as f:
@@ -246,13 +245,14 @@ def add_analysis_data(report: Report):
             new_report_dict["analysis"] = {
                 "comment_num": report_result["comment_num"],
                 "arguments_num": len(report_result["arguments"]),
-                "cluster_num": get_cluster_num(report_result)
+                "cluster_num": get_cluster_num(report_result),
             }
         return new_report_dict
     else:
         return report
 
-def get_cluster_num(result: dict) -> Dict[int, int]:
+
+def get_cluster_num(result: dict) -> dict[int, int]:
     array = [c["level"] for c in result["clusters"]]
     acc = defaultdict(int)
     for num in array:
