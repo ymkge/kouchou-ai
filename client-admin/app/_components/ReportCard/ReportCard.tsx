@@ -37,24 +37,41 @@ export function ReportCard({ report, reports, setReports }: Props) {
             : "-"}
         </Text>
       </GridItem>
-      <GridItem ml="2">
+      <GridItem ml="2" gridColumn={report.status !== "ready" ? "span 6" : "span 1"}>
         <ReportTtile report={report} />
       </GridItem>
-      <GridItem>{report.status === "ready" && <TokenUsage report={report} />}</GridItem>
-      <GridItem>
-        {report.status === "ready" && (
+      {report.status === "ready" && (
+        <>
+          <GridItem textStyle="body/md/bold" textAlign="center">
+            {report.analysis?.commentNum}
+          </GridItem>
+          <GridItem textStyle="body/md/bold" textAlign="center">
+            {report.analysis?.argumentsNum}
+          </GridItem>
+          <GridItem textStyle="body/md/bold" textAlign="center">
+            {report.analysis?.clusterNum}
+          </GridItem>
+        </>
+      )}
+      {report.status === "ready" && (
+        <GridItem>
+          <TokenUsage report={report} />
+        </GridItem>
+      )}
+      {report.status === "ready" && (
+        <GridItem>
           <ActionMenu
             report={report}
             setIsEditDialogOpen={setIsEditDialogOpen}
             setIsClusterEditDialogOpen={setIsClusterEditDialogOpen}
           />
-        )}
-      </GridItem>
+        </GridItem>
+      )}
       <GridItem>
         {report.status === "ready" && <VisibilityUpdate report={report} reports={reports} setReports={setReports} />}
         {report.status === "error" && <DeleteButton report={report} />}
       </GridItem>
-      <GridItem gridColumn="span 5">
+      <GridItem gridColumn="span 8">
         {(report.status === "processing" || report.status === "error") && (
           <ProgressSteps slug={report.slug} setReports={setReports} />
         )}
