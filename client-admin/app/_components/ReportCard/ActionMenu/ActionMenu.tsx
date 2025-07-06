@@ -22,9 +22,10 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
         </IconButton>
       </MenuTrigger>
       <Portal>
-        <MenuContent textStyle="body/md/bold">
+        <MenuContent>
           <MenuItem
             value="edit"
+            textStyle="body/md/bold"
             onClick={() => {
               setIsEditDialogOpen(true);
             }}
@@ -39,6 +40,7 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
           {report.status === "ready" && (
             <MenuItem
               value="edit-cluster"
+              textStyle="body/md/bold"
               onClick={() => {
                 setIsClusterEditDialogOpen(true);
               }}
@@ -54,7 +56,8 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
           {report.status === "ready" && report.isPubcom && (
             <MenuRoot positioning={{ placement: "right-start", gutter: 4 }}>
               <MenuTriggerItem
-                value="csv-download"
+                value="csv-download-list"
+                textStyle="body/md/bold"
                 _icon={{
                   w: 5,
                   h: 5,
@@ -65,9 +68,10 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
               </MenuTriggerItem>
               <Portal>
                 <MenuPositioner>
-                  <MenuContent textStyle="body/md/bold">
+                  <MenuContent>
                     <MenuItem
                       value="csv-download"
+                      textStyle="body/md/bold"
                       onClick={async () => {
                         await csvDownload(report.slug);
                       }}
@@ -76,6 +80,7 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
                     </MenuItem>
                     <MenuItem
                       value="csv-download-for-windows"
+                      textStyle="body/md/bold"
                       onClick={async () => {
                         await csvDownloadForWindows(report.slug);
                       }}
@@ -90,6 +95,7 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
           <MenuItem
             value="delete"
             color="fg.error"
+            textStyle="body/md/bold"
             onClick={async () => {
               await reportDelete(report.title, report.slug);
             }}

@@ -66,12 +66,13 @@ export function Visibility({ report, reports, setReports }: Props) {
         </IconButton>
       </MenuTrigger>
       <Portal>
-        <MenuContent textStyle="body/md/bold">
+        <MenuContent>
           {Object.entries(iconStyles).map(([key, style]) => (
             <MenuItem
               key={key}
               value={key}
               color={style.color}
+              textStyle="body/md/bold"
               border="1px solid"
               borderColor="transparent"
               _icon={{
