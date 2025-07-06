@@ -15,6 +15,7 @@ export function TokenUsage({ report }: Props) {
     <Tooltip
       showArrow
       closeOnPointerDown={false}
+      closeOnClick={false}
       openDelay={100}
       closeDelay={100}
       content={
