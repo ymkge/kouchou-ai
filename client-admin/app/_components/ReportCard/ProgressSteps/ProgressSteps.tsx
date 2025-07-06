@@ -6,27 +6,17 @@ import { Processing } from "./Processing";
 import { useReportProgressPoll } from "./useReportProgressPolling";
 
 const steps = [
-  { id: 1, title: "抽出", description: "データの抽出" },
-  { id: 2, title: "埋め込み", description: "埋め込み表現の生成" },
-  { id: 3, title: "意見グループ化", description: "意見グループ化の実施" },
-  { id: 4, title: "初期ラベリング", description: "初期ラベルの付与" },
-  { id: 5, title: "統合ラベリング", description: "ラベルの統合" },
-  { id: 6, title: "概要生成", description: "概要の作成" },
-  { id: 7, title: "集約", description: "結果の集約" },
-  { id: 8, title: "可視化", description: "結果の可視化" },
+  { title: "抽出", key: "extraction" },
+  { title: "埋め込み", key: "embedding" },
+  { title: "意見グループ化", key: "hierarchical_clustering" },
+  { title: "初期ラベリング", key: "hierarchical_initial_labelling" },
+  { title: "統合ラベリング", key: "hierarchical_merge_labelling" },
+  { title: "概要生成", key: "hierarchical_overview" },
+  { title: "集約", key: "hierarchical_aggregation" },
+  { title: "可視化", key: "hierarchical_visualization" },
 ] as const;
 
-// ステップの定義
-export const stepKeys = [
-  "extraction",
-  "embedding",
-  "hierarchical_clustering",
-  "hierarchical_initial_labelling",
-  "hierarchical_merge_labelling",
-  "hierarchical_overview",
-  "hierarchical_aggregation",
-  "hierarchical_visualization",
-] as const;
+export const stepKeys = steps.map(({ key }) => key);
 
 const stepItemstyle = {
   error: {
@@ -80,7 +70,7 @@ export const ProgressSteps = ({ slug, setReports }: Props) => {
     <Steps.Root defaultStep={currentStepIndex} count={steps.length} bg={stepItemstyle[status].processing} mt="2" p="6">
       <Steps.List gap="2">
         {steps.map((step, index) => (
-          <Steps.Item key={step.id} index={index} gap="2" flex="auto" textStyle="body/sm">
+          <Steps.Item key={step.key} index={index} gap="2" flex="auto" textStyle="body/sm">
             {index < currentStepIndex ? (
               <>
                 <Center w="6" h="6" bg={stepItemstyle[status].completed} borderRadius="full">
