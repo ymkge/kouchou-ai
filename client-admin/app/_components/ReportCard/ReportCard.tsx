@@ -1,5 +1,6 @@
 import type { Report } from "@/type";
-import { GridItem, Text } from "@chakra-ui/react";
+import { GridItem, HStack, IconButton, Link, Text } from "@chakra-ui/react";
+import { Bot, LinkIcon } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { ActionMenu } from "./ActionMenu/ActionMenu";
 import { ClusterEditDialog } from "./ClusterEditDialog/ClusterEditDialog";
@@ -37,9 +38,18 @@ export function ReportCard({ report, reports, setReports }: Props) {
             : "-"}
         </Text>
       </GridItem>
-      <GridItem ml="2" gridColumn={report.status !== "ready" ? "span 6" : "span 1"}>
+      <GridItem ml="2">
         <ReportTtile report={report} />
       </GridItem>
+      {report.status === "ready" && (
+        <GridItem>
+          <Link href={`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`} target="_blank">
+            <IconButton variant="ghost" size="lg" _hover={{ bg: "blue.50", boxShadow: "none" }}>
+              <LinkIcon />
+            </IconButton>
+          </Link>
+        </GridItem>
+      )}
       {report.status === "ready" && (
         <>
           <GridItem textStyle="body/md/bold" textAlign="center">
@@ -67,11 +77,33 @@ export function ReportCard({ report, reports, setReports }: Props) {
           />
         </GridItem>
       )}
-      <GridItem>
-        {report.status === "ready" && <VisibilityUpdate report={report} reports={reports} setReports={setReports} />}
-        {report.status === "error" && <DeleteButton report={report} />}
-      </GridItem>
-      <GridItem gridColumn="span 8">
+      {report.status === "ready" && (
+        <GridItem>
+          <VisibilityUpdate report={report} reports={reports} setReports={setReports} />
+        </GridItem>
+      )}
+      {report.status === "processing" && (
+        <GridItem gridColumn="span 7" ml="2">
+          <HStack color="font.processing">
+            <Bot />
+            <Text textStyle="body/sm/bold">AIによるレポート作成中です。完了までしばらくお待ちください。</Text>
+          </HStack>
+        </GridItem>
+      )}
+      {report.status === "error" && (
+        <>
+          <GridItem gridColumn="span 6" ml="2">
+            <HStack color="font.error">
+              <Bot />
+              <Text textStyle="body/sm/bold">エラーが発生しました。レポート生成設定を調整してください。</Text>
+            </HStack>
+          </GridItem>
+          <GridItem>
+            <DeleteButton report={report} />
+          </GridItem>
+        </>
+      )}
+      <GridItem gridColumn="span 9" mt="3">
         {(report.status === "processing" || report.status === "error") && (
           <ProgressSteps slug={report.slug} setReports={setReports} />
         )}

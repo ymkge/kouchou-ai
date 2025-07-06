@@ -13,14 +13,15 @@ export function ReportCardList({ reports: _reports }: Props) {
   const [reports, setReports] = useState<Report[]>(_reports);
 
   return (
-    <Grid gridTemplateColumns="170px minmax(300px, 1fr) repeat(3, 75px) repeat(3, min-content)" rowGap="2">
-      <Grid gridTemplateColumns="subgrid" gridColumn="span 8" textStyle="body/sm">
+    <Grid gridTemplateColumns="170px minmax(300px, 1fr) 52px repeat(3, 83px) repeat(3, min-content)" rowGap="2">
+      <Grid gridTemplateColumns="subgrid" gridColumn="span 9" textStyle="body/sm">
         <GridItem bg="blue.100" py="3" px="6" borderLeftRadius="sm">
           作成日時
         </GridItem>
         <GridItem bg="blue.100" py="3">
           レポート名
         </GridItem>
+        <GridItem bg="blue.100" />
         <GridItem bg="blue.100" py="3" textAlign="center">
           コメント数
         </GridItem>
@@ -39,7 +40,7 @@ export function ReportCardList({ reports: _reports }: Props) {
           key={report.slug}
           p="6"
           gridTemplateColumns="subgrid"
-          gridColumn="span 8"
+          gridColumn="span 9"
           columnGap="2"
           bgColor="white"
           borderRadius="sm"
