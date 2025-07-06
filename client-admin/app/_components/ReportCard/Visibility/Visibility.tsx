@@ -35,7 +35,7 @@ const iconStyles = {
   },
 };
 
-export function VisibilityUpdate({ report, reports, setReports }: Props) {
+export function Visibility({ report, reports, setReports }: Props) {
   return (
     <MenuRoot
       onSelect={async (e) => {
@@ -80,7 +80,7 @@ export function VisibilityUpdate({ report, reports, setReports }: Props) {
               }}
               _hover={{
                 borderColor: style.borderColor,
-                bg: style.bg
+                bg: style.bg,
               }}
             >
               {style.icon}
