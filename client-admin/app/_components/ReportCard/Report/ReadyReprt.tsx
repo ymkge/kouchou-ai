@@ -1,5 +1,5 @@
 import type { Report } from "@/type";
-import { GridItem, IconButton, Link } from "@chakra-ui/react";
+import { GridItem, IconButton } from "@chakra-ui/react";
 import { LinkIcon } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { ActionMenu } from "../ActionMenu/ActionMenu";
@@ -29,11 +29,11 @@ export function ReadyReport({ report, reports, setReports }: Props) {
         <ReportTtile report={report} />
       </GridItem>
       <GridItem>
-        <Link href={`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`} target="_blank">
-          <IconButton variant="ghost" size="lg" _hover={{ bg: "blue.50", boxShadow: "none" }}>
+        <IconButton variant="ghost" size="lg" _hover={{ bg: "blue.50", boxShadow: "none" }} asChild>
+          <a href={`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`} target="_blank" rel="noreferrer">
             <LinkIcon />
-          </IconButton>
-        </Link>
+          </a>
+        </IconButton>
       </GridItem>
       <GridItem textStyle="body/md/bold" textAlign="center">
         {report.analysis?.commentNum}
