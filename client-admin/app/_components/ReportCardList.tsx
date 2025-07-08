@@ -23,7 +23,7 @@ export function ReportCardList({ reports: _reports }: Props) {
         </GridItem>
         <GridItem bg="blue.100" />
         <GridItem bg="blue.100" py="3" textAlign="center">
-          コメント数
+          コメント
         </GridItem>
         <GridItem bg="blue.100" py="3" textAlign="center">
           意見
@@ -40,6 +40,7 @@ export function ReportCardList({ reports: _reports }: Props) {
           key={report.slug}
           p="6"
           gridTemplateColumns="subgrid"
+          gridTemplateRows="44px auto"
           gridColumn="span 9"
           columnGap="2"
           bgColor="white"
