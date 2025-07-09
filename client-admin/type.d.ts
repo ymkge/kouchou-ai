@@ -28,6 +28,11 @@ export type Report = {
   estimatedCost?: number; // 推定コスト（USD）
   provider?: string; // LLMプロバイダー
   model?: string; // LLMモデル
+  analysis?: {
+    commentNum: number
+    argumentsNum: number
+    clusterNum: number
+  }
 };
 
 export type Result = {

@@ -18,6 +18,7 @@ from src.services.llm_models import get_models_by_provider
 from src.services.llm_pricing import LLMPricing
 from src.services.report_launcher import execute_aggregation, launch_report_generation
 from src.services.report_status import (
+    add_analysis_data,
     invalidate_report_cache,
     load_status_as_reports,
     set_status,
@@ -40,7 +41,7 @@ async def verify_admin_api_key(api_key: str = Security(api_key_header)):
 
 @router.get("/admin/reports")
 async def get_reports(api_key: str = Depends(verify_admin_api_key)) -> list[Report]:
-    return load_status_as_reports()
+    return list(map(add_analysis_data, load_status_as_reports()))
 
 
 @router.post("/admin/reports", status_code=202)

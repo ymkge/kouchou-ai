@@ -7,7 +7,7 @@ import requests
 
 from src.config import settings
 from src.schemas.admin_report import ReportInput
-from src.schemas.report import Report, ReportStatus, ReportVisibility
+from src.schemas.report import AnalysisData, Report, ReportStatus, ReportVisibility
 from src.schemas.report_config import ReportConfigUpdate
 from src.services.llm_pricing import LLMPricing
 
@@ -233,3 +233,34 @@ def update_report_config(slug: str, updated_config: ReportConfigUpdate) -> dict:
 
     invalidate_report_cache(slug)
     return _report_status[slug]
+
+
+def add_analysis_data(report: Report) -> Report:
+    if report.status != ReportStatus.READY:
+        return report
+
+    report_path = settings.REPORT_DIR / report.slug / "hierarchical_result.json"
+    try:
+        with open(report_path) as f:
+            report_result = json.load(f)
+
+        analysis_data = AnalysisData(
+            comment_num=report_result.get("comment_num", 0),
+            arguments_num=len(report_result.get("arguments", [])),
+            cluster_num=get_cluster_num(report_result),
+        )
+
+        return report.model_copy(update={"analysis": analysis_data})
+
+    except FileNotFoundError:
+        logger.warning(f"[add_analysis_data] File not found: {report_path}")
+    except json.JSONDecodeError as e:
+        logger.error(f"[add_analysis_data] JSON decode error for {report_path}: {e}")
+    except Exception as e:
+        logger.exception(f"[add_analysis_data] Unexpected error for {report_path}: {e}")
+
+    return report
+
+
+def get_cluster_num(result: dict) -> int:
+    return sum(1 for c in result.get("clusters", []) if c.get("level") == 2)

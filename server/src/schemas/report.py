@@ -16,6 +16,12 @@ class ReportVisibility(Enum):
     PRIVATE = "private"
 
 
+class AnalysisData(SchemaBaseModel):
+    comment_num: int
+    arguments_num: int
+    cluster_num: int
+
+
 class Report(SchemaBaseModel):
     slug: str
     title: str
@@ -30,6 +36,7 @@ class Report(SchemaBaseModel):
     estimated_cost: float | None = None  # 推定コスト（USD）
     provider: str | None = None  # LLMプロバイダー
     model: str | None = None  # LLMモデル
+    analysis: AnalysisData | None = None
 
     @property
     def is_publicly_visible(self) -> bool:
