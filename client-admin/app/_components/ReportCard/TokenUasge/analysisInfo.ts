@@ -4,7 +4,7 @@ export function analysisInfo(report: Report) {
   const tokenUsageInput = report.tokenUsageInput?.toLocaleString();
   const tokenUsageOutput = report.tokenUsageOutput?.toLocaleString();
   const tokenUsageTotal = report.tokenUsage?.toLocaleString();
-  const estimatedCost = typeof report.estimatedCost === "number" ? `$${report.estimatedCost?.toFixed(6)}` : "情報なし";
+  const estimatedCost = typeof report.estimatedCost === "number" ? `$${report.estimatedCost.toFixed(6)}` : "情報なし";
   const model = report.provider && report.model ? `${report.provider} ${report.model}` : null;
 
   const hasInput = report.tokenUsageInput !== undefined && report.tokenUsageOutput !== undefined;

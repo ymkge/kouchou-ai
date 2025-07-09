@@ -21,20 +21,7 @@ type Props = {
 
 const duration = 0.3;
 
-function Left({ report }: { report: Report }) {
-  return (
-    <>
-      <GridItem>
-        <ReportCreatedAt createdAt={report.createdAt} />
-      </GridItem>
-      <GridItem ml="2">
-        <ReportTtile report={report} />
-      </GridItem>
-    </>
-  );
-}
-
-function Right({ report, reports, setReports }: Props) {
+function ReportDataAndActions({ report, reports, setReports }: Props) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
   return (
@@ -139,8 +126,13 @@ function Right({ report, reports, setReports }: Props) {
 export function ReportCard({ report, reports, setReports }: Props) {
   return (
     <>
-      {<Left report={report} />}
-      {<Right report={report} reports={reports} setReports={setReports} />}
+      <GridItem>
+        <ReportCreatedAt createdAt={report.createdAt} />
+      </GridItem>
+      <GridItem ml="2">
+        <ReportTtile report={report} />
+      </GridItem>
+      {<ReportDataAndActions report={report} reports={reports} setReports={setReports} />}
       <AnimatePresence>
         {(report.status === "processing" || report.status === "error") && (
           <motion.div

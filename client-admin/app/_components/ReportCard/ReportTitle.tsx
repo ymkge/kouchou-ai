@@ -11,7 +11,7 @@ export function ReportTtile({ report }: Props) {
   const ref = useRef<HTMLParagraphElement>(null);
   const [isOverflown, setIsOverflown] = useState(false);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // biome-ignore lint/correctness/useExhaustiveDependencies: レポートタイトル編集後に文字数の長さを再判定する
   useEffect(() => {
     const element = ref.current;
     setIsOverflown(element ? element.scrollWidth > element.clientWidth : false);
