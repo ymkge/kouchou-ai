@@ -59,13 +59,13 @@ function Right({ report, reports, setReports }: Props) {
               </IconButton>
             </GridItem>
             <GridItem textStyle="body/md/bold" textAlign="center">
-              {report.analysis?.commentNum || 999}
+              {report.analysis.commentNum}
             </GridItem>
             <GridItem textStyle="body/md/bold" textAlign="center">
-              {report.analysis?.argumentsNum || 999}
+              {report.analysis.argumentsNum}
             </GridItem>
             <GridItem textStyle="body/md/bold" textAlign="center">
-              {report.analysis?.clusterNum || 999}
+              {report.analysis.clusterNum}
             </GridItem>
             <GridItem>
               <TokenUsage report={report} />
