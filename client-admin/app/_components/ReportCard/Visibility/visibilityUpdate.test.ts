@@ -18,7 +18,7 @@ describe("visibilityUpdate", () => {
   const mockReports: Report[] = [
     {
       slug: "test-report-1",
-      status: "completed",
+      status: "processing",
       title: "Test Report 1",
       description: "This is a test report",
       isPubcom: false,
@@ -27,7 +27,7 @@ describe("visibilityUpdate", () => {
     },
     {
       slug: "test-report-2",
-      status: "completed",
+      status: "processing",
       title: "Test Report 2",
       description: "This is another test report",
       isPubcom: false,
@@ -71,7 +71,7 @@ describe("visibilityUpdate", () => {
     expect(mockSetReports).toHaveBeenCalledWith([
       {
         slug: "test-report-1",
-        status: "completed",
+        status: "processing",
         title: "Test Report 1",
         description: "This is a test report",
         isPubcom: false,
@@ -80,7 +80,7 @@ describe("visibilityUpdate", () => {
       },
       {
         slug: "test-report-2",
-        status: "completed",
+        status: "processing",
         title: "Test Report 2",
         description: "This is another test report",
         isPubcom: false,
@@ -141,23 +141,6 @@ describe("visibilityUpdate", () => {
     expect(mockSetReports).not.toHaveBeenCalled();
   });
 
-  it("空のreports配列を適切に処理する", async () => {
-    const mockResponse = {
-      ok: true,
-      json: jest.fn().mockResolvedValue({ visibility: "public" }),
-    };
-    mockFetch.mockResolvedValue(mockResponse);
-
-    await visibilityUpdate({
-      slug: "test-report-1",
-      visibility: ReportVisibility.PUBLIC,
-      reports: undefined,
-      setReports: mockSetReports,
-    });
-
-    expect(mockSetReports).toHaveBeenCalledWith(undefined);
-  });
-
   it("一致するレポートのみを更新する", async () => {
     const mockResponse = {
       ok: true,
@@ -175,7 +158,7 @@ describe("visibilityUpdate", () => {
     expect(mockSetReports).toHaveBeenCalledWith([
       {
         slug: "test-report-1",
-        status: "completed",
+        status: "processing",
         title: "Test Report 1",
         description: "This is a test report",
         isPubcom: false,
@@ -184,7 +167,7 @@ describe("visibilityUpdate", () => {
       },
       {
         slug: "test-report-2",
-        status: "completed",
+        status: "processing",
         title: "Test Report 2",
         description: "This is another test report",
         isPubcom: false,

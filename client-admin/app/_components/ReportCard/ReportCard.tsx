@@ -9,8 +9,8 @@ import { DeleteButton } from "./DeleteButton";
 import { ProgressSteps } from "./ProgressSteps/ProgressSteps";
 import { ReportCreatedAt } from "./ReportCreatedAt";
 import { ReportEditDialog } from "./ReportEditDialog/ReportEditDialog";
-import { ReportTtile } from "./ReportTitle";
-import { TokenUsage } from "./TokenUasge/TokenUsage";
+import { ReportTitle } from "./ReportTitle";
+import { TokenUsage } from "./TokenUsage/TokenUsage";
 import { Visibility } from "./Visibility/Visibility";
 
 type Props = {
@@ -130,7 +130,7 @@ export function ReportCard({ report, reports, setReports }: Props) {
         <ReportCreatedAt createdAt={report.createdAt} />
       </GridItem>
       <GridItem ml="2">
-        <ReportTtile report={report} />
+        <ReportTitle report={report} />
       </GridItem>
       {<ReportDataAndActions report={report} reports={reports} setReports={setReports} />}
       <AnimatePresence>

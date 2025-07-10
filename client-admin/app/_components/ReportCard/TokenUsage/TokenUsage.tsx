@@ -32,7 +32,7 @@ export function TokenUsage({ report }: Props) {
         </VStack>
       }
     >
-      <IconButton variant="ghost" size="lg">
+      <IconButton variant="ghost" size="lg" aria-label="トークン使用量の詳細を表示">
         <InfoIcon />
       </IconButton>
     </Tooltip>

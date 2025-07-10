@@ -7,7 +7,7 @@ type Props = {
   report: Report;
 };
 
-export function ReportTtile({ report }: Props) {
+export function ReportTitle({ report }: Props) {
   const ref = useRef<HTMLParagraphElement>(null);
   const [isOverflown, setIsOverflown] = useState(false);
 
@@ -24,6 +24,7 @@ export function ReportTtile({ report }: Props) {
           w="full"
           href={`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`}
           target="_blank"
+          rel="noopener noreferrer"
           _hover={{ color: "font.link" }}
         >
           <Text ref={ref} textStyle="body/md/bold" truncate>
