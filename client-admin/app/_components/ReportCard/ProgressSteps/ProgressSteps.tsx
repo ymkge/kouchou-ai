@@ -67,7 +67,7 @@ export const ProgressSteps = ({ slug, setReports }: Props) => {
   }, [progress, isCompleted, isError, lastProgress, setReports]);
 
   return (
-    <Steps.Root defaultStep={currentStepIndex} count={steps.length} bg={stepItemstyle[status].processing} mt="2" p="6">
+    <Steps.Root step={currentStepIndex} count={steps.length} bg={stepItemstyle[status].processing} mt="2" p="6">
       <Steps.List gap="2">
         {steps.map((step, index) => (
           <Steps.Item key={step.key} index={index} gap="2" flex="auto" textStyle="body/sm">
