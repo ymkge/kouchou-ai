@@ -13,7 +13,7 @@ export function ReportCreatedAt({ createdAt }: { createdAt?: string }) {
             minute: "2-digit",
             hour12: false,
           })
-        : "-"}
+        : "日時データなし"}
     </Text>
   );
 }
