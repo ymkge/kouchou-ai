@@ -176,11 +176,11 @@ jobs:
             echo "❌ APIドメインが取得できませんでした"
             exit 1
           fi
-          
+
           # リトライ付きヘルスチェック
           RETRY_COUNT=6
           RETRY_INTERVAL=20
-          
+
           for i in $(seq 1 $RETRY_COUNT); do
             echo "ヘルスチェック試行 $i/$RETRY_COUNT..."
             if curl -f "https://$API_DOMAIN/" --max-time 10 > /dev/null 2>&1; then
@@ -189,6 +189,6 @@ jobs:
             fi
             [ $i -lt $RETRY_COUNT ] && sleep $RETRY_INTERVAL
           done
-          
+
           echo "❌ ヘルスチェック失敗"
           exit 1
