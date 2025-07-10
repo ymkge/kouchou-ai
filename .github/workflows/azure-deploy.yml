@@ -79,6 +79,7 @@ jobs:
 
       - name: Azure環境のデプロイ
         run: |
+          set -euo pipefail
           # レポートのバックアップを取得
           if [ -n "$API_DOMAIN" ]; then
             echo "レポートのバックアップを取得中..."
@@ -89,17 +90,16 @@ jobs:
           fi
 
           # 全イメージを並列ビルド
+          build_pids=()
           docker build --platform linux/amd64 \
             -t ${AZURE_ACR_NAME}.azurecr.io/api:latest \
-            ./server &
-
+            ./server & build_pids+=("$!")
           docker build --platform linux/amd64 \
             --build-arg NEXT_PUBLIC_API_BASEPATH="https://${API_DOMAIN}" \
             --build-arg NEXT_PUBLIC_PUBLIC_API_KEY="${PUBLIC_API_KEY}" \
             --build-arg API_BASEPATH="https://${API_DOMAIN}" \
             -t ${AZURE_ACR_NAME}.azurecr.io/client:latest \
-            ./client &
-
+            ./client & build_pids+=("$!")
           docker build --platform linux/amd64 \
             --build-arg NEXT_PUBLIC_CLIENT_BASEPATH="https://${CLIENT_DOMAIN}" \
             --build-arg NEXT_PUBLIC_ADMIN_API_KEY="${ADMIN_API_KEY}" \
@@ -109,44 +109,52 @@ jobs:
             --build-arg BASIC_AUTH_PASSWORD="${BASIC_AUTH_PASSWORD}" \
             --build-arg API_BASEPATH="https://${API_DOMAIN}" \
             -t ${AZURE_ACR_NAME}.azurecr.io/client-admin:latest \
-            ./client-admin &
-
+            ./client-admin & build_pids+=("$!")
           docker build --platform linux/amd64 \
             --build-arg NEXT_PUBLIC_API_BASEPATH="https://${API_DOMAIN}" \
             --build-arg NEXT_PUBLIC_PUBLIC_API_KEY="${PUBLIC_API_KEY}" \
             --build-arg API_BASEPATH="https://${API_DOMAIN}" \
             -f ./client-static-build/Dockerfile \
             -t ${AZURE_ACR_NAME}.azurecr.io/client-static-build:latest \
-            . &
+            . & build_pids+=("$!")
 
-          # 全ビルドの完了を待機
-          wait
+          # 全ビルドの完了を待機 (失敗を確実に検知)
+          for pid in "${build_pids[@]}"; do
+            wait "$pid"
+          done
 
           # イメージを並列プッシュ
-          docker push ${AZURE_ACR_NAME}.azurecr.io/api:latest &
-          docker push ${AZURE_ACR_NAME}.azurecr.io/client:latest &
-          docker push ${AZURE_ACR_NAME}.azurecr.io/client-admin:latest &
-          docker push ${AZURE_ACR_NAME}.azurecr.io/client-static-build:latest &
+          push_pids=()
+          docker push ${AZURE_ACR_NAME}.azurecr.io/api:latest & push_pids+=("$!")
+          docker push ${AZURE_ACR_NAME}.azurecr.io/client:latest & push_pids+=("$!")
+          docker push ${AZURE_ACR_NAME}.azurecr.io/client-admin:latest & push_pids+=("$!")
+          docker push ${AZURE_ACR_NAME}.azurecr.io/client-static-build:latest & push_pids+=("$!")
 
-          # 全プッシュの完了を待機
-          wait
+          # 全プッシュの完了を待機 (失敗を確実に検知)
+          for pid in "${push_pids[@]}"; do
+            wait "$pid"
+          done
 
           # ヘルスプローブとポリシーの適用
           make azure-apply-policies || echo "ポリシー適用をスキップ"
 
       - name: コンテナ更新
         run: |
+          set -euo pipefail
           # 全コンテナのイメージを更新
+          update_pids=()
           az containerapp update --name api --resource-group ${AZURE_RESOURCE_GROUP} \
             --image ${AZURE_ACR_NAME}.azurecr.io/api:latest \
-            --cpu 1.0 --memory 2.0Gi &
+            --cpu 1.0 --memory 2.0Gi & update_pids+=("$!")
           az containerapp update --name client --resource-group ${AZURE_RESOURCE_GROUP} \
-            --image ${AZURE_ACR_NAME}.azurecr.io/client:latest &
+            --image ${AZURE_ACR_NAME}.azurecr.io/client:latest & update_pids+=("$!")
           az containerapp update --name client-admin --resource-group ${AZURE_RESOURCE_GROUP} \
-            --image ${AZURE_ACR_NAME}.azurecr.io/client-admin:latest &
+            --image ${AZURE_ACR_NAME}.azurecr.io/client-admin:latest & update_pids+=("$!")
           az containerapp update --name client-static-build --resource-group ${AZURE_RESOURCE_GROUP} \
-            --image ${AZURE_ACR_NAME}.azurecr.io/client-static-build:latest &
-          wait
+            --image ${AZURE_ACR_NAME}.azurecr.io/client-static-build:latest & update_pids+=("$!")
+          for pid in "${update_pids[@]}"; do
+            wait "$pid"
+          done
 
           # APIコンテナの環境変数設定
           az containerapp update --name api --resource-group ${AZURE_RESOURCE_GROUP} \
