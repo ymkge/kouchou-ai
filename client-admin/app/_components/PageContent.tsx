@@ -11,8 +11,8 @@ type Props = {
 export function PageContent({ reports }: Props) {
   return (
     <>
-      <Heading textAlign="left" fontSize="xl" mb={8}>
-        レポート一覧
+      <Heading textStyle="heading/xl">
+        レポート管理
       </Heading>
       {reports.length === 0 ? (
         <Empty />
