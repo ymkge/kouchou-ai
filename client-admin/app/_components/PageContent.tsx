@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import type { Report } from "@/type";
 import { Box, Flex, HStack, Heading, Icon, Text, VStack } from "@chakra-ui/react";
 import { Eye, EyeClosedIcon, LockKeyhole, Plus } from "lucide-react";
-import { useState } from "react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 import { BuildDownloadButton } from "./BuildDownloadButton/BuildDownloadButton";
 import { Empty } from "./Empty";
 import { ReportCardList } from "./ReportCardList";
@@ -16,9 +17,14 @@ type Props = {
 export function PageContent({ reports: _reports }: Props) {
   const [reports, setReports] = useState<Report[]>(_reports);
 
-  const publicCount = reports.filter((report) => report.visibility === "public").length;
-  const unlistedCount = reports.filter((report) => report.visibility === "unlisted").length;
-  const privateCount = reports.filter((report) => report.visibility === "private").length;
+  const counts = useMemo(
+    () => ({
+      public: reports.filter((report) => report.visibility === "public").length,
+      unlisted: reports.filter((report) => report.visibility === "unlisted").length,
+      private: reports.filter((report) => report.visibility === "private").length,
+    }),
+    [reports],
+  );
 
   return (
     <>
@@ -31,7 +37,7 @@ export function PageContent({ reports: _reports }: Props) {
                 <Eye />
               </Icon>
               <Text textStyle="body/lg/bold" lineHeight="1.38">
-                {publicCount}
+                {counts.public}
               </Text>
             </VStack>
             <VStack gap="2" w="88px" h="80px" bg="white" justifyContent="center">
@@ -39,7 +45,7 @@ export function PageContent({ reports: _reports }: Props) {
                 <LockKeyhole />
               </Icon>
               <Text textStyle="body/lg/bold" lineHeight="1.38">
-                {unlistedCount}
+                {counts.unlisted}
               </Text>
             </VStack>
             <VStack gap="2" w="88px" h="80px" bg="white" justifyContent="center">
@@ -47,7 +53,7 @@ export function PageContent({ reports: _reports }: Props) {
                 <EyeClosedIcon />
               </Icon>
               <Text textStyle="body/lg/bold" lineHeight="1.38">
-                {privateCount}
+                {counts.private}
               </Text>
             </VStack>
           </Flex>
@@ -55,10 +61,10 @@ export function PageContent({ reports: _reports }: Props) {
       </Box>
       <Flex justifyContent="flex-end" mb="4">
         <Button size="md" asChild>
-          <a href="/create">
+          <Link href="/create">
             <Plus />
             新規作成
-          </a>
+          </Link>
         </Button>
       </Flex>
       {reports.length === 0 ? (
