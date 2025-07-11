@@ -1,7 +1,10 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import type { Report } from "@/type";
 import { Box, Flex, HStack, Heading, Icon, Text, VStack } from "@chakra-ui/react";
 import { Eye, EyeClosedIcon, LockKeyhole, Plus } from "lucide-react";
+import { useState } from "react";
 import { BuildDownloadButton } from "./BuildDownloadButton/BuildDownloadButton";
 import { Empty } from "./Empty";
 import { ReportCardList } from "./ReportCardList";
@@ -10,7 +13,13 @@ type Props = {
   reports: Report[];
 };
 
-export function PageContent({ reports }: Props) {
+export function PageContent({ reports: _reports }: Props) {
+  const [reports, setReports] = useState<Report[]>(_reports);
+
+  const publicCount = reports.filter((report) => report.visibility === "public").length;
+  const unlistedCount = reports.filter((report) => report.visibility === "unlisted").length;
+  const privateCount = reports.filter((report) => report.visibility === "private").length;
+
   return (
     <>
       <Box mb="12">
@@ -22,7 +31,7 @@ export function PageContent({ reports }: Props) {
                 <Eye />
               </Icon>
               <Text textStyle="body/lg/bold" lineHeight="1.38">
-                0
+                {publicCount}
               </Text>
             </VStack>
             <VStack gap="2" w="88px" h="80px" bg="white" justifyContent="center">
@@ -30,7 +39,7 @@ export function PageContent({ reports }: Props) {
                 <LockKeyhole />
               </Icon>
               <Text textStyle="body/lg/bold" lineHeight="1.38">
-                0
+                {unlistedCount}
               </Text>
             </VStack>
             <VStack gap="2" w="88px" h="80px" bg="white" justifyContent="center">
@@ -38,7 +47,7 @@ export function PageContent({ reports }: Props) {
                 <EyeClosedIcon />
               </Icon>
               <Text textStyle="body/lg/bold" lineHeight="1.38">
-                0
+                {privateCount}
               </Text>
             </VStack>
           </Flex>
@@ -56,7 +65,7 @@ export function PageContent({ reports }: Props) {
         <Empty />
       ) : (
         <>
-          <ReportCardList reports={reports} />
+          <ReportCardList reports={reports} setReports={setReports} />
           <HStack justify="center" mt={10}>
             <BuildDownloadButton />
           </HStack>
