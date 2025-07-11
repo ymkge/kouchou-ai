@@ -34,9 +34,9 @@ export default async function Page() {
     const reports: Report[] = await response.json();
 
     return (
-      <div className="container">
+      <Box className="container" bgColor="bg.secondary">
         <Header />
-        <Box mx="auto" maxW="1000px" px="6" py="12">
+        <Box mx="auto" maxW="1024px" boxSizing="content-box" px="6" py="12">
           <Heading textAlign="left" fontSize="xl" mb={8}>
             レポート一覧
           </Heading>
@@ -54,7 +54,7 @@ export default async function Page() {
             </>
           )}
         </Box>
-      </div>
+      </Box>
     );
   } catch (error) {
     console.error("Error fetching reports:", error);

@@ -193,7 +193,8 @@ describe("useReportProgressPoll", () => {
     }
 
     await waitFor(() => {
-      expect(result.current.progress).toBe("error");
+      expect(result.current.progress).toBe("loading");
+      expect(result.current.isError).toBe(true);
     });
   });
 
@@ -212,7 +213,8 @@ describe("useReportProgressPoll", () => {
     }
 
     await waitFor(() => {
-      expect(result.current.progress).toBe("error");
+      expect(result.current.progress).toBe("loading");
+      expect(result.current.isError).toBe(true);
     });
   });
 
