@@ -8,7 +8,6 @@ import { updateReportVisibility } from "./actions";
 
 type Props = {
   report: Report;
-  reports: Report[];
   setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
@@ -36,7 +35,7 @@ const iconStyles = {
   },
 };
 
-export function Visibility({ report, reports, setReports }: Props) {
+export function Visibility({ report, setReports }: Props) {
   return (
     <MenuRoot
       onSelect={async (e) => {
@@ -45,10 +44,11 @@ export function Visibility({ report, reports, setReports }: Props) {
         const result = await updateReportVisibility(report.slug, e.value as ReportVisibility);
 
         if (result.success) {
-          const updatedReports = reports.map((r) =>
-            r.slug === report.slug ? { ...r, visibility: result.visibility } : r,
+          setReports((prevReports) =>
+            prevReports.map((r) =>
+              r.slug === report.slug ? { ...r, visibility: result.visibility } : r,
+            ),
           );
-          setReports(updatedReports);
         } else {
           toaster.create({
             type: "error",
