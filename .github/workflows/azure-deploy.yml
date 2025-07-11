@@ -138,6 +138,18 @@ jobs:
           # ヘルスプローブとポリシーの適用
           make azure-apply-policies || echo "ポリシー適用をスキップ"
 
+      - name: API用シークレット登録
+        run: |
+          az containerapp secret set \
+            --name api --resource-group ${AZURE_RESOURCE_GROUP} \
+            --secrets \
+              OPENAI_API_KEY=${OPENAI_API_KEY} \
+              PUBLIC_API_KEY=${PUBLIC_API_KEY} \
+              ADMIN_API_KEY=${ADMIN_API_KEY} \
+              REVALIDATE_SECRET=${REVALIDATE_SECRET} \
+              AZURE_BLOB_STORAGE_ACCOUNT_NAME=${AZURE_BLOB_STORAGE_ACCOUNT_NAME} \
+              AZURE_BLOB_STORAGE_CONTAINER_NAME=${AZURE_BLOB_STORAGE_CONTAINER_NAME}
+
       - name: コンテナ更新
         run: |
           set -euo pipefail
@@ -156,18 +168,18 @@ jobs:
             wait "$pid"
           done
 
-          # APIコンテナの環境変数設定
+          # APIコンテナの環境変数設定（secretrefで参照）
           az containerapp update --name api --resource-group ${AZURE_RESOURCE_GROUP} \
             --set-env-vars \
-              "OPENAI_API_KEY=${OPENAI_API_KEY}" \
-              "PUBLIC_API_KEY=${PUBLIC_API_KEY}" \
-              "ADMIN_API_KEY=${ADMIN_API_KEY}" \
+              "OPENAI_API_KEY=secretref:OPENAI_API_KEY" \
+              "PUBLIC_API_KEY=secretref:PUBLIC_API_KEY" \
+              "ADMIN_API_KEY=secretref:ADMIN_API_KEY" \
               "LOG_LEVEL=info" \
-              "AZURE_BLOB_STORAGE_ACCOUNT_NAME=${AZURE_BLOB_STORAGE_ACCOUNT_NAME}" \
-              "AZURE_BLOB_STORAGE_CONTAINER_NAME=${AZURE_BLOB_STORAGE_CONTAINER_NAME}" \
+              "AZURE_BLOB_STORAGE_ACCOUNT_NAME=secretref:AZURE_BLOB_STORAGE_ACCOUNT_NAME" \
+              "AZURE_BLOB_STORAGE_CONTAINER_NAME=secretref:AZURE_BLOB_STORAGE_CONTAINER_NAME" \
               "STORAGE_TYPE=azure_blob" \
               "REVALIDATE_URL=https://${CLIENT_DOMAIN}/api/revalidate" \
-              "REVALIDATE_SECRET=${REVALIDATE_SECRET}" \
+              "REVALIDATE_SECRET=secretref:REVALIDATE_SECRET" \
               "ENVIRONMENT=${ENVIRONMENT}"
 
       - name: デプロイ確認
