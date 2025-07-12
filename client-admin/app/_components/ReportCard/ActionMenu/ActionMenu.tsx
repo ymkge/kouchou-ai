@@ -1,5 +1,6 @@
 import { downloadFile } from "@/app/utils/downloadFile";
 import { MenuContent, MenuItem, MenuPositioner, MenuRoot, MenuTrigger, MenuTriggerItem } from "@/components/ui/menu";
+import { toaster } from "@/components/ui/toaster";
 import type { Report } from "@/type";
 import { IconButton, Portal } from "@chakra-ui/react";
 import { Ellipsis, FileSpreadsheet, Pencil, TextIcon, Trash2 } from "lucide-react";
@@ -79,6 +80,11 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
                           downloadFile(result);
                         } catch (error) {
                           console.error(error);
+                          toaster.create({
+                            title: "エラー",
+                            type: "error",
+                            description: "CSVダウンロードに失敗しました",
+                          });
                         }
                       }}
                     >
@@ -93,6 +99,11 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
                           downloadFile(result);
                         } catch (error) {
                           console.error(error);
+                          toaster.create({
+                            title: "エラー",
+                            type: "error",
+                            description: "CSVダウンロードに失敗しました",
+                          });
                         }
                       }}
                     >
