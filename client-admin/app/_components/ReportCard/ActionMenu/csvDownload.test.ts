@@ -46,17 +46,20 @@ describe("csvDownload", () => {
     });
 
     expect(result).toEqual({
+      success: true,
       data: expect.any(String),
       filename: "kouchou_test-slug.csv",
       contentType: "text/csv",
     });
 
     // Base64エンコードされた文字列であることを確認
-    expect(result.data).toMatch(/^[A-Za-z0-9+/]*={0,2}$/);
+    if (result.success) {
+      expect(result.data).toMatch(/^[A-Za-z0-9+/]*={0,2}$/);
+    }
     expect(mockBlob.arrayBuffer).toHaveBeenCalled();
   });
 
-  it("APIエラーの場合、適切にエラーをthrowする", async () => {
+  it("APIエラーの場合、適切にエラーレスポンスを返す", async () => {
     const errorDetail = "データが見つかりません";
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -64,23 +67,35 @@ describe("csvDownload", () => {
       json: () => Promise.resolve({ detail: errorDetail }),
     });
 
-    await expect(csvDownload("test-slug")).rejects.toThrow(errorDetail);
+    const result = await csvDownload("test-slug");
+    expect(result).toEqual({
+      success: false,
+      error: errorDetail,
+    });
   });
 
-  it("APIエラーでdetailが無い場合、デフォルトエラーメッセージをthrowする", async () => {
+  it("APIエラーでdetailが無い場合、デフォルトエラーメッセージを返す", async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({}),
     });
 
-    await expect(csvDownload("test-slug")).rejects.toThrow("CSV ダウンロードに失敗しました");
+    const result = await csvDownload("test-slug");
+    expect(result).toEqual({
+      success: false,
+      error: "CSV ダウンロードに失敗しました",
+    });
   });
 
-  it("ネットワークエラーの場合、適切にエラーをthrowする", async () => {
+  it("ネットワークエラーの場合、適切にエラーレスポンスを返す", async () => {
     const networkError = new Error("Network error");
 
     (global.fetch as jest.Mock).mockRejectedValueOnce(networkError);
 
-    await expect(csvDownload("test-slug")).rejects.toThrow(networkError);
+    const result = await csvDownload("test-slug");
+    expect(result).toEqual({
+      success: false,
+      error: "Network error",
+    });
   });
 });

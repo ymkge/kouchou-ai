@@ -75,15 +75,14 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
                       value="csv-download"
                       textStyle="body/md/bold"
                       onClick={async () => {
-                        try {
-                          const result = await csvDownload(report.slug);
+                        const result = await csvDownload(report.slug);
+                        if (result.success) {
                           downloadFile(result);
-                        } catch (error) {
-                          console.error(error);
+                        } else {
                           toaster.create({
                             title: "エラー",
                             type: "error",
-                            description: "CSVダウンロードに失敗しました",
+                            description: result.error,
                           });
                         }
                       }}
@@ -94,15 +93,14 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
                       value="csv-download-for-windows"
                       textStyle="body/md/bold"
                       onClick={async () => {
-                        try {
-                          const result = await csvDownloadForWindows(report.slug);
+                        const result = await csvDownloadForWindows(report.slug);
+                        if (result.success) {
                           downloadFile(result);
-                        } catch (error) {
-                          console.error(error);
+                        } else {
                           toaster.create({
                             title: "エラー",
                             type: "error",
-                            description: "CSVダウンロードに失敗しました",
+                            description: result.error,
                           });
                         }
                       }}

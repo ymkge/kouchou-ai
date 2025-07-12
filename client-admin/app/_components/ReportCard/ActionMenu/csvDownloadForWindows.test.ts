@@ -46,21 +46,24 @@ describe("csvDownloadForWindows", () => {
 
     expect(mockBlob.text).toHaveBeenCalled();
     expect(result).toEqual({
+      success: true,
       data: expect.any(String),
       filename: "kouchou_test-slug_excel.csv",
       contentType: "text/csv;charset=utf-8",
     });
 
-    // Base64エンコードされた文字列であることを確認
-    expect(result.data).toMatch(/^[A-Za-z0-9+/]*={0,2}$/);
+    if (result.success) {
+      // Base64エンコードされた文字列であることを確認
+      expect(result.data).toMatch(/^[A-Za-z0-9+/]*={0,2}$/);
 
-    // BOMが含まれていることを確認
-    const expectedContent = `\uFEFF${mockCsvText}`;
-    const actualContent = Buffer.from(result.data, "base64").toString("utf-8");
-    expect(actualContent).toBe(expectedContent);
+      // BOMが含まれていることを確認
+      const expectedContent = `\uFEFF${mockCsvText}`;
+      const actualContent = Buffer.from(result.data, "base64").toString("utf-8");
+      expect(actualContent).toBe(expectedContent);
+    }
   });
 
-  it("APIエラーの場合、適切にエラーをthrowする", async () => {
+  it("APIエラーの場合、適切にエラーレスポンスを返す", async () => {
     const errorDetail = "データが見つかりません";
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -68,23 +71,35 @@ describe("csvDownloadForWindows", () => {
       json: () => Promise.resolve({ detail: errorDetail }),
     });
 
-    await expect(csvDownloadForWindows("test-slug")).rejects.toThrow(errorDetail);
+    const result = await csvDownloadForWindows("test-slug");
+    expect(result).toEqual({
+      success: false,
+      error: errorDetail,
+    });
   });
 
-  it("APIエラーでdetailが無い場合、デフォルトエラーメッセージをthrowする", async () => {
+  it("APIエラーでdetailが無い場合、デフォルトエラーメッセージを返す", async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({}),
     });
 
-    await expect(csvDownloadForWindows("test-slug")).rejects.toThrow("CSV ダウンロードに失敗しました");
+    const result = await csvDownloadForWindows("test-slug");
+    expect(result).toEqual({
+      success: false,
+      error: "CSV ダウンロードに失敗しました",
+    });
   });
 
-  it("ネットワークエラーの場合、適切にエラーをthrowする", async () => {
+  it("ネットワークエラーの場合、適切にエラーレスポンスを返す", async () => {
     const networkError = new Error("Network error");
 
     (global.fetch as jest.Mock).mockRejectedValueOnce(networkError);
 
-    await expect(csvDownloadForWindows("test-slug")).rejects.toThrow(networkError);
+    const result = await csvDownloadForWindows("test-slug");
+    expect(result).toEqual({
+      success: false,
+      error: "Network error",
+    });
   });
 });
