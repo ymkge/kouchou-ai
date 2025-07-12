@@ -1,5 +1,6 @@
 import { MenuContent, MenuItem, MenuPositioner, MenuRoot, MenuTrigger, MenuTriggerItem } from "@/components/ui/menu";
 import type { Report } from "@/type";
+import { downloadFile } from "@/utils/downloadFile";
 import { IconButton, Portal } from "@chakra-ui/react";
 import { Ellipsis, FileSpreadsheet, Pencil, TextIcon, Trash2 } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
@@ -73,7 +74,12 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
                       value="csv-download"
                       textStyle="body/md/bold"
                       onClick={async () => {
-                        await csvDownload(report.slug);
+                        try {
+                          const result = await csvDownload(report.slug);
+                          downloadFile(result);
+                        } catch (error) {
+                          console.error(error);
+                        }
                       }}
                     >
                       CSVダウンロード
