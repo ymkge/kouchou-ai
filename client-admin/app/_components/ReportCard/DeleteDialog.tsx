@@ -25,15 +25,9 @@ export function DeleteDialog({ isOpen, setIsOpen, report }: Props) {
   return (
     <DialogRoot size="sm" placement="center" open={isOpen} modal={true} closeOnInteractOutside={true} trapFocus={true}>
       <Portal>
-        <DialogBackdrop
-          zIndex={1000}
-          position="fixed"
-          inset={0}
-          backgroundColor="blackAlpha.100"
-          backdropFilter="blur(2px)"
-        />
-        <DialogContent pointerEvents="auto" position="relative" zIndex={1001} boxShadow="md">
-          <DialogCloseTrigger position="absolute" top={3} right={3} onClick={() => setIsOpen(false)} />
+        <DialogBackdrop />
+        <DialogContent>
+          <DialogCloseTrigger onClick={() => setIsOpen(false)} />
           <DialogHeader justifyContent="center">
             <DialogTitle>
               <Icon color="font.error">
