@@ -14,7 +14,7 @@ export function DeleteButton({ report }: Props) {
       size="lg"
       color="font.error"
       onClick={async () => {
-        await reportDelete(report.title, report.slug);
+        await reportDelete(report.slug);
       }}
     >
       <Trash2 />
