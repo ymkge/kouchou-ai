@@ -1,8 +1,8 @@
+import { Provider } from "@/components/ui/provider";
 import { toaster } from "@/components/ui/toaster";
 import type { Report } from "@/type";
 import { ReportVisibility } from "@/type";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { Provider } from "@/components/ui/provider";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ReportEditDialog } from "./ReportEditDialog";
 
 // Mock toaster
@@ -79,9 +79,7 @@ describe("ReportEditDialog", () => {
     });
 
     it("ダイアログが閉じている時は表示されない", () => {
-      renderWithProvider(
-        <ReportEditDialog {...defaultProps} isEditDialogOpen={false} />
-      );
+      renderWithProvider(<ReportEditDialog {...defaultProps} isEditDialogOpen={false} />);
 
       expect(screen.queryByText("レポートを編集")).not.toBeInTheDocument();
     });
@@ -108,9 +106,7 @@ describe("ReportEditDialog", () => {
 
     it("キャンセルボタンを押すとダイアログが閉じる", () => {
       const mockSetIsEditDialogOpen = jest.fn();
-      renderWithProvider(
-        <ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />
-      );
+      renderWithProvider(<ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />);
 
       const cancelButton = screen.getByText("キャンセル");
       fireEvent.click(cancelButton);
@@ -133,7 +129,7 @@ describe("ReportEditDialog", () => {
           {...defaultProps}
           setReports={mockSetReports}
           setIsEditDialogOpen={mockSetIsEditDialogOpen}
-        />
+        />,
       );
 
       // タイトルと説明を変更
@@ -147,20 +143,17 @@ describe("ReportEditDialog", () => {
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(fetch).toHaveBeenCalledWith(
-          "http://localhost:8000/admin/reports/test-report/config",
-          {
-            method: "PATCH",
-            headers: {
-              "x-api-key": "test-api-key",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              question: "Updated Title",
-              intro: "Updated Description",
-            }),
-          }
-        );
+        expect(fetch).toHaveBeenCalledWith("http://localhost:8000/admin/reports/test-report/config", {
+          method: "PATCH",
+          headers: {
+            "x-api-key": "test-api-key",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            question: "Updated Title",
+            intro: "Updated Description",
+          }),
+        });
       });
 
       // レポート一覧が更新される
@@ -192,11 +185,7 @@ describe("ReportEditDialog", () => {
       });
 
       renderWithProvider(
-        <ReportEditDialog
-          {...defaultProps}
-          reports={undefined}
-          setIsEditDialogOpen={mockSetIsEditDialogOpen}
-        />
+        <ReportEditDialog {...defaultProps} reports={undefined} setIsEditDialogOpen={mockSetIsEditDialogOpen} />,
       );
 
       const saveButton = screen.getByText("保存");
@@ -222,12 +211,7 @@ describe("ReportEditDialog", () => {
         json: async () => ({ detail: "API Error Message" }),
       });
 
-      renderWithProvider(
-        <ReportEditDialog
-          {...defaultProps}
-          setIsEditDialogOpen={mockSetIsEditDialogOpen}
-        />
-      );
+      renderWithProvider(<ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />);
 
       const saveButton = screen.getByText("保存");
       fireEvent.click(saveButton);
@@ -248,12 +232,7 @@ describe("ReportEditDialog", () => {
       const mockSetIsEditDialogOpen = jest.fn();
       (fetch as jest.Mock).mockRejectedValueOnce(new Error("Network Error"));
 
-      renderWithProvider(
-        <ReportEditDialog
-          {...defaultProps}
-          setIsEditDialogOpen={mockSetIsEditDialogOpen}
-        />
-      );
+      renderWithProvider(<ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />);
 
       const saveButton = screen.getByText("保存");
       fireEvent.click(saveButton);
