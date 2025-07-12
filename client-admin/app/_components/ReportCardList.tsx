@@ -10,50 +10,54 @@ type Props = {
 
 export function ReportCardList({ reports, setReports }: Props) {
   return (
-    <Grid gridTemplateColumns="170px minmax(300px, 1fr) 52px repeat(3, 83px) repeat(3, 44px)" rowGap="2">
-      <Grid gridTemplateColumns="subgrid" gridColumn="span 9" textStyle="body/sm">
-        <GridItem bg="blue.100" py="3" px="6" borderLeftRadius="sm">
+    <Grid
+      gridTemplateColumns="170px minmax(330px, 1fr) 52px repeat(3, minmax(83px, min-content)) repeat(3, minmax(52px, min-content))"
+      rowGap="2"
+    >
+      <Grid px="6" gridTemplateColumns="subgrid" columnGap="2" gridColumn="span 9" bg="blue.100" textStyle="body/sm">
+        <GridItem py="3" borderLeftRadius="sm">
           作成日時
         </GridItem>
-        <GridItem bg="blue.100" py="3">
-          レポート名
-        </GridItem>
-        <GridItem bg="blue.100" />
-        <GridItem bg="blue.100" py="3" textAlign="center">
+        <GridItem py="3">レポート名</GridItem>
+        <GridItem />
+        <GridItem py="3" textAlign="center">
           コメント
         </GridItem>
-        <GridItem bg="blue.100" py="3" textAlign="center">
+        <GridItem py="3" textAlign="center">
           意見
         </GridItem>
-        <GridItem bg="blue.100" py="3" textAlign="center">
+        <GridItem py="3" textAlign="center">
           意見グループ
         </GridItem>
-        <GridItem bg="blue.100" py="3" />
-        <GridItem bg="blue.100" py="3" />
-        <GridItem bg="blue.100" py="3" borderRightRadius="sm" />
+        <GridItem py="3" />
+        <GridItem py="3" />
+        <GridItem py="3" borderRightRadius="sm" />
       </Grid>
-      {reports.map((report) => (
-        <Grid
-          key={report.slug}
-          p="6"
-          gridTemplateColumns="subgrid"
-          gridTemplateRows="44px auto"
-          gridColumn="span 9"
-          columnGap="2"
-          bgColor="white"
-          borderRadius="sm"
-          color="font.primary"
-          alignItems="center"
-          _hover={{
-            shadow: "lg",
-          }}
-        >
-          <ReportCard report={report} reports={reports} setReports={setReports} />
+      {reports.length === 0 ? (
+        <Grid gridColumn="span 9">
+          <Empty />
         </Grid>
-      ))}
-      <Grid gridColumn="span 9">
-        <Empty />
-      </Grid>
+      ) : (
+        reports.map((report) => (
+          <Grid
+            key={report.slug}
+            p="6"
+            gridTemplateColumns="subgrid"
+            gridTemplateRows="44px auto"
+            gridColumn="span 9"
+            columnGap="2"
+            bgColor="white"
+            borderRadius="sm"
+            color="font.primary"
+            alignItems="center"
+            _hover={{
+              shadow: "lg",
+            }}
+          >
+            <ReportCard report={report} reports={reports} setReports={setReports} />
+          </Grid>
+        ))
+      )}
     </Grid>
   );
 }
