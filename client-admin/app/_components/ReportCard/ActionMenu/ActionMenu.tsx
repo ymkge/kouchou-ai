@@ -88,7 +88,12 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
                       value="csv-download-for-windows"
                       textStyle="body/md/bold"
                       onClick={async () => {
-                        await csvDownloadForWindows(report.slug);
+                        try {
+                          const result = await csvDownloadForWindows(report.slug);
+                          downloadFile(result);
+                        } catch (error) {
+                          console.error(error);
+                        }
                       }}
                     >
                       CSV for Excelダウンロード
