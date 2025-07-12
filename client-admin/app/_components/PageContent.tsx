@@ -7,7 +7,6 @@ import { Eye, EyeClosedIcon, LockKeyhole, Plus } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BuildDownloadButton } from "./BuildDownloadButton/BuildDownloadButton";
-import { Empty } from "./Empty";
 import { ReportCardList } from "./ReportCardList";
 
 type Props = {
@@ -59,23 +58,21 @@ export function PageContent({ reports: _reports }: Props) {
           </Flex>
         </Flex>
       </Box>
-      <Flex justifyContent="flex-end" mb="4">
-        <Button size="md" asChild>
-          <Link href="/create">
-            <Plus />
-            新規作成
-          </Link>
-        </Button>
-      </Flex>
-      {reports.length === 0 ? (
-        <Empty />
-      ) : (
-        <>
-          <ReportCardList reports={reports} setReports={setReports} />
-          <HStack justify="center" mt={10}>
-            <BuildDownloadButton />
-          </HStack>
-        </>
+      {reports.length > 0 && (
+        <Flex justifyContent="flex-end" mb="4">
+          <Button size="md" asChild>
+            <Link href="/create">
+              <Plus />
+              新規作成
+            </Link>
+          </Button>
+        </Flex>
+      )}
+      <ReportCardList reports={reports} setReports={setReports} />
+      {reports.length > 0 && (
+        <HStack justify="center" mt={10}>
+          <BuildDownloadButton />
+        </HStack>
       )}
     </>
   );

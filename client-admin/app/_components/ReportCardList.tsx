@@ -1,5 +1,6 @@
 import type { Report } from "@/type";
 import { Grid, GridItem } from "@chakra-ui/react";
+import { Empty } from "./Empty";
 import { ReportCard } from "./ReportCard/ReportCard";
 
 type Props = {
@@ -9,7 +10,7 @@ type Props = {
 
 export function ReportCardList({ reports, setReports }: Props) {
   return (
-    <Grid gridTemplateColumns="170px minmax(300px, 1fr) 52px repeat(3, 83px) repeat(3, min-content)" rowGap="2">
+    <Grid gridTemplateColumns="170px minmax(300px, 1fr) 52px repeat(3, 83px) repeat(3, 44px)" rowGap="2">
       <Grid gridTemplateColumns="subgrid" gridColumn="span 9" textStyle="body/sm">
         <GridItem bg="blue.100" py="3" px="6" borderLeftRadius="sm">
           作成日時
@@ -50,6 +51,9 @@ export function ReportCardList({ reports, setReports }: Props) {
           <ReportCard report={report} reports={reports} setReports={setReports} />
         </Grid>
       ))}
+      <Grid gridColumn="span 9">
+        <Empty />
+      </Grid>
     </Grid>
   );
 }
