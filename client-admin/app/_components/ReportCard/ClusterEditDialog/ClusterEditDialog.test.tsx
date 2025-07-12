@@ -22,7 +22,7 @@ process.env.NEXT_PUBLIC_ADMIN_API_KEY = "test-api-key";
 
 const mockReport: Report = {
   slug: "test-report",
-  status: "completed",
+  status: "processing",
   title: "Test Report",
   description: "Test Description",
   isPubcom: false,

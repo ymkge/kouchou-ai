@@ -33,7 +33,7 @@ global.fetch = jest.fn();
 
 const mockReport: Report = {
   slug: "test-report",
-  status: "completed",
+  status: "processing",
   title: "Test Report Title",
   description: "Test Report Description",
   isPubcom: false,
