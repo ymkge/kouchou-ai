@@ -8,15 +8,17 @@ type CsvDownloadOptions = {
   contentType?: string;
 };
 
-type CsvDownloadResult = {
-  success: true;
-  data: string;
-  filename: string;
-  contentType: string;
-} | {
-  success: false;
-  error: string;
-};
+type CsvDownloadResult =
+  | {
+      success: true;
+      data: string;
+      filename: string;
+      contentType: string;
+    }
+  | {
+      success: false;
+      error: string;
+    };
 
 export async function csvDownloadCommon(slug: string, options: CsvDownloadOptions = {}): Promise<CsvDownloadResult> {
   const { includeBOM = false, filenameSuffix = "", contentType = "text/csv" } = options;
