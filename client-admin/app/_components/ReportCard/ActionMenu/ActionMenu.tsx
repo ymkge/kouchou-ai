@@ -113,7 +113,7 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
           </MenuContent>
         </Portal>
       </MenuRoot>
-      <DeleteDialog isOpen={isOpen} setIsOpen={setIsOpen} slug={report.slug} />
+      <DeleteDialog isOpen={isOpen} setIsOpen={setIsOpen} report={report} />
     </>
   );
 }
