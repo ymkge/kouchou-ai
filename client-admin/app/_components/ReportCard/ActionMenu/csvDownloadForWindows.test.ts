@@ -46,14 +46,17 @@ describe("csvDownloadForWindows", () => {
 
     expect(mockBlob.text).toHaveBeenCalled();
     expect(result).toEqual({
-      data: expect.any(Buffer),
+      data: expect.any(String),
       filename: "kouchou_test-slug_excel.csv",
       contentType: "text/csv;charset=utf-8",
     });
 
+    // Base64エンコードされた文字列であることを確認
+    expect(result.data).toMatch(/^[A-Za-z0-9+/]*={0,2}$/);
+
     // BOMが含まれていることを確認
     const expectedContent = `\uFEFF${mockCsvText}`;
-    const actualContent = result.data.toString("utf-8");
+    const actualContent = Buffer.from(result.data, "base64").toString("utf-8");
     expect(actualContent).toBe(expectedContent);
   });
 

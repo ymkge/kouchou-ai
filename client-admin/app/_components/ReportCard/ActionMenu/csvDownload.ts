@@ -20,7 +20,7 @@ export async function csvDownload(slug: string) {
   const buffer = Buffer.from(arrayBuffer);
 
   return {
-    data: buffer,
+    data: buffer.toString("base64"),
     filename: `kouchou_${slug}.csv`,
     contentType: "text/csv",
   };

@@ -12,7 +12,7 @@ describe("csvDownload", () => {
   beforeEach(() => {
     // fetchのモック
     global.fetch = jest.fn();
-    
+
     // APIベースURLのモック
     mockGetApiBaseUrl.mockReturnValue("http://localhost:8000");
 
@@ -46,10 +46,13 @@ describe("csvDownload", () => {
     });
 
     expect(result).toEqual({
-      data: expect.any(Buffer),
+      data: expect.any(String),
       filename: "kouchou_test-slug.csv",
       contentType: "text/csv",
     });
+
+    // Base64エンコードされた文字列であることを確認
+    expect(result.data).toMatch(/^[A-Za-z0-9+/]*={0,2}$/);
     expect(mockBlob.arrayBuffer).toHaveBeenCalled();
   });
 

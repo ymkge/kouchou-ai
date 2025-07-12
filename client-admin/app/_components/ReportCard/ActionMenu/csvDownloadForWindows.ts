@@ -24,7 +24,7 @@ export async function csvDownloadForWindows(slug: string) {
   const buffer = Buffer.from(csvContent, "utf-8");
 
   return {
-    data: buffer,
+    data: buffer.toString('base64'),
     filename: `kouchou_${slug}_excel.csv`,
     contentType: "text/csv;charset=utf-8",
   };
