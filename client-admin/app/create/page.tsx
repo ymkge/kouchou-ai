@@ -256,10 +256,9 @@ export default function Page() {
             </Tabs.Root>
           </Field.Root>
 
-          {/* AI詳細設定ボタン */}
           <HStack justify={"flex-end"} w={"full"}>
-            <Button onClick={onToggle} variant={"outline"} w={"200px"}>
-              AI詳細設定 (オプション)
+            <Button onClick={onToggle} variant={"outline"}>
+              レポート生成設定
             </Button>
           </HStack>
 
