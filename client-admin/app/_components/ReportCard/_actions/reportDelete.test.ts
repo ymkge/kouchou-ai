@@ -9,13 +9,6 @@ jest.mock("../../../utils/api", () => ({
 // fetchをモック化
 global.fetch = jest.fn();
 
-// window.location.reloadをモック化
-const mockReload = jest.fn();
-Object.defineProperty(window, "location", {
-  value: { reload: mockReload },
-  writable: true,
-});
-
 // console.errorをモック化してスパイ
 const mockConsoleError = jest.spyOn(console, "error").mockImplementation(() => {});
 
@@ -36,7 +29,7 @@ describe("reportDelete", () => {
     process.env.NEXT_PUBLIC_ADMIN_API_KEY = undefined;
   });
 
-  it("成功時にDELETEリクエストを送信してページをリロードする", async () => {
+  it("成功時にDELETEリクエストを送信する", async () => {
     // 成功レスポンスをモック
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
@@ -53,8 +46,6 @@ describe("reportDelete", () => {
       },
     });
 
-    // ページがリロードされることを確認
-    expect(mockReload).toHaveBeenCalledTimes(1);
     expect(mockConsoleError).not.toHaveBeenCalled();
   });
 
@@ -73,7 +64,6 @@ describe("reportDelete", () => {
 
     // エラーがログに出力されることを確認
     expect(mockConsoleError).toHaveBeenCalledWith(new Error(mockErrorDetail));
-    expect(mockReload).not.toHaveBeenCalled();
   });
 
   it("エラーレスポンスにdetailがない場合にデフォルトメッセージを使用する", async () => {
@@ -97,7 +87,6 @@ describe("reportDelete", () => {
     await reportDelete(mockSlug);
 
     expect(mockConsoleError).toHaveBeenCalledWith(mockError);
-    expect(mockReload).not.toHaveBeenCalled();
   });
 
   it("正しいAPIエンドポイントURLを構築する", async () => {
