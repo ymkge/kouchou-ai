@@ -57,7 +57,7 @@ export function DeleteDialog({ isOpen, setIsOpen, report, setReports }: Props) {
             </DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <VStack gap="3">
+            <VStack gap="3" alignItems="stretch">
               <Text textStyle="body/lg/bold" textAlign="center">
                 このレポートを
                 <br />
