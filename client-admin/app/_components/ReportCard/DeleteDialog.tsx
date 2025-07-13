@@ -13,6 +13,7 @@ import { toaster } from "@/components/ui/toaster";
 import type { Report } from "@/type";
 import { Center, Flex, Icon, Portal, Text, VStack } from "@chakra-ui/react";
 import { FileText, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type { Dispatch, SetStateAction } from "react";
 import { useTransition } from "react";
 import { reportDelete } from "./_actions/reportDelete";
@@ -21,18 +22,18 @@ type Props = {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   report: Report;
-  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
-export function DeleteDialog({ isOpen, setIsOpen, report, setReports }: Props) {
+export function DeleteDialog({ isOpen, setIsOpen, report }: Props) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleDelete = () => {
     startTransition(async () => {
       const result = await reportDelete(report.slug);
       if (result.success) {
-        setReports((prevReports) => prevReports.filter((r) => r.slug !== report.slug));
         setIsOpen(false);
+        router.refresh();
       } else {
         toaster.create({
           type: "error",

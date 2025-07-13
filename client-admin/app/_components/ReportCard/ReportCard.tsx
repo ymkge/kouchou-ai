@@ -2,7 +2,7 @@ import type { Report } from "@/type";
 import { GridItem, HStack, IconButton, Text } from "@chakra-ui/react";
 import { Bot, LinkIcon } from "lucide-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { type Dispatch, type SetStateAction, useState } from "react";
+import { useState } from "react";
 import { ActionMenu } from "./ActionMenu/ActionMenu";
 import { ClusterEditDialog } from "./ClusterEditDialog/ClusterEditDialog";
 import { DeleteButton } from "./DeleteButton";
@@ -16,12 +16,11 @@ import { Visibility } from "./Visibility/Visibility";
 type Props = {
   report: Report;
   reports: Report[];
-  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
 const duration = 0.3;
 
-function ReportDataAndActions({ report, reports, setReports }: Props) {
+function ReportDataAndActions({ report, reports }: Props) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
   return (
@@ -62,18 +61,15 @@ function ReportDataAndActions({ report, reports, setReports }: Props) {
                 report={report}
                 setIsEditDialogOpen={setIsEditDialogOpen}
                 setIsClusterEditDialogOpen={setIsClusterEditDialogOpen}
-                setReports={setReports}
               />
             </GridItem>
             <GridItem>
-              <Visibility report={report} setReports={setReports} />
+              <Visibility report={report} />
             </GridItem>
             <ReportEditDialog
               isEditDialogOpen={isEditDialogOpen}
               setIsEditDialogOpen={setIsEditDialogOpen}
               report={report}
-              reports={reports}
-              setReports={setReports}
             />
             <ClusterEditDialog
               report={report}
@@ -116,7 +112,7 @@ function ReportDataAndActions({ report, reports, setReports }: Props) {
                 <Text textStyle="body/sm/bold">エラーが発生しました。レポート生成設定を調整してください。</Text>
               </HStack>
             </motion.div>
-            <DeleteButton report={report} setReports={setReports} />
+            <DeleteButton report={report} />
           </>
         )}
       </AnimatePresence>
@@ -124,7 +120,7 @@ function ReportDataAndActions({ report, reports, setReports }: Props) {
   );
 }
 
-export function ReportCard({ report, reports, setReports }: Props) {
+export function ReportCard({ report, reports }: Props) {
   return (
     <>
       <GridItem>
@@ -133,7 +129,7 @@ export function ReportCard({ report, reports, setReports }: Props) {
       <GridItem ml="2">
         <ReportTitle report={report} />
       </GridItem>
-      {<ReportDataAndActions report={report} reports={reports} setReports={setReports} />}
+      {<ReportDataAndActions report={report} reports={reports} />}
       <AnimatePresence>
         {(report.status === "processing" || report.status === "error") && (
           <motion.div
@@ -145,7 +141,7 @@ export function ReportCard({ report, reports, setReports }: Props) {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, height: 0 }}
           >
-            <ProgressSteps slug={report.slug} setReports={setReports} />
+            <ProgressSteps slug={report.slug} />
           </motion.div>
         )}
       </AnimatePresence>

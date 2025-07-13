@@ -1,7 +1,7 @@
-import type { Report } from "@/type";
 import { Box, Center, Steps } from "@chakra-ui/react";
 import { Check, TriangleAlert } from "lucide-react";
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Processing } from "./Processing";
 import { useReportProgressPoll } from "./useReportProgressPolling";
 
@@ -33,38 +33,24 @@ const stepItemstyle = {
 
 type Props = {
   slug: string;
-  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
-export const ProgressSteps = ({ slug, setReports }: Props) => {
+export const ProgressSteps = ({ slug }: Props) => {
   const { progress, isError } = useReportProgressPoll(slug);
-  const [lastProgress, setLastProgress] = useState<string | null>(null);
 
   const isLoading = progress === "loading";
   const isCompleted = progress === "completed";
   const currentStepIndex = isCompleted ? steps.length : isLoading ? 0 : stepKeys.indexOf(progress);
   const status = isError ? "error" : "processing";
+  const router = useRouter();
 
-  // レポートが作成完了orエラーになった際に画面を更新する
   useEffect(() => {
-    if ((isCompleted || isError) && progress !== lastProgress) {
-      setLastProgress(progress);
-
-      (async () => {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports`, {
-          method: "GET",
-          headers: {
-            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-          },
-        });
-        if (!response.ok) return;
-        setReports(await response.json());
-      })();
+    if (isCompleted || isError) {
+      setTimeout(() => {
+        router.refresh();
+      }, 1000); // 直後だとデータが更新されていないので、1秒後に再取得する
     }
-  }, [progress, isCompleted, isError, lastProgress, setReports]);
+  }, [isCompleted, isError, router]);
 
   return (
     <Steps.Root step={currentStepIndex} count={steps.length} bg={stepItemstyle[status].processing} mt="2" p="6">

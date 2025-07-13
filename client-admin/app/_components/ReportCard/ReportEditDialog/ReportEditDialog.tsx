@@ -1,6 +1,7 @@
 import { toaster } from "@/components/ui/toaster";
 import type { Report } from "@/type";
 import { Box, Button, Dialog, Input, Portal, Text, Textarea, VStack } from "@chakra-ui/react";
+import { useRouter } from "next/navigation";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { getApiBaseUrl } from "../../../utils/api";
 
@@ -8,13 +9,12 @@ type Props = {
   isEditDialogOpen: boolean;
   setIsEditDialogOpen: Dispatch<SetStateAction<boolean>>;
   report: Report;
-  reports: Report[];
-  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
-export function ReportEditDialog({ isEditDialogOpen, setIsEditDialogOpen, report, reports, setReports }: Props) {
+export function ReportEditDialog({ isEditDialogOpen, setIsEditDialogOpen, report }: Props) {
   const [editTitle, setEditTitle] = useState(report.title);
   const [editDescription, setEditDescription] = useState(report.description || "");
+  const router = useRouter();
 
   async function handleSubmit() {
     try {
@@ -35,19 +35,7 @@ export function ReportEditDialog({ isEditDialogOpen, setIsEditDialogOpen, report
         throw new Error(errorData.detail || "メタデータの更新に失敗しました");
       }
 
-      // レポート一覧を更新
-      if (reports) {
-        const updatedReports = reports.map((r) =>
-          r.slug === report.slug
-            ? {
-                ...r,
-                title: editTitle,
-                description: editDescription,
-              }
-            : r,
-        );
-        setReports(updatedReports);
-      }
+      router.refresh();
 
       // 成功メッセージを表示
       toaster.create({

@@ -3,12 +3,11 @@ import { toaster } from "@/components/ui/toaster";
 import type { Report, ReportVisibility } from "@/type";
 import { IconButton, Portal } from "@chakra-ui/react";
 import { Eye, EyeClosedIcon, LockKeyhole } from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
+import { useRouter } from "next/navigation";
 import { updateReportVisibility } from "./actions";
 
 type Props = {
   report: Report;
-  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
 const iconStyles = {
@@ -35,7 +34,8 @@ const iconStyles = {
   },
 };
 
-export function Visibility({ report, setReports }: Props) {
+export function Visibility({ report }: Props) {
+  const router = useRouter();
   return (
     <MenuRoot
       onSelect={async (e) => {
@@ -44,9 +44,7 @@ export function Visibility({ report, setReports }: Props) {
         const result = await updateReportVisibility(report.slug, e.value as ReportVisibility);
 
         if (result.success) {
-          setReports((prevReports) =>
-            prevReports.map((r) => (r.slug === report.slug ? { ...r, visibility: result.visibility } : r)),
-          );
+          router.refresh();
         } else {
           toaster.create({
             type: "error",
