@@ -9,19 +9,40 @@ import {
   DialogRoot,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { toaster } from "@/components/ui/toaster";
 import type { Report } from "@/type";
 import { Center, Flex, Icon, Portal, Text, VStack } from "@chakra-ui/react";
 import { FileText, Trash2 } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
+import { useTransition } from "react";
 import { reportDelete } from "./_actions/reportDelete";
 
 type Props = {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   report: Report;
+  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
-export function DeleteDialog({ isOpen, setIsOpen, report }: Props) {
+export function DeleteDialog({ isOpen, setIsOpen, report, setReports }: Props) {
+  const [isPending, startTransition] = useTransition();
+
+  const handleDelete = () => {
+    startTransition(async () => {
+      const result = await reportDelete(report.slug);
+      if (result.success) {
+        setReports((prevReports) => prevReports.filter((r) => r.slug !== report.slug));
+        setIsOpen(false);
+      } else {
+        toaster.create({
+          type: "error",
+          title: "エラー",
+          description: result.error,
+        });
+      }
+    });
+  };
+
   return (
     <DialogRoot size="sm" placement="center" open={isOpen} modal={true} closeOnInteractOutside={true} trapFocus={true}>
       <Portal>
@@ -62,7 +83,8 @@ export function DeleteDialog({ isOpen, setIsOpen, report }: Props) {
               size="md"
               color="font.error"
               borderColor="border.error"
-              onClick={async () => await reportDelete(report.slug)}
+              onClick={handleDelete}
+              disabled={isPending}
             >
               削除する
             </Button>

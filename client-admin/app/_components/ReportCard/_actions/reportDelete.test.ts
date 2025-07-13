@@ -9,13 +9,6 @@ jest.mock("../../../utils/api", () => ({
 // fetchをモック化
 global.fetch = jest.fn();
 
-// window.location.reloadをモック化
-const mockReload = jest.fn();
-Object.defineProperty(window, "location", {
-  value: { reload: mockReload },
-  writable: true,
-});
-
 // console.errorをモック化してスパイ
 const mockConsoleError = jest.spyOn(console, "error").mockImplementation(() => {});
 
@@ -36,13 +29,13 @@ describe("reportDelete", () => {
     process.env.NEXT_PUBLIC_ADMIN_API_KEY = undefined;
   });
 
-  it("成功時にDELETEリクエストを送信してページをリロードする", async () => {
+  it("成功時にDELETEリクエストを送信してsuccess:trueを返す", async () => {
     // 成功レスポンスをモック
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
     });
 
-    await reportDelete(mockSlug);
+    const result = await reportDelete(mockSlug);
 
     // 正しいパラメータでfetchが呼ばれることを確認
     expect(fetch).toHaveBeenCalledWith(`${mockApiBaseUrl}/admin/reports/${mockSlug}`, {
@@ -53,12 +46,11 @@ describe("reportDelete", () => {
       },
     });
 
-    // ページがリロードされることを確認
-    expect(mockReload).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({ success: true });
     expect(mockConsoleError).not.toHaveBeenCalled();
   });
 
-  it("レスポンスがエラーの場合にエラーをログに出力する", async () => {
+  it("レスポンスがエラーの場合にエラーをログに出力してsuccess:falseを返す", async () => {
     const mockErrorDetail = "レポートが見つかりません";
 
     // エラーレスポンスをモック
@@ -69,35 +61,37 @@ describe("reportDelete", () => {
       }),
     });
 
-    await reportDelete(mockSlug);
+    const result = await reportDelete(mockSlug);
 
+    // エラー結果が返されることを確認
+    expect(result).toEqual({ success: false, error: mockErrorDetail });
     // エラーがログに出力されることを確認
     expect(mockConsoleError).toHaveBeenCalledWith(new Error(mockErrorDetail));
-    expect(mockReload).not.toHaveBeenCalled();
   });
 
-  it("エラーレスポンスにdetailがない場合にデフォルトメッセージを使用する", async () => {
+  it("エラーレスポンスにdetailがない場合にデフォルトメッセージでsuccess:falseを返す", async () => {
     // detailなしのエラーレスポンスをモック
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
       json: jest.fn().mockResolvedValueOnce({}),
     });
 
-    await reportDelete(mockSlug);
+    const result = await reportDelete(mockSlug);
 
+    expect(result).toEqual({ success: false, error: "レポートの削除に失敗しました" });
     expect(mockConsoleError).toHaveBeenCalledWith(new Error("レポートの削除に失敗しました"));
   });
 
-  it("fetch自体が失敗した場合にエラーをログに出力する", async () => {
+  it("fetch自体が失敗した場合にエラーをログに出力してsuccess:falseを返す", async () => {
     const mockError = new Error("ネットワークエラー");
 
     // fetchがエラーをスローすることをモック
     (fetch as jest.Mock).mockRejectedValueOnce(mockError);
 
-    await reportDelete(mockSlug);
+    const result = await reportDelete(mockSlug);
 
+    expect(result).toEqual({ success: false, error: "ネットワークエラー" });
     expect(mockConsoleError).toHaveBeenCalledWith(mockError);
-    expect(mockReload).not.toHaveBeenCalled();
   });
 
   it("正しいAPIエンドポイントURLを構築する", async () => {
@@ -108,8 +102,9 @@ describe("reportDelete", () => {
       ok: true,
     });
 
-    await reportDelete(mockSlug);
+    const result = await reportDelete(mockSlug);
 
     expect(fetch).toHaveBeenCalledWith(`${customApiUrl}/admin/reports/${mockSlug}`, expect.any(Object));
+    expect(result).toEqual({ success: true });
   });
 });
