@@ -15,7 +15,7 @@ from src.utils.logger import setup_logger
 logger = setup_logger()
 
 
-def _build_config(report_input: ReportInput) -> dict[str, Any]:
+def _build_config(report_input: ReportInput, user_api_key: str | None = None) -> dict[str, Any]:
     comment_num = len(report_input.comments)
 
     config = {
@@ -52,11 +52,15 @@ def _build_config(report_input: ReportInput) -> dict[str, Any]:
         },
         "enable_source_link": report_input.enable_source_link,
     }
+    
+    if user_api_key:
+        config["user_api_key"] = user_api_key
+    
     return config
 
 
-def save_config_file(report_input: ReportInput) -> Path:
-    config = _build_config(report_input)
+def save_config_file(report_input: ReportInput, user_api_key: str | None = None) -> Path:
+    config = _build_config(report_input, user_api_key)
     config_path = settings.CONFIG_DIR / f"{report_input.input}.json"
     with open(config_path, "w") as f:
         json.dump(config, f, indent=4, ensure_ascii=False)
@@ -152,13 +156,13 @@ def _monitor_process(process: subprocess.Popen, slug: str) -> None:
         set_status(slug, "error")
 
 
-def launch_report_generation(report_input: ReportInput) -> None:
+def launch_report_generation(report_input: ReportInput, user_api_key: str | None = None) -> None:
     """
     外部ツールの main.py を subprocess で呼び出してレポート生成処理を開始する関数。
     """
     try:
         add_new_report_to_status(report_input)
-        config_path = save_config_file(report_input)
+        config_path = save_config_file(report_input, user_api_key)
         save_input_file(report_input)
         cmd = ["python", "hierarchical_main.py", config_path, "--skip-interaction", "--without-html"]
         execution_dir = settings.TOOL_DIR / "pipeline"

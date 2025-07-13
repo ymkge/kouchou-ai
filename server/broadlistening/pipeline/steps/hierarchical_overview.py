@@ -41,6 +41,7 @@ def hierarchical_overview(config):
         model=model,
         provider=config["provider"],
         local_llm_address=config.get("local_llm_address"),
+        user_api_key=config.get("user_api_key"),
         json_schema=OverviewResponse,
     )
 

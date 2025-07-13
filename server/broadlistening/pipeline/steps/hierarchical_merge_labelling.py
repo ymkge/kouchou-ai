@@ -276,6 +276,7 @@ def process_merge_labelling(
             json_schema=LabellingFromat,
             provider=config["provider"],
             local_llm_address=config.get("local_llm_address"),
+            user_api_key=config.get("user_api_key"),
         )
 
         config["total_token_usage"] = config.get("total_token_usage", 0) + token_total

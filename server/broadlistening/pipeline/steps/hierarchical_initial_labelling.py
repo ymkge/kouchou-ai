@@ -163,6 +163,7 @@ def process_initial_labelling(
             provider=provider,
             json_schema=LabellingFromat,
             local_llm_address=local_llm_address,
+            user_api_key=config.get("user_api_key") if config else None,
         )
 
         # トークン使用量を累積（configが渡されている場合）
