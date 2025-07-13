@@ -557,7 +557,7 @@ class TestLLMService:
         assert token_input == 50
         assert token_output == 50
         assert token_total == 100
-        mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, None)
+        mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, None, None)
 
     def test_request_to_chat_openai_use_azure(self, mock_openai_response):
         """request_to_chat_openai: provider=azureの場合はrequest_to_azure_chatcompletionを使用する"""
@@ -579,7 +579,7 @@ class TestLLMService:
         assert token_input == 75
         assert token_output == 75
         assert token_total == 150
-        mock_request_to_azure.assert_called_once_with(messages, True, None)
+        mock_request_to_azure.assert_called_once_with(messages, True, None, None)
 
     def test_request_to_chat_openai_with_json_schema(self, mock_openai_response):
         """request_to_chat_openai: json_schemaパラメータを指定できる"""
@@ -615,7 +615,7 @@ class TestLLMService:
         assert token_input == 100
         assert token_output == 100
         assert token_total == 200
-        mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, json_schema)
+        mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, json_schema, None)
 
     def test_request_to_chat_openai_with_pydantic_model(self, mock_openai_response):
         """request_to_chat_openai: Pydantic BaseModelを指定できる"""
@@ -640,7 +640,7 @@ class TestLLMService:
         assert token_input == 125
         assert token_output == 125
         assert token_total == 250
-        mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, TestModel)
+        mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, TestModel, None)
 
     def test_validate_model_valid(self):
         """_validate_model: 有効なモデルの場合は例外を発生させない"""
