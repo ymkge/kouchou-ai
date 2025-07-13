@@ -62,6 +62,7 @@ function ReportDataAndActions({ report, reports, setReports }: Props) {
                 report={report}
                 setIsEditDialogOpen={setIsEditDialogOpen}
                 setIsClusterEditDialogOpen={setIsClusterEditDialogOpen}
+                setReports={setReports}
               />
             </GridItem>
             <GridItem>
@@ -115,7 +116,7 @@ function ReportDataAndActions({ report, reports, setReports }: Props) {
                 <Text textStyle="body/sm/bold">エラーが発生しました。レポート生成設定を調整してください。</Text>
               </HStack>
             </motion.div>
-            <DeleteButton report={report} />
+            <DeleteButton report={report} setReports={setReports} />
           </>
         )}
       </AnimatePresence>

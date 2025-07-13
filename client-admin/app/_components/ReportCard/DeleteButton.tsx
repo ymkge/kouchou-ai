@@ -3,14 +3,15 @@
 import { IconButton } from "@/components/ui/icon-button";
 import type { Report } from "@/type";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 import { DeleteDialog } from "./DeleteDialog";
 
 type Props = {
   report: Report;
+  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
-export function DeleteButton({ report }: Props) {
+export function DeleteButton({ report, setReports }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -25,7 +26,7 @@ export function DeleteButton({ report }: Props) {
       >
         <Trash2 />
       </IconButton>
-      <DeleteDialog isOpen={isOpen} setIsOpen={setIsOpen} report={report} />
+      <DeleteDialog isOpen={isOpen} setIsOpen={setIsOpen} report={report} setReports={setReports} />
     </>
   );
 }

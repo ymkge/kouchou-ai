@@ -13,9 +13,10 @@ type Props = {
   report: Report;
   setIsEditDialogOpen: Dispatch<SetStateAction<boolean>>;
   setIsClusterEditDialogOpen: Dispatch<SetStateAction<boolean>>;
+  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
-export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialogOpen }: Props) {
+export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialogOpen, setReports }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -113,7 +114,7 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
           </MenuContent>
         </Portal>
       </MenuRoot>
-      <DeleteDialog isOpen={isOpen} setIsOpen={setIsOpen} report={report} />
+      <DeleteDialog isOpen={isOpen} setIsOpen={setIsOpen} report={report} setReports={setReports} />
     </>
   );
 }

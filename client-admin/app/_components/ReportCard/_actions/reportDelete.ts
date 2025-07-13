@@ -1,3 +1,5 @@
+"use server";
+
 import { getApiBaseUrl } from "../../../utils/api";
 
 export async function reportDelete(slug: string) {
@@ -9,9 +11,7 @@ export async function reportDelete(slug: string) {
         "Content-Type": "application/json",
       },
     });
-    if (response.ok) {
-      window.location.reload();
-    } else {
+    if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || "レポートの削除に失敗しました");
     }

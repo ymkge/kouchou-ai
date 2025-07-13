@@ -19,9 +19,10 @@ type Props = {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   report: Report;
+  setReports: Dispatch<SetStateAction<Report[]>>;
 };
 
-export function DeleteDialog({ isOpen, setIsOpen, report }: Props) {
+export function DeleteDialog({ isOpen, setIsOpen, report, setReports }: Props) {
   return (
     <DialogRoot size="sm" placement="center" open={isOpen} modal={true} closeOnInteractOutside={true} trapFocus={true}>
       <Portal>
@@ -62,7 +63,11 @@ export function DeleteDialog({ isOpen, setIsOpen, report }: Props) {
               size="md"
               color="font.error"
               borderColor="border.error"
-              onClick={async () => await reportDelete(report.slug)}
+              onClick={async () => {
+                await reportDelete(report.slug);
+                setReports((prevReports) => prevReports.filter((r) => r.slug !== report.slug));
+                setIsOpen(false);
+              }}
             >
               削除する
             </Button>
