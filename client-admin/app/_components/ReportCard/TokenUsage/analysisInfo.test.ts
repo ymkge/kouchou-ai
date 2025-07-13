@@ -5,7 +5,7 @@ import { analysisInfo } from "./analysisInfo";
 describe("analysisInfo", () => {
   const baseReport: Report = {
     slug: "test-report",
-    status: "completed",
+    status: "processing",
     title: "Test Report",
     description: "Test Description",
     isPubcom: false,

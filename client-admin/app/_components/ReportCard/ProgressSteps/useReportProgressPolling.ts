@@ -1,7 +1,7 @@
-import type { stepKeys } from './ProgressSteps';
 import { useEffect, useState } from "react";
+import type { stepKeys } from "./ProgressSteps";
 
-type Progress = typeof stepKeys[number] | "loading" | "completed";
+type Progress = (typeof stepKeys)[number] | "loading" | "completed";
 
 export function useReportProgressPoll(slug: string) {
   const [progress, setProgress] = useState<Progress>("loading");
@@ -45,7 +45,6 @@ export function useReportProgressPoll(slug: string) {
             setIsPolling(false);
             return;
           }
-
 
           if (data.current_step === "completed") {
             setIsPolling(false);

@@ -45,9 +45,7 @@ export function Visibility({ report, setReports }: Props) {
 
         if (result.success) {
           setReports((prevReports) =>
-            prevReports.map((r) =>
-              r.slug === report.slug ? { ...r, visibility: result.visibility } : r,
-            ),
+            prevReports.map((r) => (r.slug === report.slug ? { ...r, visibility: result.visibility } : r)),
           );
         } else {
           toaster.create({
