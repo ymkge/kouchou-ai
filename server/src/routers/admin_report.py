@@ -45,7 +45,9 @@ async def get_reports(api_key: str = Depends(verify_admin_api_key)) -> list[Repo
 
 
 @router.post("/admin/reports", status_code=202)
-async def create_report(report: ReportInput, request: Request, api_key: str = Depends(verify_admin_api_key)) -> ORJSONResponse:
+async def create_report(
+    report: ReportInput, request: Request, api_key: str = Depends(verify_admin_api_key)
+) -> ORJSONResponse:
     try:
         user_api_key = request.headers.get("x-user-api-key")
         launch_report_generation(report, user_api_key)

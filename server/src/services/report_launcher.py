@@ -52,10 +52,10 @@ def _build_config(report_input: ReportInput, user_api_key: str | None = None) ->
         },
         "enable_source_link": report_input.enable_source_link,
     }
-    
+
     if user_api_key:
         config["user_api_key"] = user_api_key
-    
+
     return config
 
 

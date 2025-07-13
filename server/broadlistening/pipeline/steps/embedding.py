@@ -18,12 +18,12 @@ def embedding(config):
     for i in tqdm(range(0, len(arguments), batch_size)):
         args = arguments["argument"].tolist()[i : i + batch_size]
         embeds = request_to_embed(
-            args, 
-            model, 
-            is_embedded_at_local, 
+            args,
+            model,
+            is_embedded_at_local,
             config["provider"],
             local_llm_address=config.get("local_llm_address"),
-            user_api_key=config.get("user_api_key")
+            user_api_key=config.get("user_api_key"),
         )
         embeddings.extend(embeds)
     df = pd.DataFrame([{"arg-id": arguments.iloc[i]["arg-id"], "embedding": e} for i, e in enumerate(embeddings)])
