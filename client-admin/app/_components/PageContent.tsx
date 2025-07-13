@@ -5,7 +5,7 @@ import type { Report } from "@/type";
 import { Box, Flex, HStack, Heading, Icon, Text, VStack } from "@chakra-ui/react";
 import { Eye, EyeClosedIcon, LockKeyhole, Plus } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { BuildDownloadButton } from "./BuildDownloadButton/BuildDownloadButton";
 import { ReportCardList } from "./ReportCardList";
 
@@ -13,9 +13,7 @@ type Props = {
   reports: Report[];
 };
 
-export function PageContent({ reports: _reports }: Props) {
-  const [reports, setReports] = useState<Report[]>(_reports);
-
+export function PageContent({ reports }: Props) {
   const counts = useMemo(
     () => ({
       public: reports.filter((report) => report.visibility === "public").length,
@@ -68,7 +66,7 @@ export function PageContent({ reports: _reports }: Props) {
           </Button>
         </Flex>
       )}
-      <ReportCardList reports={reports} setReports={setReports} />
+      <ReportCardList reports={reports} />
       {reports.length > 0 && (
         <HStack justify="center" mt={10}>
           <BuildDownloadButton />

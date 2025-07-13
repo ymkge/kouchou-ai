@@ -17,6 +17,18 @@ jest.mock("../../../utils/api", () => ({
   getApiBaseUrl: jest.fn(() => "http://localhost:8000"),
 }));
 
+// Mock useRouter
+jest.mock("next/navigation", () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    refresh: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+  })),
+}));
+
 // Mock environment variable
 const originalEnv = process.env;
 beforeEach(() => {
@@ -56,8 +68,6 @@ const defaultProps = {
   isEditDialogOpen: true,
   setIsEditDialogOpen: jest.fn(),
   report: mockReport,
-  reports: mockReports,
-  setReports: jest.fn(),
 };
 
 function renderWithProvider(component: React.ReactElement) {
@@ -117,20 +127,26 @@ describe("ReportEditDialog", () => {
 
   describe("保存処理", () => {
     it("保存が成功した場合の処理", async () => {
-      const mockSetReports = jest.fn();
       const mockSetIsEditDialogOpen = jest.fn();
+      const mockRouterRefresh = jest.fn();
+
+      // useRouterのrefreshメソッドをモック
+      const { useRouter } = require("next/navigation");
+      useRouter.mockReturnValue({
+        push: jest.fn(),
+        refresh: mockRouterRefresh,
+        back: jest.fn(),
+        forward: jest.fn(),
+        replace: jest.fn(),
+        prefetch: jest.fn(),
+      });
+
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         json: async () => ({}),
       });
 
-      renderWithProvider(
-        <ReportEditDialog
-          {...defaultProps}
-          setReports={mockSetReports}
-          setIsEditDialogOpen={mockSetIsEditDialogOpen}
-        />,
-      );
+      renderWithProvider(<ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />);
 
       // タイトルと説明を変更
       const titleInput = screen.getByDisplayValue("Test Report Title");
@@ -156,15 +172,8 @@ describe("ReportEditDialog", () => {
         });
       });
 
-      // レポート一覧が更新される
-      expect(mockSetReports).toHaveBeenCalledWith([
-        {
-          ...mockReport,
-          title: "Updated Title",
-          description: "Updated Description",
-        },
-        mockReports[1],
-      ]);
+      // router.refresh()が呼ばれる
+      expect(mockRouterRefresh).toHaveBeenCalled();
 
       // 成功メッセージが表示される
       expect(toaster.create).toHaveBeenCalledWith({
@@ -174,33 +183,6 @@ describe("ReportEditDialog", () => {
       });
 
       // ダイアログが閉じる
-      expect(mockSetIsEditDialogOpen).toHaveBeenCalledWith(false);
-    });
-
-    it("reportsがundefinedの場合でも保存処理が動作する", async () => {
-      const mockSetIsEditDialogOpen = jest.fn();
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({}),
-      });
-
-      renderWithProvider(
-        <ReportEditDialog {...defaultProps} reports={undefined} setIsEditDialogOpen={mockSetIsEditDialogOpen} />,
-      );
-
-      const saveButton = screen.getByText("保存");
-      fireEvent.click(saveButton);
-
-      await waitFor(() => {
-        expect(fetch).toHaveBeenCalled();
-      });
-
-      expect(toaster.create).toHaveBeenCalledWith({
-        type: "success",
-        title: "更新完了",
-        description: "レポート情報が更新されました",
-      });
-
       expect(mockSetIsEditDialogOpen).toHaveBeenCalledWith(false);
     });
 

@@ -5,10 +5,9 @@ import { ReportCard } from "./ReportCard/ReportCard";
 
 type Props = {
   reports: Report[];
-  setReports: React.Dispatch<React.SetStateAction<Report[]>>;
 };
 
-export function ReportCardList({ reports, setReports }: Props) {
+export function ReportCardList({ reports }: Props) {
   return (
     <Grid
       gridTemplateColumns="170px minmax(330px, 1fr) 52px repeat(3, minmax(83px, min-content)) repeat(3, minmax(52px, min-content))"
@@ -54,7 +53,7 @@ export function ReportCardList({ reports, setReports }: Props) {
               shadow: "lg",
             }}
           >
-            <ReportCard report={report} reports={reports} setReports={setReports} />
+            <ReportCard report={report} reports={reports} />
           </Grid>
         ))
       )}
