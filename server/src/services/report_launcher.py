@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import threading
 from pathlib import Path
@@ -15,7 +16,7 @@ from src.utils.logger import setup_logger
 logger = setup_logger()
 
 
-def _build_config(report_input: ReportInput, user_api_key: str | None = None) -> dict[str, Any]:
+def _build_config(report_input: ReportInput) -> dict[str, Any]:
     comment_num = len(report_input.comments)
 
     config = {
@@ -53,14 +54,11 @@ def _build_config(report_input: ReportInput, user_api_key: str | None = None) ->
         "enable_source_link": report_input.enable_source_link,
     }
 
-    if user_api_key:
-        config["user_api_key"] = user_api_key
-
     return config
 
 
 def save_config_file(report_input: ReportInput, user_api_key: str | None = None) -> Path:
-    config = _build_config(report_input, user_api_key)
+    config = _build_config(report_input)
     config_path = settings.CONFIG_DIR / f"{report_input.input}.json"
     with open(config_path, "w") as f:
         json.dump(config, f, indent=4, ensure_ascii=False)
@@ -166,7 +164,12 @@ def launch_report_generation(report_input: ReportInput, user_api_key: str | None
         save_input_file(report_input)
         cmd = ["python", "hierarchical_main.py", config_path, "--skip-interaction", "--without-html"]
         execution_dir = settings.TOOL_DIR / "pipeline"
-        process = subprocess.Popen(cmd, cwd=execution_dir)
+
+        env = os.environ.copy()
+        if user_api_key:
+            env["USER_API_KEY"] = user_api_key
+
+        process = subprocess.Popen(cmd, cwd=execution_dir, env=env)
         threading.Thread(target=_monitor_process, args=(process, report_input.input), daemon=True).start()
     except Exception as e:
         set_status(report_input.input, "error")
@@ -174,7 +177,7 @@ def launch_report_generation(report_input: ReportInput, user_api_key: str | None
         raise e
 
 
-def execute_aggregation(slug: str) -> bool:
+def execute_aggregation(slug: str, user_api_key: str | None = None) -> bool:
     """
     broadlistenigの集約処理のみ実行する関数
     """
@@ -190,7 +193,12 @@ def execute_aggregation(slug: str) -> bool:
             "hierarchical_aggregation",
         ]
         execution_dir = settings.TOOL_DIR / "pipeline"
-        process = subprocess.Popen(cmd, cwd=execution_dir)
+
+        env = os.environ.copy()
+        if user_api_key:
+            env["USER_API_KEY"] = user_api_key
+
+        process = subprocess.Popen(cmd, cwd=execution_dir, env=env)
         threading.Thread(target=_monitor_process, args=(process, slug), daemon=True).start()
         return True
     except Exception as e:
