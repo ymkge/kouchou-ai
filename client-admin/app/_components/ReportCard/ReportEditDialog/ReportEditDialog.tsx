@@ -1,3 +1,4 @@
+import { DialogBackdrop, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogRoot, DialogTitle } from "@/components/ui/dialog";
 import { toaster } from "@/components/ui/toaster";
 import type { Report } from "@/type";
 import { Box, Button, Dialog, Input, Portal, Text, Textarea, VStack } from "@chakra-ui/react";
@@ -40,70 +41,42 @@ export function ReportEditDialog({ isEditDialogOpen, setIsEditDialogOpen, report
   }
 
   return (
-    <Dialog.Root
-      open={isEditDialogOpen}
-      onOpenChange={({ open }) => setIsEditDialogOpen(open)}
-      modal={true}
-      closeOnInteractOutside={true}
-      trapFocus={true}
-    >
+    <DialogRoot placement="center" open={isEditDialogOpen} onOpenChange={({ open }) => setIsEditDialogOpen(open)}>
       <Portal>
-        <Dialog.Backdrop
-          zIndex={1000}
-          position="fixed"
-          inset={0}
-          backgroundColor="blackAlpha.100"
-          backdropFilter="blur(2px)"
-        />
-        <Dialog.Positioner>
-          <Dialog.Content
-            pointerEvents="auto"
-            position="relative"
-            zIndex={1001}
-            boxShadow="md"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Dialog.CloseTrigger position="absolute" top={3} right={3} />
-            <Dialog.Header>
-              <Dialog.Title>レポートを編集</Dialog.Title>
-            </Dialog.Header>
-            <form onSubmit={handleSubmit}>
-              <Dialog.Body>
-                <VStack gap={4} align="stretch">
-                  <Box>
-                    <Text mb={2} fontWeight="bold">
-                      タイトル
-                    </Text>
-                    <Input
-                      name="question"
-                      defaultValue={report.title}
-                      placeholder="レポートのタイトルを入力"
-                    />
-                  </Box>
-                  <Box>
-                    <Text mb={2} fontWeight="bold">
-                      調査概要
-                    </Text>
-                    <Textarea
-                      name="intro"
-                      defaultValue={report.description || ""}
-                      placeholder="調査の概要を入力"
-                    />
-                  </Box>
-                </VStack>
-              </Dialog.Body>
-              <Dialog.Footer>
-                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                  キャンセル
-                </Button>
-                <Button ml={3} type="submit">
-                  保存
-                </Button>
-              </Dialog.Footer>
-            </form>
-          </Dialog.Content>
-        </Dialog.Positioner>
+        <DialogBackdrop />
+        <DialogContent>
+          <DialogCloseTrigger />
+          <DialogHeader>
+            <DialogTitle>レポートを編集</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <DialogBody>
+              <VStack gap={4} align="stretch">
+                <Box>
+                  <Text mb={2} fontWeight="bold">
+                    タイトル
+                  </Text>
+                  <Input name="question" defaultValue={report.title} placeholder="レポートのタイトルを入力" />
+                </Box>
+                <Box>
+                  <Text mb={2} fontWeight="bold">
+                    調査概要
+                  </Text>
+                  <Textarea name="intro" defaultValue={report.description || ""} placeholder="調査の概要を入力" />
+                </Box>
+              </VStack>
+            </DialogBody>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                キャンセル
+              </Button>
+              <Button ml={3} type="submit">
+                保存
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
       </Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }
