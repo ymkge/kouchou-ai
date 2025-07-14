@@ -15,12 +15,11 @@ import { Visibility } from "./Visibility/Visibility";
 
 type Props = {
   report: Report;
-  reports: Report[];
 };
 
 const duration = 0.3;
 
-function ReportDataAndActions({ report, reports }: Props) {
+function ReportDataAndActions({ report }: Props) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
   return (
@@ -120,7 +119,7 @@ function ReportDataAndActions({ report, reports }: Props) {
   );
 }
 
-export function ReportCard({ report, reports }: Props) {
+export function ReportCard({ report }: Props) {
   return (
     <>
       <GridItem>
@@ -129,7 +128,7 @@ export function ReportCard({ report, reports }: Props) {
       <GridItem ml="2">
         <ReportTitle report={report} />
       </GridItem>
-      {<ReportDataAndActions report={report} reports={reports} />}
+      {<ReportDataAndActions report={report} />}
       <AnimatePresence>
         {(report.status === "processing" || report.status === "error") && (
           <motion.div

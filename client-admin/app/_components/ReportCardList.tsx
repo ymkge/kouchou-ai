@@ -53,7 +53,7 @@ export function ReportCardList({ reports }: Props) {
               shadow: "lg",
             }}
           >
-            <ReportCard report={report} reports={reports} />
+            <ReportCard report={report} />
           </Grid>
         ))
       )}
