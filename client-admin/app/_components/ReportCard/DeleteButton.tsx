@@ -4,7 +4,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import type { Report } from "@/type";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { DeleteDialog } from "./DeleteDialog";
+import { DeleteDialog } from "./DeleteDialog/DeleteDialog";
 
 type Props = {
   report: Report;
