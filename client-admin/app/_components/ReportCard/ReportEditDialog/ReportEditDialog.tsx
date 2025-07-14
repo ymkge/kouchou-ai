@@ -3,7 +3,7 @@ import type { Report } from "@/type";
 import { Box, Button, Dialog, Input, Portal, Text, Textarea, VStack } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { type Dispatch, type SetStateAction, useState } from "react";
-import { getApiBaseUrl } from "../../../utils/api";
+import { updateReportConfig } from "./actions";
 
 type Props = {
   isEditDialogOpen: boolean;
@@ -17,40 +17,27 @@ export function ReportEditDialog({ isEditDialogOpen, setIsEditDialogOpen, report
   const router = useRouter();
 
   async function handleSubmit() {
-    try {
-      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/config`, {
-        method: "PATCH",
-        headers: {
-          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          question: editTitle,
-          intro: editDescription,
-        }),
-      });
+    const formData = new FormData();
+    formData.append("question", editTitle);
+    formData.append("intro", editDescription);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "メタデータの更新に失敗しました");
-      }
+    const result = await updateReportConfig(report.slug, formData);
 
+    if (result.success) {
       router.refresh();
 
-      // 成功メッセージを表示
       toaster.create({
         type: "success",
         title: "更新完了",
         description: "レポート情報が更新されました",
       });
 
-      // ダイアログを閉じる
       setIsEditDialogOpen(false);
-    } catch (error) {
+    } else {
       toaster.create({
         type: "error",
         title: "更新エラー",
-        description: "メタデータの更新に失敗しました",
+        description: result.error || "メタデータの更新に失敗しました",
       });
     }
   }

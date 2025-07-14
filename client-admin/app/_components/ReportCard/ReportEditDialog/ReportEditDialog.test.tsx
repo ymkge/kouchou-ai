@@ -29,6 +29,11 @@ jest.mock("next/navigation", () => ({
   })),
 }));
 
+// Mock server action
+jest.mock("./actions", () => ({
+  updateReportConfig: jest.fn(),
+}));
+
 // Mock environment variable
 const originalEnv = process.env;
 beforeEach(() => {
@@ -40,8 +45,6 @@ afterEach(() => {
   process.env = originalEnv;
 });
 
-// Mock fetch
-global.fetch = jest.fn();
 
 const mockReport: Report = {
   slug: "test-report",
@@ -52,17 +55,6 @@ const mockReport: Report = {
   visibility: ReportVisibility.PUBLIC,
 };
 
-const mockReports: Report[] = [
-  mockReport,
-  {
-    slug: "other-report",
-    status: "processing",
-    title: "Other Report",
-    description: "Other Description",
-    isPubcom: true,
-    visibility: ReportVisibility.PRIVATE,
-  },
-];
 
 const defaultProps = {
   isEditDialogOpen: true,
@@ -129,6 +121,7 @@ describe("ReportEditDialog", () => {
     it("保存が成功した場合の処理", async () => {
       const mockSetIsEditDialogOpen = jest.fn();
       const mockRouterRefresh = jest.fn();
+      const { updateReportConfig } = require("./actions");
 
       // useRouterのrefreshメソッドをモック
       const { useRouter } = require("next/navigation");
@@ -141,9 +134,9 @@ describe("ReportEditDialog", () => {
         prefetch: jest.fn(),
       });
 
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({}),
+      // Server actionのモック
+      updateReportConfig.mockResolvedValueOnce({
+        success: true,
       });
 
       renderWithProvider(<ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />);
@@ -159,17 +152,7 @@ describe("ReportEditDialog", () => {
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(fetch).toHaveBeenCalledWith("http://localhost:8000/admin/reports/test-report/config", {
-          method: "PATCH",
-          headers: {
-            "x-api-key": "test-api-key",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            question: "Updated Title",
-            intro: "Updated Description",
-          }),
-        });
+        expect(updateReportConfig).toHaveBeenCalledWith("test-report", expect.any(FormData));
       });
 
       // router.refresh()が呼ばれる
@@ -188,9 +171,12 @@ describe("ReportEditDialog", () => {
 
     it("API呼び出しが失敗した場合のエラー処理", async () => {
       const mockSetIsEditDialogOpen = jest.fn();
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ detail: "API Error Message" }),
+      const { updateReportConfig } = require("./actions");
+
+      // Server actionが失敗を返すようにモック
+      updateReportConfig.mockResolvedValueOnce({
+        success: false,
+        error: "API Error Message",
       });
 
       renderWithProvider(<ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />);
@@ -202,7 +188,7 @@ describe("ReportEditDialog", () => {
         expect(toaster.create).toHaveBeenCalledWith({
           type: "error",
           title: "更新エラー",
-          description: "メタデータの更新に失敗しました",
+          description: "API Error Message",
         });
       });
 
@@ -212,7 +198,12 @@ describe("ReportEditDialog", () => {
 
     it("API呼び出しでネットワークエラーが発生した場合の処理", async () => {
       const mockSetIsEditDialogOpen = jest.fn();
-      (fetch as jest.Mock).mockRejectedValueOnce(new Error("Network Error"));
+      const { updateReportConfig } = require("./actions");
+
+      // Server actionがエラーなしで失敗を返すようにモック
+      updateReportConfig.mockResolvedValueOnce({
+        success: false,
+      });
 
       renderWithProvider(<ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />);
 
