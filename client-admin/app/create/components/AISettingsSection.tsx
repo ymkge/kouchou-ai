@@ -101,17 +101,14 @@ export function AISettingsSection({
 
       {provider !== "local" && (
         <Field.Root>
-          <Field.Label>APIキー（オプション）</Field.Label>
+          <Field.Label>APIキー</Field.Label>
           <Input
             type="password"
             placeholder="独自のAPIキーを入力（空欄の場合はサーバー設定を使用）"
             value={userApiKey}
             onChange={onUserApiKeyChange}
           />
-          <Field.HelperText>
-            独自のAPIキーを入力することで、サーバー側の設定ではなく、あなたのAPIキーを使用してレポートを生成できます。
-            空欄の場合は、サーバー側で設定されたAPIキーが使用されます。
-          </Field.HelperText>
+          <Field.HelperText>入力されたAPIキーを使用してレポートを生成できます。</Field.HelperText>
         </Field.Root>
       )}
 
