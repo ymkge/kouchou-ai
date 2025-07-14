@@ -12,6 +12,7 @@ StorageType = Literal["local", "azure_blob"]
 class Settings(BaseSettings):
     ADMIN_API_KEY: str = Field(env="ADMIN_API_KEY")
     PUBLIC_API_KEY: str = Field(env="PUBLIC_API_KEY")
+    OPENAI_API_KEY: str = Field(env="OPENAI_API_KEY")
     ENVIRONMENT: Environment = Field(env="ENVIRONMENT", default="production")
 
     # Next.jsのrevalidate API用の設定
@@ -42,3 +43,5 @@ class Settings(BaseSettings):
 
 env_file = os.environ.get("ENV_FILE", ".env")
 settings = Settings(_env_file=env_file)
+# レポート出力ツール側でOpenAI APIを利用できるように、環境変数にセットする
+os.environ["OPENAI_API_KEY"] = settings.OPENAI_API_KEY
