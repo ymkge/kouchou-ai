@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ActionMenu } from "./ActionMenu/ActionMenu";
 import { ClusterEditDialog } from "./ClusterEditDialog/ClusterEditDialog";
 import { DeleteButton } from "./DeleteButton";
+import { NumberDisplay } from "./NumberDisplay";
 import { ProgressSteps } from "./ProgressSteps/ProgressSteps";
 import { ReportCreatedAt } from "./ReportCreatedAt";
 import { ReportEditDialog } from "./ReportEditDialog/ReportEditDialog";
@@ -44,14 +45,14 @@ function ReportDataAndActions({ report, reports }: Props) {
                 </a>
               </IconButton>
             </GridItem>
-            <GridItem textStyle="body/md/bold" textAlign="center">
-              {report.analysis.commentNum}
+            <GridItem>
+              <NumberDisplay value={report.analysis.commentNum} />
             </GridItem>
-            <GridItem textStyle="body/md/bold" textAlign="center">
-              {report.analysis.argumentsNum}
+            <GridItem>
+              <NumberDisplay value={report.analysis.argumentsNum} />
             </GridItem>
-            <GridItem textStyle="body/md/bold" textAlign="center">
-              {report.analysis.clusterNum}
+            <GridItem>
+              <NumberDisplay value={report.analysis.clusterNum} />
             </GridItem>
             <GridItem>
               <TokenUsage report={report} />
