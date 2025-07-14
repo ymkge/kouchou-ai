@@ -99,7 +99,8 @@ export function AISettingsSection({
         <Field.HelperText>{getProviderDescription()}</Field.HelperText>
       </Field.Root>
 
-      {provider !== "local" && (
+      {/* TODO: azure の場合は別の方法が必要そうなので別途対応する */}
+      {provider !== "local" && provider !== "azure" && (
         <Field.Root>
           <Field.Label>APIキー</Field.Label>
           <Input
