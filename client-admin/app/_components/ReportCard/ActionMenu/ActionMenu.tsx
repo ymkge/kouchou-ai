@@ -21,6 +21,7 @@ type Props = {
 export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialogOpen }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const { exportStaticHTML } = useBuildDownload();
+  const isVisible = report.visibility === "public";
 
   return (
     <>
@@ -123,12 +124,14 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
               value="static-export"
               textStyle="body/md/bold"
               onClick={() => {
+                if (!isVisible) return;
                 exportStaticHTML([report.slug]);
               }}
               _icon={{
                 w: 5,
                 h: 5,
               }}
+              disabled={!isVisible}
             >
               <FolderDown />
               HTML書き出し
