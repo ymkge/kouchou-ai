@@ -7,10 +7,10 @@ import type { Report } from "@/type";
 import { IconButton, Portal } from "@chakra-ui/react";
 import { Ellipsis, FileSpreadsheet, FolderDown, Pencil, TextIcon, Trash2 } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
+import { useBuildDownload } from "../../BuildDownloadButton/useBuildDownload";
 import { DeleteDialog } from "../DeleteDialog";
 import { csvDownload } from "./csvDownload";
 import { csvDownloadForWindows } from "./csvDownloadForWindows";
-import { useBuildDownload } from "../../BuildDownloadButton/useBuildDownload";
 
 type Props = {
   report: Report;
@@ -20,7 +20,23 @@ type Props = {
 
 export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialogOpen }: Props) {
   const [isOpen, setIsOpen] = useState(false);
-  const { isLoading, handleDownload } = useBuildDownload();
+  const { handleDownload } = useBuildDownload();
+
+  function handleExport(slug: string[]) {
+    toaster.promise(handleDownload(slug), {
+      success: {
+        title: "HTML書き出し完了",
+        description: "ダウンロードフォルダに保存されました。",
+      },
+      error: {
+        title: "HTML書き出し失敗",
+        description: "問題が解決しない場合は、管理者に問い合わせてください。",
+      },
+      loading: {
+        title: "HTML書き出し中",
+      },
+    });
+  }
 
   return (
     <>
@@ -120,19 +136,19 @@ export function ActionMenu({ report, setIsEditDialogOpen, setIsClusterEditDialog
               </MenuRoot>
             )}
             <MenuItem
-                value="static-export"
-                textStyle="body/md/bold"
-                onClick={() => {
-                  handleDownload([report.slug]);
-                }}
-                _icon={{
-                  w: 5,
-                  h: 5,
-                }}
-              >
-                <FolderDown />
-                HTML書き出し
-              </MenuItem>
+              value="static-export"
+              textStyle="body/md/bold"
+              onClick={() => {
+                handleExport([report.slug]);
+              }}
+              _icon={{
+                w: 5,
+                h: 5,
+              }}
+            >
+              <FolderDown />
+              HTML書き出し
+            </MenuItem>
             <MenuItem
               value="delete"
               color="fg.error"
