@@ -1,5 +1,5 @@
 import { getApiBaseUrl } from "../../../utils/api";
-import { reportDelete } from "./reportDelete";
+import { reportDelete } from "./action";
 
 // APIユーティリティ関数をモック化
 jest.mock("../../../utils/api", () => ({

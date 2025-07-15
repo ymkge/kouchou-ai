@@ -16,7 +16,7 @@ import { FileText, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Dispatch, SetStateAction } from "react";
 import { useTransition } from "react";
-import { reportDelete } from "./_actions/reportDelete";
+import { reportDelete } from "./action";
 
 type Props = {
   isOpen: boolean;

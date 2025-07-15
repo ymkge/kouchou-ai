@@ -2,10 +2,12 @@ import type { Report } from "@/type";
 import { GridItem, HStack, IconButton, Text } from "@chakra-ui/react";
 import { Bot, LinkIcon } from "lucide-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
+import Link from "next/link";
 import { useState } from "react";
 import { ActionMenu } from "./ActionMenu/ActionMenu";
 import { ClusterEditDialog } from "./ClusterEditDialog/ClusterEditDialog";
 import { DeleteButton } from "./DeleteButton";
+import { NumberDisplay } from "./NumberDisplay";
 import { ProgressSteps } from "./ProgressSteps/ProgressSteps";
 import { ReportCreatedAt } from "./ReportCreatedAt";
 import { ReportEditDialog } from "./ReportEditDialog/ReportEditDialog";
@@ -15,12 +17,11 @@ import { Visibility } from "./Visibility/Visibility";
 
 type Props = {
   report: Report;
-  reports: Report[];
 };
 
 const duration = 0.3;
 
-function ReportDataAndActions({ report, reports }: Props) {
+function ReportDataAndActions({ report }: Props) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isClusterEditDialogOpen, setIsClusterEditDialogOpen] = useState(false);
   return (
@@ -39,19 +40,23 @@ function ReportDataAndActions({ report, reports }: Props) {
           >
             <GridItem>
               <IconButton variant="ghost" size="lg" _hover={{ bg: "blue.50", boxShadow: "none" }} asChild>
-                <a href={`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`} target="_blank" rel="noreferrer">
+                <Link
+                  href={`${process.env.NEXT_PUBLIC_CLIENT_BASEPATH}/${report.slug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   <LinkIcon />
-                </a>
+                </Link>
               </IconButton>
             </GridItem>
-            <GridItem textStyle="body/md/bold" textAlign="center">
-              {report.analysis.commentNum}
+            <GridItem>
+              <NumberDisplay value={report.analysis.commentNum} />
             </GridItem>
-            <GridItem textStyle="body/md/bold" textAlign="center">
-              {report.analysis.argumentsNum}
+            <GridItem>
+              <NumberDisplay value={report.analysis.argumentsNum} />
             </GridItem>
-            <GridItem textStyle="body/md/bold" textAlign="center">
-              {report.analysis.clusterNum}
+            <GridItem>
+              <NumberDisplay value={report.analysis.clusterNum} />
             </GridItem>
             <GridItem>
               <TokenUsage report={report} />
@@ -120,7 +125,7 @@ function ReportDataAndActions({ report, reports }: Props) {
   );
 }
 
-export function ReportCard({ report, reports }: Props) {
+export function ReportCard({ report }: Props) {
   return (
     <>
       <GridItem>
@@ -129,7 +134,7 @@ export function ReportCard({ report, reports }: Props) {
       <GridItem ml="2">
         <ReportTitle report={report} />
       </GridItem>
-      {<ReportDataAndActions report={report} reports={reports} />}
+      {<ReportDataAndActions report={report} />}
       <AnimatePresence>
         {(report.status === "processing" || report.status === "error") && (
           <motion.div

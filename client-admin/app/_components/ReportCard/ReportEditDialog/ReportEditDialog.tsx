@@ -1,9 +1,10 @@
+import { DialogBackdrop, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogRoot, DialogTitle } from "@/components/ui/dialog";
 import { toaster } from "@/components/ui/toaster";
 import type { Report } from "@/type";
 import { Box, Button, Dialog, Input, Portal, Text, Textarea, VStack } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import { type Dispatch, type SetStateAction, useState } from "react";
-import { getApiBaseUrl } from "../../../utils/api";
+import type { Dispatch, FormEvent, SetStateAction } from "react";
+import { updateReportConfig } from "./actions";
 
 type Props = {
   isEditDialogOpen: boolean;
@@ -12,112 +13,70 @@ type Props = {
 };
 
 export function ReportEditDialog({ isEditDialogOpen, setIsEditDialogOpen, report }: Props) {
-  const [editTitle, setEditTitle] = useState(report.title);
-  const [editDescription, setEditDescription] = useState(report.description || "");
   const router = useRouter();
 
-  async function handleSubmit() {
-    try {
-      const response = await fetch(`${getApiBaseUrl()}/admin/reports/${report.slug}/config`, {
-        method: "PATCH",
-        headers: {
-          "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          question: editTitle,
-          intro: editDescription,
-        }),
-      });
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "メタデータの更新に失敗しました");
-      }
+    const formData = new FormData(event.currentTarget);
+    const result = await updateReportConfig(report.slug, formData);
 
+    if (result.success) {
       router.refresh();
 
-      // 成功メッセージを表示
       toaster.create({
         type: "success",
         title: "更新完了",
         description: "レポート情報が更新されました",
       });
 
-      // ダイアログを閉じる
       setIsEditDialogOpen(false);
-    } catch (error) {
+    } else {
       toaster.create({
         type: "error",
         title: "更新エラー",
-        description: "メタデータの更新に失敗しました",
+        description: result.error || "メタデータの更新に失敗しました",
       });
     }
   }
 
   return (
-    <Dialog.Root
-      open={isEditDialogOpen}
-      onOpenChange={({ open }) => setIsEditDialogOpen(open)}
-      modal={true}
-      closeOnInteractOutside={true}
-      trapFocus={true}
-    >
+    <DialogRoot placement="center" open={isEditDialogOpen} onOpenChange={({ open }) => setIsEditDialogOpen(open)}>
       <Portal>
-        <Dialog.Backdrop
-          zIndex={1000}
-          position="fixed"
-          inset={0}
-          backgroundColor="blackAlpha.100"
-          backdropFilter="blur(2px)"
-        />
-        <Dialog.Positioner>
-          <Dialog.Content
-            pointerEvents="auto"
-            position="relative"
-            zIndex={1001}
-            boxShadow="md"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Dialog.CloseTrigger position="absolute" top={3} right={3} />
-            <Dialog.Header>
-              <Dialog.Title>レポートを編集</Dialog.Title>
-            </Dialog.Header>
-            <Dialog.Body>
+        <DialogBackdrop />
+        <DialogContent>
+          <DialogCloseTrigger />
+          <DialogHeader>
+            <DialogTitle>レポートを編集</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <DialogBody>
               <VStack gap={4} align="stretch">
                 <Box>
                   <Text mb={2} fontWeight="bold">
                     タイトル
                   </Text>
-                  <Input
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    placeholder="レポートのタイトルを入力"
-                  />
+                  <Input name="question" defaultValue={report.title} placeholder="レポートのタイトルを入力" />
                 </Box>
                 <Box>
                   <Text mb={2} fontWeight="bold">
                     調査概要
                   </Text>
-                  <Textarea
-                    value={editDescription}
-                    onChange={(e) => setEditDescription(e.target.value)}
-                    placeholder="調査の概要を入力"
-                  />
+                  <Textarea name="intro" defaultValue={report.description || ""} placeholder="調査の概要を入力" />
                 </Box>
               </VStack>
-            </Dialog.Body>
-            <Dialog.Footer>
+            </DialogBody>
+            <DialogFooter>
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                 キャンセル
               </Button>
-              <Button ml={3} onClick={handleSubmit}>
+              <Button ml={3} type="submit">
                 保存
               </Button>
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog.Positioner>
+            </DialogFooter>
+          </form>
+        </DialogContent>
       </Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }
