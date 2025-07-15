@@ -7,7 +7,7 @@ export const BuildDownloadButton = () => {
   const { isLoading, handleDownload } = useBuildDownload();
 
   return (
-    <Button size="xl" onClick={handleDownload} loading={isLoading} loadingText="エクスポート中">
+    <Button size="xl" onClick={() => handleDownload()} loading={isLoading} loadingText="エクスポート中">
       全レポートをエクスポート
     </Button>
   );

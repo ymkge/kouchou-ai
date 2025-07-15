@@ -6,11 +6,14 @@ import { useState } from "react";
 export function useBuildDownload() {
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleDownload() {
+  async function handleDownload(slugs: string[] = [""]) {
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/download");
+      const res = await fetch("/api/download", {
+        method: "POST",
+        body: JSON.stringify({ slugs: slugs.join(",") }),
+      });
 
       if (!res.ok) {
         throw new Error("ビルドに失敗しました");
