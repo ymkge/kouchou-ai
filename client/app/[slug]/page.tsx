@@ -37,7 +37,8 @@ export async function generateStaticParams() {
       }));
 
     if (process.env.BUILD_SLUGS) {
-      return slugs.filter((report) => process.env.BUILD_SLUGS?.split(",").includes(report.slug));
+      const buildSlugs = process.env.BUILD_SLUGS.split(",").filter(Boolean);
+      return slugs.filter((report) => buildSlugs.includes(report.slug));
     }
 
     return slugs;
