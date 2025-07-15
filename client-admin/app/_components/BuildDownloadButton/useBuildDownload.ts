@@ -1,5 +1,6 @@
 "use client";
 
+import { toaster } from "@/components/ui/toaster";
 import { useState } from "react";
 
 export function useBuildDownload() {
@@ -38,8 +39,24 @@ export function useBuildDownload() {
     }
   }
 
+  function exportStaticHTML(slug: string[]) {
+    toaster.promise(handleDownload(slug), {
+      success: {
+        title: "HTML書き出し完了",
+        description: "ダウンロードフォルダに保存されました。",
+      },
+      error: {
+        title: "HTML書き出し失敗",
+        description: "問題が解決しない場合は、管理者に問い合わせてください。",
+      },
+      loading: {
+        title: "HTML書き出し中",
+      },
+    });
+  }
+
   return {
     isLoading,
-    handleDownload,
+    exportStaticHTML,
   };
 }
