@@ -30,11 +30,17 @@ export async function generateStaticParams() {
       },
     });
     const reports: Report[] = await response.json();
-    return reports
+    const slugs = reports
       .filter((report) => report.status === "ready")
       .map((report) => ({
         slug: report.slug,
       }));
+
+    if (process.env.BUILD_SLUGS) {
+      return slugs.filter((report) => process.env.BUILD_SLUGS?.split(",").includes(report.slug));
+    }
+
+    return slugs;
   } catch (_e) {
     return [];
   }
