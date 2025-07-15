@@ -8,7 +8,7 @@ import { IconButton, Portal } from "@chakra-ui/react";
 import { Ellipsis, FileSpreadsheet, FolderDown, Pencil, TextIcon, Trash2 } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { useBuildDownload } from "../../BuildDownloadButton/useBuildDownload";
-import { DeleteDialog } from "../DeleteDialog";
+import { DeleteDialog } from "../DeleteDialog/DeleteDialog";
 import { csvDownload } from "./csvDownload";
 import { csvDownloadForWindows } from "./csvDownloadForWindows";
 
