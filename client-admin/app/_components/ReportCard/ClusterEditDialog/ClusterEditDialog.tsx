@@ -116,30 +116,12 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
       return;
     }
 
-    // 意見グループ一覧を再取得して更新
-    const updatedClusters = await fetchClustersData();
-    if (updatedClusters) {
-      // 更新された意見グループ情報をフォームに再設定
-      const updatedSelectedCluster = updatedClusters.find((c: ClusterResponse) => c.id === selectedClusterId);
-      if (updatedSelectedCluster) {
-        setEditClusterTitle(updatedSelectedCluster.label);
-        setEditClusterDescription(updatedSelectedCluster.description);
-      }
-    } else {
-      // クラスター一覧取得のエラーを処理
-      console.error("意見グループ一覧の取得に失敗しました");
-      toaster.create({
-        type: "warning",
-        title: "一部データの取得に失敗",
-        description: "最新の意見グループ一覧の取得に失敗しましたが、変更は保存されています",
-      });
-    }
-
     toaster.create({
       type: "success",
       title: "更新完了",
       description: "意見グループ情報が更新されました",
     });
+
     setIsClusterEditDialogOpen(false);
   }
 
