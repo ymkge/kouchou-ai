@@ -50,30 +50,6 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
     return clusters.filter((c) => c.level === selectedLevel);
   }, [clusters, selectedLevel]);
 
-  // クラスター一覧を取得する共通関数
-  const fetchClustersData = useCallback(async () => {
-    const result = await fetchClusters(report.slug);
-    if (result.success && result.clusters) {
-      setClusters(result.clusters);
-      return result.clusters;
-    }
-    console.error("意見グループ情報の取得に失敗しました:", result.error);
-    return null;
-  }, [report.slug]);
-
-  const fetchInitialClusters = useCallback(async () => {
-    const clusters = await fetchClustersData();
-    if (clusters === null) {
-      toaster.create({
-        type: "error",
-        title: "エラー",
-        description: "クラスタ一覧の取得に失敗しました。",
-      });
-      return;
-    }
-    setClusterData(clusters);
-  }, [fetchClustersData]);
-
   const setClusterData = useCallback((clusters: ClusterResponse[]) => {
     if (clusters && clusters.length > 0) {
       setSelectedClusterId(clusters[0].id);
@@ -86,10 +62,19 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
     }
   }, []);
 
-  // 階層が変更されたら意見グループの先頭を自動選択
-  useEffect(() => {
-    setClusterData(filteredClusters);
-  }, [filteredClusters, setClusterData]);
+  const fetchInitialClusters = useCallback(async () => {
+    const result = await fetchClusters(report.slug);
+    if (result.clusters === undefined) {
+      toaster.create({
+        type: "error",
+        title: "エラー",
+        description: "クラスタ一覧の取得に失敗しました。",
+      });
+      return;
+    }
+    setClusters(result.clusters);
+    setClusterData(result.clusters);
+  }, [report.slug, setClusterData]);
 
   useEffect(() => {
     if (isOpen) {
@@ -156,6 +141,7 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
                     if (item?.value) {
                       const level = Array.isArray(item.value) ? item.value[0] : item.value;
                       setSelectedLevel(Number(level));
+                      setClusterData(clusters.filter((c) => c.level === Number(level)));
                     }
                   }}
                 >
