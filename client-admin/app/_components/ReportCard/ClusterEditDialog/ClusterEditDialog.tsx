@@ -117,7 +117,7 @@ function Dialog({ clusters, report, isOpen, setIsOpen }: DialogProps) {
   }
 
   return (
-    <DialogRoot open={isOpen} modal={true} closeOnInteractOutside={true} trapFocus={true}>
+    <DialogRoot placement="center" open={isOpen} modal={true} closeOnInteractOutside={true} trapFocus={true}>
       <Portal>
         <DialogBackdrop />
         <DialogContent>
