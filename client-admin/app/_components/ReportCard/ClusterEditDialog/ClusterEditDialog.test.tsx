@@ -12,6 +12,12 @@ jest.mock("@/components/ui/toaster", () => ({
   },
 }));
 
+// Mock the server actions
+jest.mock("./actions", () => ({
+  fetchClusters: jest.fn(),
+  updateCluster: jest.fn(),
+}));
+
 // Mock the API utility
 jest.mock("@/app/utils/api", () => ({
   getApiBaseUrl: jest.fn(() => "http://localhost:8000"),
@@ -71,17 +77,19 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <ChakraProvider value={system}>{children}</ChakraProvider>
 );
 
-// Mock fetch
-global.fetch = jest.fn();
-
 describe("ClusterEditDialog", () => {
   const mockOnClose = jest.fn();
+  const mockFetchClusters = require("./actions").fetchClusters;
+  const mockUpdateCluster = require("./actions").updateCluster;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ clusters: mockClusters }),
+    mockFetchClusters.mockResolvedValue({
+      success: true,
+      clusters: mockClusters,
+    });
+    mockUpdateCluster.mockResolvedValue({
+      success: true,
     });
   });
 
@@ -115,11 +123,7 @@ describe("ClusterEditDialog", () => {
     );
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith("http://localhost:8000/admin/reports/test-report/cluster-labels", {
-        headers: {
-          "x-api-key": "test-api-key",
-        },
-      });
+      expect(mockFetchClusters).toHaveBeenCalledWith("test-report");
     });
   });
 
@@ -184,11 +188,6 @@ describe("ClusterEditDialog", () => {
   });
 
   it("保存ボタンがクリックされたときに変更が送信される", async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ clusters: mockClusters }),
-    });
-
     render(
       <TestWrapper>
         <ClusterEditDialog report={mockReport} isOpen={true} setIsClusterEditDialogOpen={mockOnClose} />
@@ -205,17 +204,10 @@ describe("ClusterEditDialog", () => {
     await user.click(saveButton);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith("http://localhost:8000/admin/reports/test-report/cluster-label", {
-        method: "PATCH",
-        headers: {
-          "x-api-key": "test-api-key",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: "cluster-1",
-          label: "Updated Title",
-          description: "Description for cluster 1",
-        }),
+      expect(mockUpdateCluster).toHaveBeenCalledWith("test-report", {
+        id: "cluster-1",
+        label: "Updated Title",
+        description: "Description for cluster 1",
       });
     });
   });
@@ -240,9 +232,9 @@ describe("ClusterEditDialog", () => {
   });
 
   it("クラスタが選択されていないときに保存ボタンが無効化される", async () => {
-    (global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ clusters: [] }),
+    mockFetchClusters.mockResolvedValue({
+      success: true,
+      clusters: [],
     });
 
     render(
@@ -259,7 +251,10 @@ describe("ClusterEditDialog", () => {
 
   it("クラスタ取得時のAPIエラーを処理する", async () => {
     const mockToaster = require("@/components/ui/toaster").toaster;
-    (global.fetch as jest.Mock).mockRejectedValue(new Error("API Error"));
+    mockFetchClusters.mockResolvedValue({
+      success: false,
+      error: "クラスタ一覧の取得に失敗しました",
+    });
 
     render(
       <TestWrapper>
@@ -278,16 +273,10 @@ describe("ClusterEditDialog", () => {
 
   it("クラスタ更新時のAPIエラーを処理する", async () => {
     const mockToaster = require("@/components/ui/toaster").toaster;
-    (global.fetch as jest.Mock)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ clusters: mockClusters }),
-      })
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: () => Promise.resolve({ detail: "Invalid data" }),
-      });
+    mockUpdateCluster.mockResolvedValue({
+      success: false,
+      error: "入力データが不正です: Invalid data",
+    });
 
     render(
       <TestWrapper>
@@ -304,15 +293,15 @@ describe("ClusterEditDialog", () => {
       expect(mockToaster.create).toHaveBeenCalledWith({
         type: "error",
         title: "更新エラー",
-        description: "意見グループ情報の更新に失敗しました",
+        description: "入力データが不正です: Invalid data",
       });
     });
   });
 
   it("クラスタが選択されている場合のみ編集フォームが表示される", async () => {
-    (global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ clusters: [] }),
+    mockFetchClusters.mockResolvedValue({
+      success: true,
+      clusters: [],
     });
 
     render(
