@@ -205,12 +205,14 @@ describe("ClusterEditDialog", () => {
     await user.click(saveButton);
 
     await waitFor(() => {
-      expect(mockUpdateCluster).toHaveBeenCalledWith("test-report", {
-        id: "cluster-1",
-        label: "Updated Title",
-        description: "Description for cluster 1",
-      });
+      expect(mockUpdateCluster).toHaveBeenCalledWith("test-report", expect.any(FormData));
     });
+
+    // Verify FormData contents
+    const formDataCall = mockUpdateCluster.mock.calls[0][1] as FormData;
+    expect(formDataCall.get("id")).toBe("cluster-1");
+    expect(formDataCall.get("label")).toBe("Updated Title");
+    expect(formDataCall.get("description")).toBe("Description for cluster 1");
   });
 
   it("キャンセルボタンがクリックされたときにダイアログが閉じる", async () => {

@@ -1,7 +1,7 @@
 "use server";
 
 import { getApiBaseUrl } from "@/app/utils/api";
-import type { ClusterResponse, ClusterUpdate } from "@/type";
+import type { ClusterResponse } from "@/type";
 
 type FetchClustersResult =
   | {
@@ -37,7 +37,11 @@ type UpdateClusterResult = {
   error?: string;
 };
 
-export async function updateCluster(reportSlug: string, clusterUpdate: ClusterUpdate): Promise<UpdateClusterResult> {
+export async function updateCluster(reportSlug: string, formData: FormData): Promise<UpdateClusterResult> {
+  const id = formData.get("id") as string;
+  const label = formData.get("label") as string;
+  const description = formData.get("description") as string;
+
   try {
     const response = await fetch(`${getApiBaseUrl()}/admin/reports/${reportSlug}/cluster-label`, {
       method: "PATCH",
@@ -45,7 +49,7 @@ export async function updateCluster(reportSlug: string, clusterUpdate: ClusterUp
         "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(clusterUpdate),
+      body: JSON.stringify({ id, label, description }),
     });
 
     if (!response.ok) {

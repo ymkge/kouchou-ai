@@ -1,3 +1,5 @@
+"use client";
+
 import {
   DialogBackdrop,
   DialogBody,
@@ -73,9 +75,11 @@ type DialogProps = {
 function Dialog({ clusters, report, isOpen, setIsOpen }: DialogProps) {
   const firstCluster = clusters[0];
   const [selectedClusterId, setSelectedClusterId] = useState<string>(firstCluster.id);
-  const [editClusterTitle, setEditClusterTitle] = useState(firstCluster.label);
-  const [editClusterDescription, setEditClusterDescription] = useState(firstCluster.description);
   const [selectedLevel, setSelectedLevel] = useState<number>(1); // デフォルトの階層は1
+
+  const selectedCluster = clusters.find((c) => c.id === selectedClusterId) || firstCluster;
+  const editClusterTitle = selectedCluster.label;
+  const editClusterDescription = selectedCluster.description;
 
   // 意見グループの階層を取得
   const availableLevels = useMemo(() => {
@@ -91,12 +95,8 @@ function Dialog({ clusters, report, isOpen, setIsOpen }: DialogProps) {
     items: clusters.filter((c) => c.level === selectedLevel).map((c) => ({ label: c.label, value: c.id })),
   });
 
-  async function handleSubmit() {
-    const result = await updateCluster(report.slug, {
-      id: selectedClusterId,
-      label: editClusterTitle,
-      description: editClusterDescription,
-    });
+  async function handleSubmit(formData: FormData) {
+    const result = await updateCluster(report.slug, formData);
 
     if (!result.success) {
       toaster.create({
@@ -126,112 +126,118 @@ function Dialog({ clusters, report, isOpen, setIsOpen }: DialogProps) {
             <DialogTitle>意見グループを編集</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <VStack gap={4} align="stretch">
-              <Heading size="md">編集対象の選択</Heading>
-              <Box>
-                <Text mb={2} fontWeight="bold">
-                  意見グループの階層
-                </Text>
-                <Select.Root
-                  collection={argumentsCollection}
-                  defaultValue={[String(selectedLevel)]}
-                  onValueChange={(item) => {
-                    const level = Number(item.value[0]);
-                    setSelectedLevel(level);
-                    const c = clusters.find((c) => c.level === level);
-                    if (!c) return;
-                    setSelectedClusterId(c.id);
-                    setEditClusterTitle(c.label);
-                    setEditClusterDescription(c.description);
-                  }}
-                >
-                  <Select.HiddenSelect />
-                  <Select.Control>
-                    <Select.Trigger>
-                      <Select.ValueText placeholder="test" />
-                    </Select.Trigger>
-                    <Select.IndicatorGroup>
-                      <Select.Indicator />
-                    </Select.IndicatorGroup>
-                  </Select.Control>
-                  <Select.Positioner>
-                    <Select.Content>
-                      {argumentsCollection.items.map((item) => (
-                        <Select.Item item={item} key={item.value}>
-                          {item.label}
-                          <Select.ItemIndicator />
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Positioner>
-                </Select.Root>
-              </Box>
-              <Box>
-                <Text mb={2} fontWeight="bold">
-                  編集対象のグループ
-                </Text>
-                <Select.Root
-                  collection={filteredClustersCollection}
-                  key={selectedLevel}
-                  defaultValue={[filteredClustersCollection.items[0].value]}
-                  onValueChange={(item) => {
-                    const selected = clusters.find((c) => c.id === item.value[0]);
-                    if (!selected) return;
-                    setEditClusterTitle(selected.label);
-                    setEditClusterDescription(selected.description);
-                  }}
-                >
-                  <Select.HiddenSelect />
-                  <Select.Control>
-                    <Select.Trigger>
-                      <Select.ValueText placeholder="意見グループを選択" />
-                    </Select.Trigger>
-                    <Select.IndicatorGroup>
-                      <Select.Indicator />
-                    </Select.IndicatorGroup>
-                  </Select.Control>
-                  <Select.Positioner>
-                    <Select.Content>
-                      {filteredClustersCollection.items.map((item) => (
-                        <Select.Item item={item} key={item.value}>
-                          {item.label}
-                          <Select.ItemIndicator />
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Positioner>
-                </Select.Root>
-              </Box>
-              <Separator my={4} />
-              <Heading size="md">意見グループの編集</Heading>
-              <Box>
-                <Text mb={2} fontWeight="bold">
-                  タイトル
-                </Text>
-                <Input
-                  value={editClusterTitle}
-                  onChange={(e) => setEditClusterTitle(e.target.value)}
-                  placeholder="タイトルを入力"
-                />
-              </Box>
-              <Box>
-                <Text mb={2} fontWeight="bold">
-                  説明
-                </Text>
-                <Textarea
-                  value={editClusterDescription}
-                  onChange={(e) => setEditClusterDescription(e.target.value)}
-                  placeholder="説明を入力"
-                  height="150px"
-                />
-              </Box>
-            </VStack>
+            <form action={handleSubmit} id="cluster-edit-form">
+              <VStack gap={4} align="stretch">
+                <Heading size="md">編集対象の選択</Heading>
+                <Box>
+                  <Text mb={2} fontWeight="bold">
+                    意見グループの階層
+                  </Text>
+                  <Select.Root
+                    collection={argumentsCollection}
+                    defaultValue={[String(selectedLevel)]}
+                    onValueChange={(item) => {
+                      const level = Number(item.value[0]);
+                      setSelectedLevel(level);
+                      const c = clusters.find((c) => c.level === level);
+                      if (!c) return;
+                      setSelectedClusterId(c.id);
+                    }}
+                  >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                      <Select.Trigger>
+                        <Select.ValueText placeholder="test" />
+                      </Select.Trigger>
+                      <Select.IndicatorGroup>
+                        <Select.Indicator />
+                      </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Select.Positioner>
+                      <Select.Content>
+                        {argumentsCollection.items.map((item) => (
+                          <Select.Item item={item} key={item.value}>
+                            {item.label}
+                            <Select.ItemIndicator />
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Positioner>
+                  </Select.Root>
+                </Box>
+                <Box>
+                  <Text mb={2} fontWeight="bold">
+                    編集対象のグループ
+                  </Text>
+                  <Select.Root
+                    name="id"
+                    collection={filteredClustersCollection}
+                    key={selectedLevel}
+                    defaultValue={[filteredClustersCollection.items[0].value]}
+                    onValueChange={(item) => {
+                      const selected = clusters.find((c) => c.id === item.value[0]);
+                      if (!selected) return;
+                      setSelectedClusterId(selected.id);
+                    }}
+                  >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                      <Select.Trigger>
+                        <Select.ValueText placeholder="意見グループを選択" />
+                      </Select.Trigger>
+                      <Select.IndicatorGroup>
+                        <Select.Indicator />
+                      </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Select.Positioner>
+                      <Select.Content>
+                        {filteredClustersCollection.items.map((item) => (
+                          <Select.Item item={item} key={item.value}>
+                            {item.label}
+                            <Select.ItemIndicator />
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Positioner>
+                  </Select.Root>
+                </Box>
+                <Separator my={4} />
+                <Heading size="md">意見グループの編集</Heading>
+                <VStack gap={4} align="stretch">
+                  <Box>
+                    <Text mb={2} fontWeight="bold">
+                      タイトル
+                    </Text>
+                    <Input
+                      key={selectedClusterId}
+                      name="label"
+                      defaultValue={editClusterTitle}
+                      placeholder="タイトルを入力"
+                      required
+                    />
+                  </Box>
+                  <Box>
+                    <Text mb={2} fontWeight="bold">
+                      説明
+                    </Text>
+                    <Textarea
+                      key={selectedClusterId}
+                      name="description"
+                      defaultValue={editClusterDescription}
+                      placeholder="説明を入力"
+                      height="150px"
+                      required
+                    />
+                  </Box>
+                </VStack>
+              </VStack>
+            </form>
           </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               キャンセル
             </Button>
-            <Button ml={3} onClick={handleSubmit}>
+            <Button type="submit" form="cluster-edit-form">
               保存
             </Button>
           </DialogFooter>
