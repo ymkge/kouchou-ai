@@ -33,38 +33,11 @@ type ClusterEditDialogProps = {
 };
 
 export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }: ClusterEditDialogProps) {
-  const [selectedClusterId, setSelectedClusterId] = useState<string | undefined>(undefined);
-  const [editClusterTitle, setEditClusterTitle] = useState("");
-  const [editClusterDescription, setEditClusterDescription] = useState("");
   const [clusters, setClusters] = useState<ClusterResponse[]>([]);
-  const [selectedLevel, setSelectedLevel] = useState<number>(1); // デフォルトの階層は1
-
-  // 利用可能な階層レベルを取得
-  const availableLevels = useMemo(() => {
-    const levels = [...new Set(clusters.map((c) => c.level))].sort((a, b) => a - b);
-    return levels.length > 0 ? levels : [1];
-  }, [clusters]);
-
-  // 選択された階層の意見グループのみをフィルタリング
-  const filteredClusters = useMemo(() => {
-    return clusters.filter((c) => c.level === selectedLevel);
-  }, [clusters, selectedLevel]);
-
-  const setClusterData = useCallback((clusters: ClusterResponse[]) => {
-    if (clusters && clusters.length > 0) {
-      setSelectedClusterId(clusters[0].id);
-      setEditClusterTitle(clusters[0].label);
-      setEditClusterDescription(clusters[0].description);
-    } else {
-      setSelectedClusterId(undefined);
-      setEditClusterTitle("");
-      setEditClusterDescription("");
-    }
-  }, []);
 
   const fetchInitialClusters = useCallback(async () => {
     const result = await fetchClusters(report.slug);
-    if (result.clusters === undefined) {
+    if (!result.success) {
       toaster.create({
         type: "error",
         title: "エラー",
@@ -73,18 +46,52 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
       return;
     }
     setClusters(result.clusters);
-    setClusterData(result.clusters);
-  }, [report.slug, setClusterData]);
+  }, [report.slug]);
 
   useEffect(() => {
     if (isOpen) {
       fetchInitialClusters();
+    } else {
+      setClusters([]);
     }
   }, [fetchInitialClusters, isOpen]);
 
-  async function handleSubmit() {
-    if (!selectedClusterId) return;
+  return (
+    clusters.length > 0 && (
+      <Dialog clusters={clusters} report={report} isOpen={isOpen} setIsOpen={setIsClusterEditDialogOpen} />
+    )
+  );
+}
 
+type DialogProps = {
+  clusters: ClusterResponse[];
+  report: Report;
+  isOpen: boolean;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+};
+
+function Dialog({ clusters, report, isOpen, setIsOpen }: DialogProps) {
+  const firstCluster = clusters[0];
+  const [selectedClusterId, setSelectedClusterId] = useState<string>(firstCluster.id);
+  const [editClusterTitle, setEditClusterTitle] = useState(firstCluster.label);
+  const [editClusterDescription, setEditClusterDescription] = useState(firstCluster.description);
+  const [selectedLevel, setSelectedLevel] = useState<number>(1); // デフォルトの階層は1
+
+  // 意見グループの階層を取得
+  const availableLevels = useMemo(() => {
+    const levels = [...new Set(clusters.map((c) => c.level))].sort((a, b) => a - b);
+    return levels.length > 0 ? levels : [1];
+  }, [clusters]);
+  const argumentsCollection = createListCollection({
+    items: availableLevels.map((level) => ({ label: `第${level}階層`, value: String(level) })),
+  });
+
+  // 選択された階層の意見グループのみをフィルタリング
+  const filteredClustersCollection = createListCollection({
+    items: clusters.filter((c) => c.level === selectedLevel).map((c) => ({ label: c.label, value: c.id })),
+  });
+
+  async function handleSubmit() {
     const result = await updateCluster(report.slug, {
       id: selectedClusterId,
       label: editClusterTitle,
@@ -92,7 +99,6 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
     });
 
     if (!result.success) {
-      console.error("意見グループ情報の更新に失敗しました:", result.error);
       toaster.create({
         type: "error",
         title: "更新エラー",
@@ -107,21 +113,15 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
       description: "意見グループ情報が更新されました",
     });
 
-    setIsClusterEditDialogOpen(false);
+    setIsOpen(false);
   }
 
   return (
-    <DialogRoot
-      open={isOpen}
-      onOpenChange={({ open }) => setIsClusterEditDialogOpen(open)}
-      modal={true}
-      closeOnInteractOutside={true}
-      trapFocus={true}
-    >
+    <DialogRoot open={isOpen} modal={true} closeOnInteractOutside={true} trapFocus={true}>
       <Portal>
         <DialogBackdrop />
         <DialogContent>
-          <DialogCloseTrigger />
+          <DialogCloseTrigger onClick={() => setIsOpen(false)} />
           <DialogHeader>
             <DialogTitle>意見グループを編集</DialogTitle>
           </DialogHeader>
@@ -133,22 +133,22 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
                   意見グループの階層
                 </Text>
                 <Select.Root
-                  collection={createListCollection({
-                    items: availableLevels.map((level) => ({ label: `第${level}階層`, value: level })),
-                  })}
-                  value={[String(selectedLevel)]}
+                  collection={argumentsCollection}
+                  defaultValue={[String(selectedLevel)]}
                   onValueChange={(item) => {
-                    if (item?.value) {
-                      const level = Array.isArray(item.value) ? item.value[0] : item.value;
-                      setSelectedLevel(Number(level));
-                      setClusterData(clusters.filter((c) => c.level === Number(level)));
-                    }
+                    const level = Number(item.value[0]);
+                    setSelectedLevel(level);
+                    const c = clusters.find((c) => c.level === level);
+                    if (!c) return;
+                    setSelectedClusterId(c.id);
+                    setEditClusterTitle(c.label);
+                    setEditClusterDescription(c.description);
                   }}
                 >
                   <Select.HiddenSelect />
                   <Select.Control>
                     <Select.Trigger>
-                      <Select.ValueText>{`第${selectedLevel}階層`}</Select.ValueText>
+                      <Select.ValueText placeholder="test" />
                     </Select.Trigger>
                     <Select.IndicatorGroup>
                       <Select.Indicator />
@@ -156,9 +156,9 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
                   </Select.Control>
                   <Select.Positioner>
                     <Select.Content>
-                      {availableLevels.map((level) => (
-                        <Select.Item item={{ label: `第${level}階層`, value: level }} key={level}>
-                          第{level}階層
+                      {argumentsCollection.items.map((item) => (
+                        <Select.Item item={item} key={item.value}>
+                          {item.label}
                           <Select.ItemIndicator />
                         </Select.Item>
                       ))}
@@ -171,30 +171,20 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
                   編集対象のグループ
                 </Text>
                 <Select.Root
-                  collection={createListCollection({
-                    items: filteredClusters.map((c) => ({ label: c.label, value: c.id })),
-                  })}
-                  value={selectedClusterId ? [selectedClusterId] : []}
+                  collection={filteredClustersCollection}
+                  key={selectedLevel}
+                  defaultValue={[filteredClustersCollection.items[0].value]}
                   onValueChange={(item) => {
-                    if (item?.value) {
-                      const selectedId = Array.isArray(item.value) ? item.value[0] : item.value;
-                      setSelectedClusterId(selectedId);
-                      const selected = clusters.find((c) => c.id === selectedId);
-                      if (selected) {
-                        setEditClusterTitle(selected.label);
-                        setEditClusterDescription(selected.description);
-                      }
-                    }
+                    const selected = clusters.find((c) => c.id === item.value[0]);
+                    if (!selected) return;
+                    setEditClusterTitle(selected.label);
+                    setEditClusterDescription(selected.description);
                   }}
                 >
                   <Select.HiddenSelect />
                   <Select.Control>
                     <Select.Trigger>
-                      <Select.ValueText>
-                        {selectedClusterId
-                          ? clusters.find((c) => c.id === selectedClusterId)?.label || "意見グループを選択"
-                          : "意見グループを選択"}
-                      </Select.ValueText>
+                      <Select.ValueText placeholder="意見グループを選択" />
                     </Select.Trigger>
                     <Select.IndicatorGroup>
                       <Select.Indicator />
@@ -202,9 +192,9 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
                   </Select.Control>
                   <Select.Positioner>
                     <Select.Content>
-                      {filteredClusters.map((c) => (
-                        <Select.Item item={{ label: c.label, value: c.id }} key={c.id}>
-                          {c.label}
+                      {filteredClustersCollection.items.map((item) => (
+                        <Select.Item item={item} key={item.value}>
+                          {item.label}
                           <Select.ItemIndicator />
                         </Select.Item>
                       ))}
@@ -212,40 +202,36 @@ export function ClusterEditDialog({ report, isOpen, setIsClusterEditDialogOpen }
                   </Select.Positioner>
                 </Select.Root>
               </Box>
-              {selectedClusterId && (
-                <>
-                  <Separator my={4} />
-                  <Heading size="md">意見グループの編集</Heading>
-                  <Box>
-                    <Text mb={2} fontWeight="bold">
-                      タイトル
-                    </Text>
-                    <Input
-                      value={editClusterTitle}
-                      onChange={(e) => setEditClusterTitle(e.target.value)}
-                      placeholder="タイトルを入力"
-                    />
-                  </Box>
-                  <Box>
-                    <Text mb={2} fontWeight="bold">
-                      説明
-                    </Text>
-                    <Textarea
-                      value={editClusterDescription}
-                      onChange={(e) => setEditClusterDescription(e.target.value)}
-                      placeholder="説明を入力"
-                      height="150px"
-                    />
-                  </Box>
-                </>
-              )}
+              <Separator my={4} />
+              <Heading size="md">意見グループの編集</Heading>
+              <Box>
+                <Text mb={2} fontWeight="bold">
+                  タイトル
+                </Text>
+                <Input
+                  value={editClusterTitle}
+                  onChange={(e) => setEditClusterTitle(e.target.value)}
+                  placeholder="タイトルを入力"
+                />
+              </Box>
+              <Box>
+                <Text mb={2} fontWeight="bold">
+                  説明
+                </Text>
+                <Textarea
+                  value={editClusterDescription}
+                  onChange={(e) => setEditClusterDescription(e.target.value)}
+                  placeholder="説明を入力"
+                  height="150px"
+                />
+              </Box>
             </VStack>
           </DialogBody>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsClusterEditDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsOpen(false)}>
               キャンセル
             </Button>
-            <Button ml={3} disabled={!selectedClusterId} onClick={handleSubmit}>
+            <Button ml={3} onClick={handleSubmit}>
               保存
             </Button>
           </DialogFooter>

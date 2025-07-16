@@ -147,7 +147,8 @@ describe("ClusterEditDialog", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("Test Cluster 1")).toBeInTheDocument();
+      const titleInput = screen.getByPlaceholderText("タイトルを入力");
+      expect(titleInput).toHaveValue("Test Cluster 1");
     });
   });
 
@@ -159,10 +160,10 @@ describe("ClusterEditDialog", () => {
     );
 
     await waitFor(() => {
-      const titleInput = screen.getByDisplayValue("Test Cluster 1");
-      const descriptionTextarea = screen.getByDisplayValue("Description for cluster 1");
-      expect(titleInput).toBeInTheDocument();
-      expect(descriptionTextarea).toBeInTheDocument();
+      const titleInput = screen.getByPlaceholderText("タイトルを入力");
+      const descriptionTextarea = screen.getByPlaceholderText("説明を入力");
+      expect(titleInput).toHaveValue("Test Cluster 1");
+      expect(descriptionTextarea).toHaveValue("Description for cluster 1");
     });
   });
 
@@ -231,7 +232,7 @@ describe("ClusterEditDialog", () => {
     expect(mockOnClose).toHaveBeenCalled();
   });
 
-  it("クラスタが選択されていないときに保存ボタンが無効化される", async () => {
+  it("クラスタが存在しないときはダイアログが表示されない", async () => {
     mockFetchClusters.mockResolvedValue({
       success: true,
       clusters: [],
@@ -244,8 +245,7 @@ describe("ClusterEditDialog", () => {
     );
 
     await waitFor(() => {
-      const saveButton = screen.getByText("保存");
-      expect(saveButton).toBeDisabled();
+      expect(screen.queryByText("意見グループを編集")).not.toBeInTheDocument();
     });
   });
 

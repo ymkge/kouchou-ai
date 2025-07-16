@@ -3,11 +3,15 @@
 import { getApiBaseUrl } from "@/app/utils/api";
 import type { ClusterResponse, ClusterUpdate } from "@/type";
 
-type FetchClustersResult = {
-  success: boolean;
-  clusters?: ClusterResponse[];
-  error?: string;
-};
+type FetchClustersResult =
+  | {
+      success: true;
+      clusters: ClusterResponse[];
+    }
+  | {
+      success: false;
+      error: string;
+    };
 
 export async function fetchClusters(reportSlug: string): Promise<FetchClustersResult> {
   try {
