@@ -147,7 +147,7 @@ function Dialog({ clusters, report, isOpen, setIsOpen }: DialogProps) {
                     <Select.HiddenSelect />
                     <Select.Control>
                       <Select.Trigger>
-                        <Select.ValueText placeholder="test" />
+                        <Select.ValueText placeholder="階層を選択" />
                       </Select.Trigger>
                       <Select.IndicatorGroup>
                         <Select.Indicator />
