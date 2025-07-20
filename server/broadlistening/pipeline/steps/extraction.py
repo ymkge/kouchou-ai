@@ -104,7 +104,7 @@ logging.basicConfig(level=logging.ERROR)
 def extract_batch(batch, prompt, model, workers, provider="openai", local_llm_address=None, config=None):
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
         futures_with_index = [
-            (i, executor.submit(extract_arguments, input, prompt, model, provider, local_llm_address, config))
+            (i, executor.submit(extract_arguments, input, prompt, model, provider, local_llm_address))
             for i, input in enumerate(batch)
         ]
 
