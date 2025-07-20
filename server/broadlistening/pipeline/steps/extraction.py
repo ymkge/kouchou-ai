@@ -145,7 +145,7 @@ def extract_batch(batch, prompt, model, workers, provider="openai", local_llm_ad
         return results
 
 
-def extract_arguments(input, prompt, model, provider="openai", local_llm_address=None, config=None):
+def extract_arguments(input, prompt, model, provider="openai", local_llm_address=None):
     messages = [
         {"role": "system", "content": prompt},
         {"role": "user", "content": input},
