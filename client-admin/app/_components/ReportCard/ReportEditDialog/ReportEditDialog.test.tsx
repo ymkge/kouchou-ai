@@ -1,8 +1,8 @@
+import { Provider } from "@/components/ui/provider";
 import { toaster } from "@/components/ui/toaster";
 import type { Report } from "@/type";
 import { ReportVisibility } from "@/type";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { Provider } from "@/components/ui/provider";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ReportEditDialog } from "./ReportEditDialog";
 
 // Mock toaster
@@ -17,6 +17,23 @@ jest.mock("../../../utils/api", () => ({
   getApiBaseUrl: jest.fn(() => "http://localhost:8000"),
 }));
 
+// Mock useRouter
+jest.mock("next/navigation", () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    refresh: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+  })),
+}));
+
+// Mock server action
+jest.mock("./actions", () => ({
+  updateReportConfig: jest.fn(),
+}));
+
 // Mock environment variable
 const originalEnv = process.env;
 beforeEach(() => {
@@ -28,36 +45,21 @@ afterEach(() => {
   process.env = originalEnv;
 });
 
-// Mock fetch
-global.fetch = jest.fn();
 
 const mockReport: Report = {
   slug: "test-report",
-  status: "completed",
+  status: "processing",
   title: "Test Report Title",
   description: "Test Report Description",
   isPubcom: false,
   visibility: ReportVisibility.PUBLIC,
 };
 
-const mockReports: Report[] = [
-  mockReport,
-  {
-    slug: "other-report",
-    status: "processing",
-    title: "Other Report",
-    description: "Other Description",
-    isPubcom: true,
-    visibility: ReportVisibility.PRIVATE,
-  },
-];
 
 const defaultProps = {
   isEditDialogOpen: true,
   setIsEditDialogOpen: jest.fn(),
   report: mockReport,
-  reports: mockReports,
-  setReports: jest.fn(),
 };
 
 function renderWithProvider(component: React.ReactElement) {
@@ -79,9 +81,7 @@ describe("ReportEditDialog", () => {
     });
 
     it("ダイアログが閉じている時は表示されない", () => {
-      renderWithProvider(
-        <ReportEditDialog {...defaultProps} isEditDialogOpen={false} />
-      );
+      renderWithProvider(<ReportEditDialog {...defaultProps} isEditDialogOpen={false} />);
 
       expect(screen.queryByText("レポートを編集")).not.toBeInTheDocument();
     });
@@ -108,9 +108,7 @@ describe("ReportEditDialog", () => {
 
     it("キャンセルボタンを押すとダイアログが閉じる", () => {
       const mockSetIsEditDialogOpen = jest.fn();
-      renderWithProvider(
-        <ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />
-      );
+      renderWithProvider(<ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />);
 
       const cancelButton = screen.getByText("キャンセル");
       fireEvent.click(cancelButton);
@@ -121,20 +119,27 @@ describe("ReportEditDialog", () => {
 
   describe("保存処理", () => {
     it("保存が成功した場合の処理", async () => {
-      const mockSetReports = jest.fn();
       const mockSetIsEditDialogOpen = jest.fn();
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({}),
+      const mockRouterRefresh = jest.fn();
+      const { updateReportConfig } = require("./actions");
+
+      // useRouterのrefreshメソッドをモック
+      const { useRouter } = require("next/navigation");
+      useRouter.mockReturnValue({
+        push: jest.fn(),
+        refresh: mockRouterRefresh,
+        back: jest.fn(),
+        forward: jest.fn(),
+        replace: jest.fn(),
+        prefetch: jest.fn(),
       });
 
-      renderWithProvider(
-        <ReportEditDialog
-          {...defaultProps}
-          setReports={mockSetReports}
-          setIsEditDialogOpen={mockSetIsEditDialogOpen}
-        />
-      );
+      // Server actionのモック
+      updateReportConfig.mockResolvedValueOnce({
+        success: true,
+      });
+
+      renderWithProvider(<ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />);
 
       // タイトルと説明を変更
       const titleInput = screen.getByDisplayValue("Test Report Title");
@@ -147,31 +152,11 @@ describe("ReportEditDialog", () => {
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(fetch).toHaveBeenCalledWith(
-          "http://localhost:8000/admin/reports/test-report/config",
-          {
-            method: "PATCH",
-            headers: {
-              "x-api-key": "test-api-key",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              question: "Updated Title",
-              intro: "Updated Description",
-            }),
-          }
-        );
+        expect(updateReportConfig).toHaveBeenCalledWith("test-report", expect.any(FormData));
       });
 
-      // レポート一覧が更新される
-      expect(mockSetReports).toHaveBeenCalledWith([
-        {
-          ...mockReport,
-          title: "Updated Title",
-          description: "Updated Description",
-        },
-        mockReports[1],
-      ]);
+      // router.refresh()が呼ばれる
+      expect(mockRouterRefresh).toHaveBeenCalled();
 
       // 成功メッセージが表示される
       expect(toaster.create).toHaveBeenCalledWith({
@@ -184,50 +169,17 @@ describe("ReportEditDialog", () => {
       expect(mockSetIsEditDialogOpen).toHaveBeenCalledWith(false);
     });
 
-    it("reportsがundefinedの場合でも保存処理が動作する", async () => {
-      const mockSetIsEditDialogOpen = jest.fn();
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({}),
-      });
-
-      renderWithProvider(
-        <ReportEditDialog
-          {...defaultProps}
-          reports={undefined}
-          setIsEditDialogOpen={mockSetIsEditDialogOpen}
-        />
-      );
-
-      const saveButton = screen.getByText("保存");
-      fireEvent.click(saveButton);
-
-      await waitFor(() => {
-        expect(fetch).toHaveBeenCalled();
-      });
-
-      expect(toaster.create).toHaveBeenCalledWith({
-        type: "success",
-        title: "更新完了",
-        description: "レポート情報が更新されました",
-      });
-
-      expect(mockSetIsEditDialogOpen).toHaveBeenCalledWith(false);
-    });
-
     it("API呼び出しが失敗した場合のエラー処理", async () => {
       const mockSetIsEditDialogOpen = jest.fn();
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ detail: "API Error Message" }),
+      const { updateReportConfig } = require("./actions");
+
+      // Server actionが失敗を返すようにモック
+      updateReportConfig.mockResolvedValueOnce({
+        success: false,
+        error: "API Error Message",
       });
 
-      renderWithProvider(
-        <ReportEditDialog
-          {...defaultProps}
-          setIsEditDialogOpen={mockSetIsEditDialogOpen}
-        />
-      );
+      renderWithProvider(<ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />);
 
       const saveButton = screen.getByText("保存");
       fireEvent.click(saveButton);
@@ -236,7 +188,7 @@ describe("ReportEditDialog", () => {
         expect(toaster.create).toHaveBeenCalledWith({
           type: "error",
           title: "更新エラー",
-          description: "メタデータの更新に失敗しました",
+          description: "API Error Message",
         });
       });
 
@@ -246,14 +198,14 @@ describe("ReportEditDialog", () => {
 
     it("API呼び出しでネットワークエラーが発生した場合の処理", async () => {
       const mockSetIsEditDialogOpen = jest.fn();
-      (fetch as jest.Mock).mockRejectedValueOnce(new Error("Network Error"));
+      const { updateReportConfig } = require("./actions");
 
-      renderWithProvider(
-        <ReportEditDialog
-          {...defaultProps}
-          setIsEditDialogOpen={mockSetIsEditDialogOpen}
-        />
-      );
+      // Server actionがエラーなしで失敗を返すようにモック
+      updateReportConfig.mockResolvedValueOnce({
+        success: false,
+      });
+
+      renderWithProvider(<ReportEditDialog {...defaultProps} setIsEditDialogOpen={mockSetIsEditDialogOpen} />);
 
       const saveButton = screen.getByText("保存");
       fireEvent.click(saveButton);

@@ -33,13 +33,13 @@ export async function parseCsv(csvFile: File): Promise<CsvData[]> {
           const converted = data.map((row, index) => {
             // id または comment-id が存在する場合はその値を使用、存在しない場合は csv-${index + 1} を使用
             let finalId = `csv-${index + 1}`;
-            
-            if (row.id !== undefined && row.id !== null && row.id !== '') {
+
+            if (row.id !== undefined && row.id !== null && row.id !== "") {
               finalId = String(row.id);
-            } else if (row['comment-id'] !== undefined && row['comment-id'] !== null && row['comment-id'] !== '') {
-              finalId = String(row['comment-id']);
+            } else if (row["comment-id"] !== undefined && row["comment-id"] !== null && row["comment-id"] !== "") {
+              finalId = String(row["comment-id"]);
             }
-            
+
             return {
               ...row,
               id: finalId,

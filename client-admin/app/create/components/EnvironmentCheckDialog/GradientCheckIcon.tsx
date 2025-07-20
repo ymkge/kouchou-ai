@@ -1,6 +1,13 @@
 export function GradientCheckIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="checkIconTitle">
+    <svg
+      width="32"
+      height="32"
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-labelledby="checkIconTitle"
+    >
       <title id="checkIconTitle">Environment check icon</title>
       <path
         d="M15.9935 29.3317C23.3573 29.3317 29.3268 23.3622 29.3268 15.9984C29.3268 8.63458 23.3573 2.66504 15.9935 2.66504C8.62969 2.66504 2.66016 8.63458 2.66016 15.9984C2.66016 23.3622 8.62969 29.3317 15.9935 29.3317Z"
