@@ -57,7 +57,7 @@ def _build_config(report_input: ReportInput) -> dict[str, Any]:
     return config
 
 
-def save_config_file(report_input: ReportInput, user_api_key: str | None = None) -> Path:
+def save_config_file(report_input: ReportInput) -> Path:
     config = _build_config(report_input)
     config_path = settings.CONFIG_DIR / f"{report_input.input}.json"
     with open(config_path, "w") as f:
@@ -160,7 +160,7 @@ def launch_report_generation(report_input: ReportInput, user_api_key: str | None
     """
     try:
         add_new_report_to_status(report_input)
-        config_path = save_config_file(report_input, user_api_key)
+        config_path = save_config_file(report_input)
         save_input_file(report_input)
         cmd = ["python", "hierarchical_main.py", config_path, "--skip-interaction", "--without-html"]
         execution_dir = settings.TOOL_DIR / "pipeline"
