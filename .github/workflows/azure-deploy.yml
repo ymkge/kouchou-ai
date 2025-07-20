@@ -25,6 +25,7 @@ jobs:
     if: github.repository == 'digitaldemocracy2030/kouchou-ai'
     runs-on: ubuntu-latest
     environment: production
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
