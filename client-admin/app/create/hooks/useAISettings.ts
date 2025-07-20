@@ -123,9 +123,7 @@ export function useAISettings() {
     getFromStorage<string>(STORAGE_KEYS.LOCAL_LLM_ADDRESS, DEFAULT_LOCAL_LLM_ADDRESS),
   );
 
-  const [userApiKey, setUserApiKey] = useState<string>(() =>
-    getFromStorage<string>(STORAGE_KEYS.USER_API_KEY, ""),
-  );
+  const [userApiKey, setUserApiKey] = useState<string>("");
 
   const [openRouterModels, setOpenRouterModels] = useState<ModelOption[]>([]);
   const [localLLMModels, setLocalLLMModels] = useState<ModelOption[]>([]);
@@ -153,10 +151,6 @@ export function useAISettings() {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.ENABLE_SOURCE_LINK, enableSourceLink);
   }, [enableSourceLink]);
-
-  useEffect(() => {
-    saveToStorage(STORAGE_KEYS.USER_API_KEY, userApiKey);
-  }, [userApiKey]);
 
   useEffect(() => {
     if (provider === "openrouter") {
