@@ -22,7 +22,6 @@ const STORAGE_KEYS = {
   LOCAL_LLM_ADDRESS: `${STORAGE_KEY_PREFIX}local_llm_address`,
   IS_EMBEDDED_AT_LOCAL: `${STORAGE_KEY_PREFIX}is_embedded_at_local`,
   ENABLE_SOURCE_LINK: `${STORAGE_KEY_PREFIX}enable_source_link`,
-  USER_API_KEY: `${STORAGE_KEY_PREFIX}user_api_key`,
 };
 
 // LocalLLMのデフォルトアドレスを定数化
@@ -352,7 +351,6 @@ export function useAISettings() {
     saveToStorage(STORAGE_KEYS.LOCAL_LLM_ADDRESS, DEFAULT_LOCAL_LLM_ADDRESS);
     saveToStorage(STORAGE_KEYS.IS_EMBEDDED_AT_LOCAL, false);
     saveToStorage(STORAGE_KEYS.ENABLE_SOURCE_LINK, false);
-    saveToStorage(STORAGE_KEYS.USER_API_KEY, "");
   };
 
   return {
