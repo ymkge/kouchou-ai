@@ -18,8 +18,8 @@ def patch_request_to_openai(monkeypatch):
     monkeypatch.setattr(category_classification, "request_to_openai", dummy_request_to_openai)
 
 
-def test_env_api_key_present(monkeypatch):
-    # Mockで呼び出し引数を記録し、user_api_keyが"env-key"で呼ばれていることを明示的に確認
+def test_env_api_key_used_when_user_api_key_not_set(monkeypatch):
+    # 環境変数OPENAI_API_KEYが設定されていて、user_api_keyが未設定の場合に、request_to_openaiのuser_api_key引数がNoneで呼ばれることを確認
     mock = Mock(return_value='{"arg-id-1": {"カテゴリ1": "A"}}')
     monkeypatch.setattr(category_classification, "request_to_openai", mock)
     monkeypatch.setenv("OPENAI_API_KEY", "env-key")
@@ -29,12 +29,12 @@ def test_env_api_key_present(monkeypatch):
     args = pd.DataFrame([{"arg-id": "arg-id-1", "argument": "テスト意見"}])
     result = category_classification.classify_args(args, config, workers=1)
     assert result["カテゴリ1"].iloc[0] == "A"
-    # user_api_keyがenv-keyで呼ばれていることを明示的に確認
-    assert mock.call_args.kwargs["user_api_key"] == "env-key"
+    # request_to_openaiのuser_api_key引数はNoneで呼ばれることを確認
+    assert mock.call_args.kwargs["user_api_key"] is None
 
 
 def test_user_api_key_propagation(monkeypatch):
-    # configにuser_api_keyがある場合、request_to_openaiに渡ることを確認
+    # user_api_keyがフォームから指定された場合、その値がrequest_to_openaiに渡ることを確認
     config = {
         "extraction": {"category_batch_size": 1, "categories": {"カテゴリ1": {"A": "説明A"}}, "model": "dummy-model"},
         "user_api_key": "test-key",
@@ -44,12 +44,12 @@ def test_user_api_key_propagation(monkeypatch):
     assert result["カテゴリ1"].iloc[0] == "A"
 
 
-def test_env_api_key(monkeypatch):
-    # configにuser_api_keyが無い場合、環境変数が使われることを確認
+def test_error_when_no_api_key(monkeypatch):
+    # user_api_keyも環境変数OPENAI_API_KEYも未設定の場合はエラーになることを確認
     config = {
         "extraction": {"category_batch_size": 1, "categories": {"カテゴリ1": {"A": "説明A"}}, "model": "dummy-model"}
     }
     args = pd.DataFrame([{"arg-id": "arg-id-1", "argument": "テスト意見"}])
-    # user_api_keyがNoneの場合はRuntimeErrorを返すダミー
+    # user_api_keyがNone、かつ環境変数も未設定の場合はRuntimeErrorを返すダミー
     with pytest.raises(RuntimeError):
         category_classification.classify_args(args, config, workers=1)
