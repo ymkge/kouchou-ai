@@ -95,42 +95,52 @@ export function Chart({
 
   if (isFullscreen) {
     return (
-      <Dialog.Root size="full" open={true} onOpenChange={onExitFullscreen}>
+      <Dialog.Root size="full" open={isFullscreen} onOpenChange={onExitFullscreen}>
         <Portal>
           <Dialog.Backdrop />
           <Dialog.Positioner>
             <Dialog.Content>
-              <HStack id={"fullScreenButtons"} position={"fixed"} top={5} right={5} zIndex={1}>
-                <Tooltip content={"全画面終了"} openDelay={0} closeDelay={0}>
-                  <Button onClick={onExitFullscreen} h={"50px"} borderWidth={2}>
-                    <Icon>
-                      <Minimize2 />
-                    </Icon>
-                  </Button>
-                </Tooltip>
-              </HStack>
-              {(selectedChart === "scatterAll" || selectedChart === "scatterDensity") && (
-                <ScatterChart
-                  clusterList={result.clusters}
-                  argumentList={result.arguments}
-                  targetLevel={selectedChart === "scatterAll" ? 1 : Math.max(...result.clusters.map((c) => c.level))}
-                  onHover={() => setTimeout(avoidHoverTextCoveringShrinkButton, 500)}
-                  showClusterLabels={showClusterLabels}
-                  filteredArgumentIds={filteredArgumentIds}
-                  config={result.config}
-                />
-              )}
-              {selectedChart === "treemap" && (
-                <TreemapChart
-                  key={treemapLevel}
-                  clusterList={result.clusters}
-                  argumentList={result.arguments}
-                  onHover={avoidHoverTextCoveringShrinkButton}
-                  level={treemapLevel}
-                  onTreeZoom={onTreeZoom}
-                  filteredArgumentIds={filteredArgumentIds}
-                />
-              )}
+              <Box
+                w="100%"
+                h="100vh"
+                display="flex"
+                flexDirection="column"
+                justifyContent="center"
+                alignItems="center"
+                bg="#fff"
+              >
+                <HStack id={"fullScreenButtons"} position={"fixed"} top={5} right={5} zIndex={1}>
+                  <Tooltip content={"全画面終了"} openDelay={0} closeDelay={0}>
+                    <Button onClick={onExitFullscreen} h={"50px"} borderWidth={2}>
+                      <Icon>
+                        <Minimize2 />
+                      </Icon>
+                    </Button>
+                  </Tooltip>
+                </HStack>
+                {(selectedChart === "scatterAll" || selectedChart === "scatterDensity") && (
+                  <ScatterChart
+                    clusterList={result.clusters}
+                    argumentList={result.arguments}
+                    targetLevel={selectedChart === "scatterAll" ? 1 : Math.max(...result.clusters.map((c) => c.level))}
+                    onHover={() => setTimeout(avoidHoverTextCoveringShrinkButton, 500)}
+                    showClusterLabels={showClusterLabels}
+                    filteredArgumentIds={filteredArgumentIds}
+                    config={result.config}
+                  />
+                )}
+                {selectedChart === "treemap" && (
+                  <TreemapChart
+                    key={treemapLevel}
+                    clusterList={result.clusters}
+                    argumentList={result.arguments}
+                    onHover={avoidHoverTextCoveringShrinkButton}
+                    level={treemapLevel}
+                    onTreeZoom={onTreeZoom}
+                    filteredArgumentIds={filteredArgumentIds}
+                  />
+                )}
+              </Box>
             </Dialog.Content>
           </Dialog.Positioner>
         </Portal>
