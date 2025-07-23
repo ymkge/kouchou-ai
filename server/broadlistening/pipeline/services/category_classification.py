@@ -112,7 +112,7 @@ def _parse_arg_result(classification_results: dict, arg_id: str, categories: lis
     return parsed_result
 
 
-def classify_batch_args(batch_args: pd.DataFrame, categories: dict, model: str, user_api_key: str = None) -> dict:
+def classify_batch_args(batch_args: pd.DataFrame, categories: dict, model: str) -> dict:
     category_string = _build_categories_string(categories)
     batch_args_string = _build_batch_args_string(batch_args)
     prompt = BASE_CLASSIFICATION_PROMPT.format(categories_string=category_string, args_string=batch_args_string)
@@ -122,7 +122,6 @@ def classify_batch_args(batch_args: pd.DataFrame, categories: dict, model: str, 
         ],
         model=model,
         is_json=True,
-        user_api_key=user_api_key,
     )
     try:
         return json.loads(result)
@@ -132,7 +131,6 @@ def classify_batch_args(batch_args: pd.DataFrame, categories: dict, model: str, 
 
 def classify_args(args: pd.DataFrame, config, workers: int) -> pd.DataFrame:
     batch_size = config["extraction"]["category_batch_size"]
-    user_api_key = config.get("user_api_key")
 
     classification_results = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
@@ -143,7 +141,6 @@ def classify_args(args: pd.DataFrame, config, workers: int) -> pd.DataFrame:
                 args.loc[batch_idx : batch_idx + batch_size],
                 config["extraction"]["categories"],
                 config["extraction"]["model"],
-                user_api_key,
             ): batch_idx
             for batch_idx in batch_start_indices
         }
