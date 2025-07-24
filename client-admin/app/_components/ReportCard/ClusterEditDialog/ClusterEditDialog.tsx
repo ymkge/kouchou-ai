@@ -73,7 +73,7 @@ type DialogProps = {
 };
 
 function Dialog({ clusters, report, isOpen, setIsOpen }: DialogProps) {
-  const sortedCluster = clusters.sort((a, b) => b.value - a.value);
+  const sortedCluster = [...clusters].sort((a, b) => b.value - a.value);
   const firstCluster = sortedCluster[0];
   const [selectedClusterId, setSelectedClusterId] = useState<string>(firstCluster.id);
   const [selectedLevel, setSelectedLevel] = useState<number>(1); // デフォルトの階層は1
