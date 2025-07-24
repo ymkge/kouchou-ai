@@ -238,7 +238,7 @@ export function ClientContainer({ result }: Props) {
     } else {
       c = result.clusters.filter((c) => c.level === 1);
     }
-    return c.sort((a, b) => (a.value > b.value ? -1 : 1));
+    return c.sort((a, b) => b.value - a.value);
   }, [result.clusters, filteredResult.clusters, selectedChart]);
 
   // --- その他UIハンドラ ---
