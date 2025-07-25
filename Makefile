@@ -249,6 +249,7 @@ azure-build:
 	docker build --platform linux/amd64 --no-cache -t $(AZURE_ACR_NAME).azurecr.io/client-static-build:latest -f ./client-static-build/Dockerfile .
 
 
+
 # イメージをAzureにプッシュ（ローカルのDockerから）
 azure-push:
 	$(call read-env)
