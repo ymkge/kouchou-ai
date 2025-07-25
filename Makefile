@@ -5,13 +5,121 @@ azure-cli azure-login azure-build azure-push azure-deploy azure-info azure-confi
 azure-logs-client azure-logs-api azure-logs-admin azure-logs-client-static-build
 
 ##############################################################################
+# envファイル変更チェック機能
+##############################################################################
+
+HASH_DIR := .env-hashes
+
+ENV_HASH_FILE := $(HASH_DIR)/.env.hash
+AZURE_ENV_HASH_FILE := $(HASH_DIR)/.env.azure.hash
+
+define check_env_changes
+changed=false; \
+if [ -f .env ]; then \
+	current_hash=$$(sha256sum .env | cut -d' ' -f1); \
+	stored_hash=$$([ -f $(ENV_HASH_FILE) ] && cat $(ENV_HASH_FILE) || echo "no_hash"); \
+	if [ "$$current_hash" != "$$stored_hash" ]; then \
+		changed=true; \
+	fi; \
+fi; \
+if [ -f .env.azure ]; then \
+	current_hash=$$(sha256sum .env.azure | cut -d' ' -f1); \
+	stored_hash=$$([ -f $(AZURE_ENV_HASH_FILE) ] && cat $(AZURE_ENV_HASH_FILE) || echo "no_hash"); \
+	if [ "$$current_hash" != "$$stored_hash" ]; then \
+		changed=true; \
+	fi; \
+fi
+endef
+
+define update_env_hashes
+mkdir -p $(HASH_DIR); \
+if [ -f .env ]; then sha256sum .env | cut -d' ' -f1 > $(ENV_HASH_FILE); fi; \
+if [ -f .env.azure ]; then sha256sum .env.azure | cut -d' ' -f1 > $(AZURE_ENV_HASH_FILE); fi
+endef
+
+$(HASH_DIR):
+	@mkdir -p $(HASH_DIR)
+
+check-env-status:
+	@echo "🔍 envファイルの変更状況:"
+	@echo "----------------------------------------"
+	@if [ -f .env ]; then \
+		current_hash=$$(sha256sum .env | cut -d' ' -f1); \
+		stored_hash=$$([ -f $(ENV_HASH_FILE) ] && cat $(ENV_HASH_FILE) || echo "no_hash"); \
+		if [ "$$current_hash" != "$$stored_hash" ]; then \
+			echo ".env: 変更あり"; \
+		else \
+			echo ".env: 変更なし"; \
+		fi; \
+	else \
+		echo ".env: ファイルなし"; \
+	fi
+	@if [ -f .env.azure ]; then \
+		current_hash=$$(sha256sum .env.azure | cut -d' ' -f1); \
+		stored_hash=$$([ -f $(AZURE_ENV_HASH_FILE) ] && cat $(AZURE_ENV_HASH_FILE) || echo "no_hash"); \
+		if [ "$$current_hash" != "$$stored_hash" ]; then \
+			echo ".env.azure: 変更あり"; \
+		else \
+			echo ".env.azure: 変更なし"; \
+		fi; \
+	else \
+		echo ".env.azure: ファイルなし"; \
+	fi
+	@echo "----------------------------------------"
+
+update-hashes: | $(HASH_DIR)
+	@mkdir -p $(HASH_DIR)
+	@if [ -f .env ]; then \
+		sha256sum .env | cut -d' ' -f1 > $(ENV_HASH_FILE); \
+		echo ".envのハッシュを更新しました"; \
+	fi
+	@if [ -f .env.azure ]; then \
+		sha256sum .env.azure | cut -d' ' -f1 > $(AZURE_ENV_HASH_FILE); \
+		echo ".env.azureのハッシュを更新しました"; \
+	fi
+
+clean-env-hashes:
+	@echo ">>> envファイルのハッシュをクリーンアップ中..."
+	@rm -rf $(HASH_DIR)
+	@echo "ハッシュファイルをクリーンアップしました"
+
+check-only: check-env-status
+
+##############################################################################
 # ローカル開発環境のコマンド
 ##############################################################################
 
 build:
-	docker compose build
+	@$(check_env_changes); \
+	if [ "$$changed" = "true" ]; then \
+		echo "envファイルの変更が検出されました。再ビルドを実行します..."; \
+		docker compose down 2>/dev/null || true; \
+		docker compose build --no-cache; \
+		$(update_env_hashes); \
+		echo "再ビルド完了"; \
+	else \
+		echo "envファイルに変更はありません。通常ビルドを実行します..."; \
+		docker compose build; \
+	fi
 
 up:
+	@$(check_env_changes); \
+	if [ "$$changed" = "true" ]; then \
+		echo "envファイルの変更が検出されました。再ビルドして起動します..."; \
+		docker compose down 2>/dev/null || true; \
+		docker compose up --build; \
+		$(update_env_hashes); \
+	else \
+		echo "envファイルに変更はありません。通常起動します..."; \
+		docker compose up --build; \
+	fi
+
+build-force:
+	@echo ">>> チェックをスキップしてビルド..."
+	docker compose build
+
+up-force:
+	@echo ">>> チェックをスキップして起動..."
 	docker compose up --build
 
 down:
