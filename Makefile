@@ -235,10 +235,19 @@ azure-acr-login-auto:
 # Azure用のイメージをビルド
 azure-build:
 	$(call read-env)
+	@$(check_env_changes); \
+	if [ "$changed" = "true" ]; then \
+		echo "envファイルの変更が検出されました。Azure用イメージを再ビルドします..."; \
+		$(update_env_hashes); \
+	else \
+		echo "envファイルに変更はありません。Azure用イメージをビルドします..."; \
+	fi
+	@echo ">>> Azure用イメージをビルド中..."
 	docker build --platform linux/amd64 -t $(AZURE_ACR_NAME).azurecr.io/api:latest ./server
 	docker build --platform linux/amd64 -t $(AZURE_ACR_NAME).azurecr.io/client:latest ./client
 	docker build --platform linux/amd64 --no-cache -t $(AZURE_ACR_NAME).azurecr.io/client-admin:latest ./client-admin
 	docker build --platform linux/amd64 --no-cache -t $(AZURE_ACR_NAME).azurecr.io/client-static-build:latest -f ./client-static-build/Dockerfile .
+
 
 # イメージをAzureにプッシュ（ローカルのDockerから）
 azure-push:
