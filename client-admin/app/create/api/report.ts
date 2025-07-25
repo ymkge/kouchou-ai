@@ -1,6 +1,5 @@
 import type { CsvData } from "../parseCsv";
 import type { PromptSettings } from "../types";
-import { handleApiError } from "../utils/error-handler";
 
 /**
  * レポート作成APIを呼び出す
@@ -67,6 +66,6 @@ export async function createReport({
 
     return;
   } catch (error) {
-    throw handleApiError(error, "レポート作成に失敗しました");
+    throw Error("レポート作成に失敗しました");
   }
 }
