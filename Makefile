@@ -16,14 +16,22 @@ AZURE_ENV_HASH_FILE := $(HASH_DIR)/.env.azure.hash
 define check_env_changes
 changed=false; \
 if [ -f .env ]; then \
-	current_hash=$$(sha256sum .env | cut -d' ' -f1); \
+	if command -v sha256sum >/dev/null 2>&1; then \
+		current_hash=$$(sha256sum .env | cut -d' ' -f1); \
+	else \
+		current_hash=$$(shasum -a 256 .env | cut -d' ' -f1); \
+	fi; \
 	stored_hash=$$([ -f $(ENV_HASH_FILE) ] && cat $(ENV_HASH_FILE) || echo "no_hash"); \
 	if [ "$$current_hash" != "$$stored_hash" ]; then \
 		changed=true; \
 	fi; \
 fi; \
 if [ -f .env.azure ]; then \
-	current_hash=$$(sha256sum .env.azure | cut -d' ' -f1); \
+	if command -v sha256sum >/dev/null 2>&1; then \
+		current_hash=$$(sha256sum .env.azure | cut -d' ' -f1); \
+	else \
+		current_hash=$$(shasum -a 256 .env.azure | cut -d' ' -f1); \
+	fi; \
 	stored_hash=$$([ -f $(AZURE_ENV_HASH_FILE) ] && cat $(AZURE_ENV_HASH_FILE) || echo "no_hash"); \
 	if [ "$$current_hash" != "$$stored_hash" ]; then \
 		changed=true; \
@@ -35,6 +43,20 @@ define update_env_hashes
 mkdir -p $(HASH_DIR); \
 if [ -f .env ]; then sha256sum .env | cut -d' ' -f1 > $(ENV_HASH_FILE); fi; \
 if [ -f .env.azure ]; then sha256sum .env.azure | cut -d' ' -f1 > $(AZURE_ENV_HASH_FILE); fi
+endef
+
+define build_with_env_check
+$(check_env_changes); \
+if [ "$$changed" = "true" ]; then \
+	echo "envファイルの変更が検出されました。再ビルドを実行します..."; \
+	docker compose down 2>/dev/null || true; \
+	docker compose build --no-cache; \
+	$(update_env_hashes); \
+	echo "再ビルド完了"; \
+else \
+	echo "envファイルに変更はありません。通常ビルドを実行します..."; \
+	docker compose build; \
+fi
 endef
 
 $(HASH_DIR):
@@ -68,15 +90,8 @@ check-env-status:
 	@echo "----------------------------------------"
 
 update-hashes: | $(HASH_DIR)
-	@mkdir -p $(HASH_DIR)
-	@if [ -f .env ]; then \
-		sha256sum .env | cut -d' ' -f1 > $(ENV_HASH_FILE); \
-		echo ".envのハッシュを更新しました"; \
-	fi
-	@if [ -f .env.azure ]; then \
-		sha256sum .env.azure | cut -d' ' -f1 > $(AZURE_ENV_HASH_FILE); \
-		echo ".env.azureのハッシュを更新しました"; \
-	fi
+	@$(update_env_hashes)
+	@echo ".envファイルのハッシュを更新しました"
 
 clean-env-hashes:
 	@echo ">>> envファイルのハッシュをクリーンアップ中..."
@@ -90,29 +105,11 @@ check-only: check-env-status
 ##############################################################################
 
 build:
-	@$(check_env_changes); \
-	if [ "$$changed" = "true" ]; then \
-		echo "envファイルの変更が検出されました。再ビルドを実行します..."; \
-		docker compose down 2>/dev/null || true; \
-		docker compose build --no-cache; \
-		$(update_env_hashes); \
-		echo "再ビルド完了"; \
-	else \
-		echo "envファイルに変更はありません。通常ビルドを実行します..."; \
-		docker compose build; \
-	fi
+	@$(build_with_env_check)
 
 up:
-	@$(check_env_changes); \
-	if [ "$$changed" = "true" ]; then \
-		echo "envファイルの変更が検出されました。再ビルドして起動します..."; \
-		docker compose down 2>/dev/null || true; \
-		docker compose up --build; \
-		$(update_env_hashes); \
-	else \
-		echo "envファイルに変更はありません。通常起動します..."; \
-		docker compose up --build; \
-	fi
+	@$(build_with_env_check)
+	docker compose up --build
 
 build-force:
 	@echo ">>> チェックをスキップしてビルド..."
@@ -236,17 +233,20 @@ azure-acr-login-auto:
 azure-build:
 	$(call read-env)
 	@$(check_env_changes); \
-	if [ "$changed" = "true" ]; then \
+	if [ "$$changed" = "true" ]; then \
 		echo "envファイルの変更が検出されました。Azure用イメージを再ビルドします..."; \
+		docker build --platform linux/amd64 --no-cache -t $(AZURE_ACR_NAME).azurecr.io/api:latest ./server && \
+		docker build --platform linux/amd64 --no-cache -t $(AZURE_ACR_NAME).azurecr.io/client:latest ./client && \
+		docker build --platform linux/amd64 --no-cache -t $(AZURE_ACR_NAME).azurecr.io/client-admin:latest ./client-admin && \
+		docker build --platform linux/amd64 --no-cache -t $(AZURE_ACR_NAME).azurecr.io/client-static-build:latest -f ./client-static-build/Dockerfile . && \
 		$(update_env_hashes); \
 	else \
 		echo "envファイルに変更はありません。Azure用イメージをビルドします..."; \
+		docker build --platform linux/amd64 -t $(AZURE_ACR_NAME).azurecr.io/api:latest ./server; \
+		docker build --platform linux/amd64 -t $(AZURE_ACR_NAME).azurecr.io/client:latest ./client; \
+		docker build --platform linux/amd64 -t $(AZURE_ACR_NAME).azurecr.io/client-admin:latest ./client-admin; \
+		docker build --platform linux/amd64 -t $(AZURE_ACR_NAME).azurecr.io/client-static-build:latest -f ./client-static-build/Dockerfile .; \
 	fi
-	@echo ">>> Azure用イメージをビルド中..."
-	docker build --platform linux/amd64 -t $(AZURE_ACR_NAME).azurecr.io/api:latest ./server
-	docker build --platform linux/amd64 -t $(AZURE_ACR_NAME).azurecr.io/client:latest ./client
-	docker build --platform linux/amd64 --no-cache -t $(AZURE_ACR_NAME).azurecr.io/client-admin:latest ./client-admin
-	docker build --platform linux/amd64 --no-cache -t $(AZURE_ACR_NAME).azurecr.io/client-static-build:latest -f ./client-static-build/Dockerfile .
 
 # イメージをAzureにプッシュ（ローカルのDockerから）
 azure-push:
