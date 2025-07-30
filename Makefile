@@ -98,8 +98,6 @@ clean-env-hashes:
 	@rm -rf $(HASH_DIR)
 	@echo "ハッシュファイルをクリーンアップしました"
 
-check-only: check-env-status
-
 ##############################################################################
 # ローカル開発環境のコマンド
 ##############################################################################
@@ -109,7 +107,7 @@ build:
 
 up:
 	@$(build_with_env_check)
-	docker compose up --build
+	docker compose up
 
 build-force:
 	@echo ">>> チェックをスキップしてビルド..."
