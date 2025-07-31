@@ -37,7 +37,9 @@ NEXT_PUBLIC_STATIC_EXPORT_BASE_PATH=
 
 ## 3. 静的エクスポートの実行
 
-以下のコマンドを実行して、静的エクスポートを行います：
+
+**注意**: 静的エクスポートを行う前に、すべてのレポートを「公開」状態にする必要があります。
+
 
 ```bash
 make client-build-static
