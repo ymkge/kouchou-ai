@@ -7,7 +7,6 @@ import pandas as pd
 from pydantic import BaseModel, Field
 from tqdm import tqdm
 
-from services.category_classification import classify_args
 from services.llm import request_to_chat_ai
 from services.parse_json_list import parse_extraction_response
 from utils import update_progress
@@ -87,10 +86,6 @@ def extraction(config):
 
     if results.empty:
         raise RuntimeError("result is empty, maybe bad prompt")
-
-    classification_categories = config["extraction"]["categories"]
-    if classification_categories:
-        results = classify_args(results, config, workers)
 
     results.to_csv(path, index=False)
     # comment-idとarg-idの関係を保存
