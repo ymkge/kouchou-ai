@@ -1,10 +1,14 @@
+"use server";
+
+import { getApiBaseUrl } from "@/app/utils/api";
 import type { CsvData } from "../parseCsv";
 import type { PromptSettings } from "../types";
-import { handleApiError } from "../utils/error-handler";
 
-/**
- * レポート作成APIを呼び出す
- */
+type CreateReportResult = {
+  success: boolean;
+  error?: string;
+};
+
 export async function createReport({
   input,
   question,
@@ -37,7 +41,7 @@ export async function createReport({
   enable_source_link: boolean;
   local_llm_address?: string;
   userApiKey?: string;
-}): Promise<void> {
+}): Promise<CreateReportResult> {
   try {
     const headers: Record<string, string> = {
       "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
@@ -48,7 +52,7 @@ export async function createReport({
       headers["x-user-api-key"] = userApiKey;
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports`, {
+    const response = await fetch(`${getApiBaseUrl()}/admin/reports`, {
       method: "POST",
       headers,
       body: JSON.stringify({
@@ -70,11 +74,11 @@ export async function createReport({
     });
 
     if (!response.ok) {
-      throw new Error(response.statusText);
+      return { success: false, error: response.statusText };
     }
 
-    return;
+    return { success: true };
   } catch (error) {
-    throw handleApiError(error, "レポート作成に失敗しました");
+    return { success: false, error: "レポート作成に失敗しました" };
   }
 }
