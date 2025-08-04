@@ -38,6 +38,7 @@ jobs:
 
       - name: Docker ログイン (ACR)
         run: |
+          set -euo pipefail
           az acr login --name ${{ env.AZURE_ACR_NAME }}
 
       - name: Python環境のセットアップ
