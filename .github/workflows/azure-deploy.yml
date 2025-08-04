@@ -218,7 +218,6 @@ jobs:
             --image ${AZURE_ACR_NAME}.azurecr.io/client-static-build:latest \
             --set-env-vars \
               "NEXT_PUBLIC_API_BASEPATH=https://${API_DOMAIN}" \
-              "API_BASEPATH=https://${API_DOMAIN}" \
               "NEXT_PUBLIC_PUBLIC_API_KEY=secretref:public-api-key" & update_pids+=("$!")
 
           # 全更新の完了を待機
