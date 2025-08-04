@@ -156,7 +156,8 @@ jobs:
           az containerapp secret set \
             --name client --resource-group ${AZURE_RESOURCE_GROUP} \
             --secrets \
-              public-api-key=${PUBLIC_API_KEY}
+              public-api-key=${PUBLIC_API_KEY} \
+              revalidate-secret=${REVALIDATE_SECRET}
 
           # Client-adminコンテナのシークレット登録
           az containerapp secret set \
@@ -198,7 +199,8 @@ jobs:
             --set-env-vars \
               "NEXT_PUBLIC_API_BASEPATH=https://${API_DOMAIN}" \
               "API_BASEPATH=https://${API_DOMAIN}" \
-              "NEXT_PUBLIC_PUBLIC_API_KEY=secretref:public-api-key" & update_pids+=("$!")
+              "NEXT_PUBLIC_PUBLIC_API_KEY=secretref:public-api-key" \
+              "REVALIDATE_SECRET=secretref:revalidate-secret" & update_pids+=("$!")
 
           # Client-adminコンテナの更新（イメージ + 環境変数）
           az containerapp update --name client-admin --resource-group ${AZURE_RESOURCE_GROUP} \
