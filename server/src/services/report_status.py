@@ -263,4 +263,4 @@ def add_analysis_data(report: Report) -> Report:
 
 
 def get_cluster_num(result: dict) -> int:
-    return sum(1 for c in result.get("clusters", []) if c.get("level") == 2)
+    return sum(1 for c in result.get("clusters", []) if c.get("level") == 1)
