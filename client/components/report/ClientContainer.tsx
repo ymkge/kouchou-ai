@@ -142,7 +142,7 @@ export function ClientContainer({ result }: Props) {
         if (arg.attributes) {
           const passesAttributeFilters = Object.entries(attrFilters).every(([attrName, selectedValues]) => {
             const attrValue = arg.attributes?.[attrName];
-            const values = selectedValues as string[];
+            const values = selectedValues;
             if (values.length === 1 && values[0].startsWith("range:")) {
               const [_, minStr, maxStr] = values[0].split(":");
               const min = Number(minStr);
