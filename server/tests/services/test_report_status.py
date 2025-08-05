@@ -194,7 +194,7 @@ class TestAddAnalysisData:
         assert updated.analysis is not None
         assert updated.analysis.comment_num == 150
         assert updated.analysis.arguments_num == 3
-        assert updated.analysis.cluster_num == 2  # level 2 のみ
+        assert updated.analysis.cluster_num == 1  # level 1 のみ
 
     @patch("src.services.report_status.settings")
     def test_add_analysis_data_file_not_found(self, mock_settings, ready_report):
