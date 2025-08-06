@@ -296,14 +296,14 @@ export function useAISettings() {
    * プロバイダー説明文を取得
    */
   const getProviderDescription = () => {
-    return providerConfigs[provider as Provider].description;
+    return providerConfigs[provider].description;
   };
 
   /**
    * 現在のプロバイダーのモデルリストを取得
    */
   const getCurrentModels = () => {
-    return providerConfigs[provider as Provider].models;
+    return providerConfigs[provider].models;
   };
 
   /**
