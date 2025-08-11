@@ -8,7 +8,10 @@ export const semanticTokens = {
       link: { value: "{colors.blue.500}" },
       visited: { value: "{colors.purple.700}" },
       error: { value: "{colors.red.500}" },
-      aiTalking: { value: "{colors.purple.600}" },
+      public: { value: "{colors.green.600}" },
+      limitedPublic: { value: "{colors.yellow.600}" },
+      private: { value: "{colors.red.600}" },
+      processing: { value: "{colors.purple.600}" },
     },
     button: {
       primary: {
@@ -18,6 +21,23 @@ export const semanticTokens = {
       },
       hover: { value: "rgba(0, 0, 0, 0.06)" },
       active: { value: "rgba(0, 0, 0, 0.08)" },
+    },
+    bg: {
+      white: { value: "{colors.white}" },
+      secondary: { value: "{colors.blue.50}" },
+      disable: { value: "{colors.gray.50}" },
+      tooltip: { value: "{colors.gray.700}" },
+      overlay: { value: "rgba(0, 0, 0, 0.36)" },
+      error: { value: "{colors.red.50}" },
+      public: { value: "{colors.green.50}" },
+      limitedPublic: { value: "{colors.yellow.50}" },
+      private: { value: "{colors.red.50}" },
+      processing: { value: "{colors.purple.50}" },
+    },
+    border: {
+      public: { value: "{colors.green.200}" },
+      limitedPublic: { value: "{colors.yellow.300}" },
+      private: { value: "{colors.red.200}" },
     },
   },
 };

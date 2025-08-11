@@ -1,100 +1,93 @@
-import type { Report } from "@/type";
-import { Box, Flex, Steps } from "@chakra-ui/react";
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import { Box, Center, Steps } from "@chakra-ui/react";
+import { Check, TriangleAlert } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Processing } from "./Processing";
 import { useReportProgressPoll } from "./useReportProgressPolling";
 
 const steps = [
-  { id: 1, title: "抽出", description: "データの抽出" },
-  { id: 2, title: "埋め込み", description: "埋め込み表現の生成" },
-  { id: 3, title: "意見グループ化", description: "意見グループ化の実施" },
-  { id: 4, title: "初期ラベリング", description: "初期ラベルの付与" },
-  { id: 5, title: "統合ラベリング", description: "ラベルの統合" },
-  { id: 6, title: "概要生成", description: "概要の作成" },
-  { id: 7, title: "集約", description: "結果の集約" },
-  { id: 8, title: "可視化", description: "結果の可視化" },
+  { key: "extraction", title: "抽出" },
+  { key: "embedding", title: "埋め込み" },
+  { key: "hierarchical_clustering", title: "意見グループ化" },
+  { key: "hierarchical_initial_labelling", title: "初期ラベリング" },
+  { key: "hierarchical_merge_labelling", title: "統合ラベリング" },
+  { key: "hierarchical_overview", title: "概要生成" },
+  { key: "hierarchical_aggregation", title: "集約" },
+  { key: "hierarchical_visualization", title: "可視化" },
 ] as const;
 
-// ステップの定義
-const stepKeys = [
-  "extraction",
-  "embedding",
-  "hierarchical_clustering",
-  "hierarchical_initial_labelling",
-  "hierarchical_merge_labelling",
-  "hierarchical_overview",
-  "hierarchical_aggregation",
-  "hierarchical_visualization",
-];
+export const stepKeys = steps.map(({ key }) => key);
+
+const stepItemstyle = {
+  error: {
+    completed: "font.error",
+    processing: "bg.error",
+    currentStepIcon: <TriangleAlert />,
+  },
+  processing: {
+    completed: "font.processing",
+    processing: "bg.processing",
+    currentStepIcon: <Processing />,
+  },
+} as const;
 
 type Props = {
   slug: string;
-  setReports: Dispatch<SetStateAction<Report[] | undefined>>;
 };
 
-export const ProgressSteps = ({ slug, setReports }: Props) => {
-  const { progress } = useReportProgressPoll(slug);
-  const [lastProgress, setLastProgress] = useState<string | null>(null);
+export const ProgressSteps = ({ slug }: Props) => {
+  const { progress, isError } = useReportProgressPoll(slug);
 
-  const currentStepIndex =
-    progress === "completed" ? steps.length : stepKeys.indexOf(progress) === -1 ? 0 : stepKeys.indexOf(progress);
+  const isLoading = progress === "loading";
+  const isCompleted = progress === "completed";
+  const currentStepIndex = isCompleted ? steps.length : isLoading ? 0 : stepKeys.indexOf(progress);
+  const status = isError ? "error" : "processing";
+  const router = useRouter();
 
-  // progress が変更されたときにレポート状態を更新
   useEffect(() => {
-    if ((progress === "completed" || progress === "error") && progress !== lastProgress) {
-      setLastProgress(progress);
-
-      (async () => {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASEPATH}/admin/reports`, {
-          method: "GET",
-          headers: {
-            "x-api-key": process.env.NEXT_PUBLIC_ADMIN_API_KEY || "",
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-          },
-        });
-        if (!response.ok) return;
-        setReports(await response.json());
-      })();
+    if (isCompleted || isError) {
+      setTimeout(() => {
+        router.refresh();
+      }, 1000); // 直後だとデータが更新されていないので、1秒後に再取得する
     }
-  }, [progress, lastProgress, setReports]);
+  }, [isCompleted, isError, router]);
 
   return (
-    <Box mt={2}>
-      <Steps.Root defaultStep={currentStepIndex} count={steps.length}>
-        <Steps.List>
-          {steps.map((step, index) => {
-            const isCompleted = index < currentStepIndex;
-
-            const stepColor = (() => {
-              if (progress === "error" && index === currentStepIndex) {
-                return "red.500";
-              }
-              if (isCompleted) return "green.500";
-              return "gray.300";
-            })();
-
-            return (
-              <Steps.Item key={step.id} index={index} title={step.title}>
-                <Flex direction="column" align="center">
-                  <Steps.Indicator boxSize="24px" bg={stepColor} position="relative" />
-                  <Steps.Title
-                    mt={1}
-                    fontSize="sm"
-                    whiteSpace="nowrap"
-                    textAlign="center"
-                    color={stepColor}
-                    fontWeight={progress === "error" && index === currentStepIndex ? "bold" : "normal"}
-                  >
-                    {step.title}
-                  </Steps.Title>
-                </Flex>
-                <Steps.Separator borderColor={stepColor} />
-              </Steps.Item>
-            );
-          })}
-        </Steps.List>
-      </Steps.Root>
-    </Box>
+    <Steps.Root step={currentStepIndex} count={steps.length} bg={stepItemstyle[status].processing} mt="2" p="6">
+      <Steps.List gap="2">
+        {steps.map((step, index) => (
+          <Steps.Item key={step.key} index={index} gap="2" flex="auto" textStyle="body/sm">
+            {index < currentStepIndex ? (
+              <>
+                <Center w="6" h="6" bg={stepItemstyle[status].completed} borderRadius="full">
+                  <Check size="16" color="white" />
+                </Center>
+                <Steps.Title textStyle="body/sm" color="font.primary">
+                  {step.title}
+                </Steps.Title>
+              </>
+            ) : index === currentStepIndex ? (
+              <>
+                <Box color={stepItemstyle[status].completed}>{stepItemstyle[status].currentStepIcon}</Box>
+                <Steps.Title
+                  textStyle={isError ? "body/sm/bold" : "body/sm"}
+                  color={isError ? "font.error" : "font.primary"}
+                >
+                  {step.title}
+                </Steps.Title>
+              </>
+            ) : (
+              <>
+                <Center w="6" h="6" bg={stepItemstyle[status].completed} opacity="0.16" borderRadius="full" />
+                <Steps.Title textStyle="body/sm" color={isError ? "font.secondary" : "font.primary"}>
+                  {step.title}
+                </Steps.Title>
+              </>
+            )}
+            <Steps.Separator m="0" bg="blackAlpha.500" h="1px" />
+          </Steps.Item>
+        ))}
+      </Steps.List>
+    </Steps.Root>
   );
 };

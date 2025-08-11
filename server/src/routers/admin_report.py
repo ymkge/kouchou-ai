@@ -1,5 +1,4 @@
 import json
-import os
 
 import openai
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
@@ -18,6 +17,7 @@ from src.services.llm_models import get_models_by_provider
 from src.services.llm_pricing import LLMPricing
 from src.services.report_launcher import execute_aggregation, launch_report_generation
 from src.services.report_status import (
+    add_analysis_data,
     invalidate_report_cache,
     load_status_as_reports,
     set_status,
@@ -40,7 +40,7 @@ async def verify_admin_api_key(api_key: str = Security(api_key_header)):
 
 @router.get("/admin/reports")
 async def get_reports(api_key: str = Depends(verify_admin_api_key)) -> list[Report]:
-    return load_status_as_reports()
+    return list(map(add_analysis_data, load_status_as_reports()))
 
 
 @router.post("/admin/reports", status_code=202)
@@ -82,7 +82,8 @@ async def get_current_step(slug: str) -> dict:
             status = json.load(f)
 
         response = {
-            "current_step": "loading",
+            "status": status.get("status", "running"),
+            "current_step": status.get("current_job", "loading"),
             "token_usage": status.get("total_token_usage", 0),
             "token_usage_input": status.get("token_usage_input", 0),
             "token_usage_output": status.get("token_usage_output", 0),
@@ -91,22 +92,14 @@ async def get_current_step(slug: str) -> dict:
             "model": status.get("model"),
         }
 
-        # error キーが存在する場合はエラーとみなす
-        if "error" in status:
-            response["current_step"] = "error"
-            return response
-
         # 全体のステータスが "completed" なら、current_step も "completed" とする
         if status.get("status") == "completed":
             response["current_step"] = "completed"
             return response
 
-        # current_job キーが存在しない場合も "loading" とみなす
-        if "current_job" not in status:
-            return response
-
         # current_job が空文字列の場合も "loading" とする
         if not status.get("current_job"):
+            response["current_step"] = "loading"
             return response
 
         # 有効な current_job を返す
@@ -279,8 +272,6 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
     from broadlistening.pipeline.services.llm import request_to_chat_ai
 
     try:
-        use_azure = os.getenv("USE_AZURE", "false").lower() == "true"
-
         test_messages = [
             {"role": "system", "content": "This is a test message to verify API key."},
             {"role": "user", "content": "Hello"},
@@ -296,7 +287,6 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
             "message": "ChatGPT API キーは有効です",
             "error_detail": None,
             "error_type": None,
-            "use_azure": use_azure,
         }
 
     except openai.AuthenticationError as e:
@@ -305,7 +295,6 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
             "message": "認証エラー: APIキーが無効または期限切れです",
             "error_detail": str(e),
             "error_type": "authentication_error",
-            "use_azure": use_azure,
         }
     except openai.RateLimitError as e:
         error_str = str(e).lower()
@@ -315,14 +304,12 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
                 "message": "残高不足エラー: APIキーのデポジット残高が不足しています。残高を追加してください。",
                 "error_detail": str(e),
                 "error_type": "insufficient_quota",
-                "use_azure": use_azure,
             }
         return {
             "success": False,
             "message": "レート制限エラー: APIリクエストの制限を超えました。しばらく待ってから再試行してください。",
             "error_detail": str(e),
             "error_type": "rate_limit_error",
-            "use_azure": use_azure,
         }
     except Exception as e:
         return {
@@ -330,7 +317,6 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
             "message": f"エラーが発生しました: {str(e)}",
             "error_detail": str(e),
             "error_type": "unknown_error",
-            "use_azure": use_azure,
         }
 
 

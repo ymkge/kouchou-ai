@@ -188,7 +188,7 @@ export function AISettingsSection({
           ソースリンク機能を有効にする
         </Checkbox>
         <Field.HelperText>
-         ONにした場合は、CSVのurlカラムの情報を使って、レポートの散布図上でデータ点をクリックすると元のソースにアクセスできます。
+          ONにした場合は、CSVのurlカラムの情報を使って、レポートの散布図上でデータ点をクリックすると元のソースにアクセスできます。
         </Field.HelperText>
       </Field.Root>
 
