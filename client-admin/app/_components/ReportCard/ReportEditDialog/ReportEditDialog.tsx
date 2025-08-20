@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { toaster } from "@/components/ui/toaster";
 import type { Report } from "@/type";
-import { Box, Button, Dialog, Input, Portal, Text, Textarea, VStack } from "@chakra-ui/react";
+import { Box, Button, Input, Portal, Text, Textarea, VStack } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { updateReportConfig } from "./actions";
