@@ -1,6 +1,7 @@
 import logging
 import os
 import threading
+import time
 
 import openai
 from dotenv import load_dotenv
@@ -180,17 +181,6 @@ def request_to_azure_chatcompletion(
         raise
 
 
-_GEMINI_RETRY_EXCEPTION = (
-    Exception if google_exceptions is None else google_exceptions.ResourceExhausted
-)
-
-
-@retry(
-    retry=retry_if_exception_type(_GEMINI_RETRY_EXCEPTION),
-    wait=wait_exponential(multiplier=1, min=2, max=20),
-    stop=stop_after_attempt(3),
-    reraise=True,
-)
 def request_to_gemini_chatcompletion(
     messages: list[dict],
     model: str = "gemini-1.5-flash",
@@ -241,32 +231,74 @@ def request_to_gemini_chatcompletion(
             response_mime_type="application/json"
         )
 
-    try:
-        response = model_client.generate_content(
-            history, generation_config=generation_config
-        )
-        usage = getattr(response, "usage_metadata", None)
-        if usage:
-            token_usage_input = getattr(usage, "prompt_token_count", 0) or 0
-            token_usage_output = getattr(usage, "candidates_token_count", 0) or 0
-            token_usage_total = getattr(usage, "total_token_count", 0) or 0
-        text = response.text
-        if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = model_client.generate_content(
+                history, generation_config=generation_config
+            )
+            usage = getattr(response, "usage_metadata", None)
+            if usage:
+                token_usage_input = getattr(usage, "prompt_token_count", 0) or 0
+                token_usage_output = getattr(usage, "candidates_token_count", 0) or 0
+                token_usage_total = getattr(usage, "total_token_count", 0) or 0
+            text = response.text
+            if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
+                try:
+                    parsed = json_schema.model_validate_json(text).model_dump()
+                except Exception:  # pragma: no cover - validation error
+                    parsed = text
+                return (
+                    parsed,
+                    token_usage_input,
+                    token_usage_output,
+                    token_usage_total,
+                )
+            return text, token_usage_input, token_usage_output, token_usage_total
+        except google_exceptions.Unauthenticated as e:
+            logging.error(f"Gemini API authentication error: {e}")
+            raise
+        except google_exceptions.InvalidArgument as e:
+            logging.error(f"Gemini API bad request error: {e}")
+            raise
+        except google_exceptions.GoogleAPICallError as e:
+            status_code = getattr(e, "code", None)
+            is_rate_limit = (
+                status_code == 429
+                or isinstance(e, google_exceptions.ResourceExhausted)
+            )
+            if not is_rate_limit:
+                logging.error(f"Gemini API error: {e}")
+                raise
+
+            retry_delay: int | str | None = getattr(e, "retry_delay", None)
+            response_data = getattr(e, "response", None)
+            if retry_delay is None and isinstance(response_data, dict):
+                retry_delay = (
+                    response_data.get("error", {})
+                    .get("details", [{}])[0]
+                    .get("metadata", {})
+                    .get("retry_delay")
+                )
+
+            if isinstance(retry_delay, str) and retry_delay.endswith("s"):
+                retry_delay = retry_delay[:-1]
             try:
-                parsed = json_schema.model_validate_json(text).model_dump()
-            except Exception:  # pragma: no cover - validation error
-                parsed = text
-            return parsed, token_usage_input, token_usage_output, token_usage_total
-        return text, token_usage_input, token_usage_output, token_usage_total
-    except _GEMINI_RETRY_EXCEPTION as e:  # type: ignore[misc]
-        logging.warning(f"Gemini API rate limit hit: {e}")
-        raise
-    except google_exceptions.Unauthenticated as e:
-        logging.error(f"Gemini API authentication error: {e}")
-        raise
-    except google_exceptions.InvalidArgument as e:
-        logging.error(f"Gemini API bad request error: {e}")
-        raise
+                wait_time = int(retry_delay) if retry_delay is not None else 30
+            except (TypeError, ValueError):
+                wait_time = 30
+
+            if attempt >= max_retries - 1:
+                logging.error(
+                    "Gemini API rate limit exceeded repeatedly. Free tier allows 15 requests per minute per model. Consider upgrading to a paid plan."
+                )
+                raise
+            logging.warning(
+                f"Gemini API rate limit hit. Retrying after {wait_time} seconds."
+            )
+            time.sleep(wait_time)
+
+    raise RuntimeError("Gemini API call failed after retries")
 
 
 def request_to_local_llm(
