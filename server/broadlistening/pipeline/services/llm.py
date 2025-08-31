@@ -275,7 +275,7 @@ def request_to_chat_ai(
         model: 使用するモデル名
         is_json: JSONレスポンスを要求するかどうか
         json_schema: JSONスキーマ（Pydanticモデルまたは辞書）
-        provider: 使用するプロバイダー（"openai", "azure", "local", "openrouter"）
+        provider: 使用するプロバイダー（"openai", "azure", "local", "gemini", "openrouter"）
         local_llm_address: ローカルLLMのアドレス（provider="local"の場合のみ使用）
 
     Returns:
@@ -285,6 +285,7 @@ def request_to_chat_ai(
         - provider="openai": OpenAI APIを使用
         - provider="azure": Azure OpenAI APIを使用
         - provider="local": ローカルLLM（OllamaやLM Studio）を使用
+        - provider="gemini": Google Gemini APIを使用
         - provider="openrouter": OpenRouter APIを使用（OpenAIやGeminiのモデルにアクセス可能）
     """
     if provider == "azure":
@@ -294,6 +295,8 @@ def request_to_chat_ai(
     elif provider == "local":
         address = local_llm_address or "localhost:11434"
         return request_to_local_llm(messages, model, is_json, json_schema, address)
+    elif provider == "gemini":
+        return request_to_gemini_chatcompletion(messages, model, is_json, json_schema, user_api_key)
     elif provider == "openrouter":
         # OpenRouterのモデル名を直接使用
         return request_to_openrouter_chatcompletion(messages, model, is_json, json_schema, user_api_key)
@@ -519,6 +522,50 @@ def _local_llm_test():
     response = request_to_local_llm(messages=messages, model="llama-3-elyza-jp-8b", address="localhost:1234")
     print("Local LLM response example:")
     print(response)
+
+
+def request_to_gemini_chatcompletion(
+    messages: list[dict],
+    model: str,
+    is_json: bool = False,
+    json_schema: dict | type[BaseModel] | None = None,
+    user_api_key: str | None = None,
+) -> tuple[str, int, int, int]:  # 戻り値を文字列とトークン使用量(入力・出力・合計)のタプルに変更
+    api_key = user_api_key or os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise RuntimeError("GOOGLE_API_KEY environment variable is not set")
+
+    import google.generativeai as genai
+
+    genai.configure(api_key=api_key)
+
+    generation_config = None
+    if is_json:
+        generation_config = {"response_mime_type": "application/json"}
+    if json_schema:
+        generation_config = {
+            "response_mime_type": "application/json",
+            "response_schema": json_schema,
+        }
+
+    gemini_messages = [{"role": m["role"], "parts": [m["content"]]} for m in messages]
+
+    model_client = genai.GenerativeModel(model)
+    response = model_client.generate_content(
+        gemini_messages,
+        generation_config=generation_config,
+    )
+
+    token_usage_input = 0
+    token_usage_output = 0
+    token_usage_total = 0
+    usage = getattr(response, "usage_metadata", None)
+    if usage:
+        token_usage_input = getattr(usage, "prompt_token_count", 0)
+        token_usage_output = getattr(usage, "candidates_token_count", 0)
+        token_usage_total = getattr(usage, "total_token_count", 0)
+
+    return response.text, token_usage_input, token_usage_output, token_usage_total
 
 
 @retry(
