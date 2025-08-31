@@ -7,6 +7,7 @@ kouchou-aiのAPIサーバーです。
 * rye
 * python 3.12
 * OpenAI API Key
+* Gemini API Key ([取得方法](https://ai.google.dev/gemini-api/docs/api-key))
 
 
 ## セットアップ（開発環境）
@@ -21,6 +22,18 @@ cp .env.example .env
 * OPENROUTER_API_KEY
   * OpenRouterのAPIキー。OpenRouter経由でOpenAIやGeminiのモデルを使用する場合に必要。
   * [OpenRouter](https://openrouter.ai/)でアカウントを作成し、APIキーを取得してください。
+* GOOGLE_API_KEY
+  * GeminiのAPIキー。[Google AI Studio](https://ai.google.dev/gemini-api/docs/api-key)で取得し、Geminiモデルを直接利用する場合に設定。
+  * 利用例:
+    ```python
+    import os
+    import google.generativeai as genai
+
+    genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    print(model.generate_content("Hello Gemini").text)
+    ```
+  * 利用可能なモデル例: `gemini-1.5-flash`, `gemini-1.5-pro`
 
 ※ APIキーは他人と共有しないでください。GithubやSlackにもアップロードしないよう注意してください。  
 ※ このキーを設定しなくてもサーバーは起動しますが、/admin/reportsなど一部のエンドポイントでエラーになります。  

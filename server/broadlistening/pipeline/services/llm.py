@@ -8,6 +8,13 @@ from openai import AzureOpenAI, OpenAI
 from pydantic import BaseModel
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
+try:  # Optional dependency
+    import google.generativeai as genai
+    from google.api_core import exceptions as google_exceptions
+except ModuleNotFoundError:  # pragma: no cover - library might be unavailable in tests
+    genai = None
+    google_exceptions = None
+
 DOTENV_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../.env"))
 load_dotenv(DOTENV_PATH)
 
@@ -173,6 +180,93 @@ def request_to_azure_chatcompletion(
         raise
 
 
+_GEMINI_RETRY_EXCEPTION = (
+    Exception if google_exceptions is None else google_exceptions.ResourceExhausted
+)
+
+
+@retry(
+    retry=retry_if_exception_type(_GEMINI_RETRY_EXCEPTION),
+    wait=wait_exponential(multiplier=1, min=2, max=20),
+    stop=stop_after_attempt(3),
+    reraise=True,
+)
+def request_to_gemini_chatcompletion(
+    messages: list[dict],
+    model: str = "gemini-1.5-flash",
+    is_json: bool = False,
+    json_schema: dict | type[BaseModel] | None = None,
+    user_api_key: str | None = None,
+) -> tuple[str, int, int, int]:
+    token_usage_input = 0
+    token_usage_output = 0
+    token_usage_total = 0
+
+    if genai is None or google_exceptions is None:  # pragma: no cover - optional dependency
+        raise RuntimeError("google-generativeai is required for Gemini provider")
+
+    api_key = user_api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    genai.configure(api_key=api_key)
+
+    system_messages = [m["content"] for m in messages if m.get("role") == "system"]
+    system_instruction = "\n".join(system_messages) if system_messages else None
+
+    history = []
+    for m in messages:
+        role = m.get("role")
+        if role == "system":
+            continue
+        mapped_role = "user" if role == "user" else "model"
+        history.append({"role": mapped_role, "parts": [m.get("content", "")]})
+
+    model_client = genai.GenerativeModel(
+        model, system_instruction=system_instruction
+    )
+
+    generation_config = None
+    if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
+        generation_config = genai.GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=json_schema.model_json_schema(),
+        )
+    elif isinstance(json_schema, dict):
+        generation_config = genai.GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=json_schema,
+        )
+    elif is_json:
+        generation_config = genai.GenerationConfig(
+            response_mime_type="application/json"
+        )
+
+    try:
+        response = model_client.generate_content(
+            history, generation_config=generation_config
+        )
+        usage = getattr(response, "usage_metadata", None)
+        if usage:
+            token_usage_input = getattr(usage, "prompt_token_count", 0) or 0
+            token_usage_output = getattr(usage, "candidates_token_count", 0) or 0
+            token_usage_total = getattr(usage, "total_token_count", 0) or 0
+        text = response.text
+        if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
+            try:
+                parsed = json_schema.model_validate_json(text).model_dump()
+            except Exception:  # pragma: no cover - validation error
+                parsed = text
+            return parsed, token_usage_input, token_usage_output, token_usage_total
+        return text, token_usage_input, token_usage_output, token_usage_total
+    except _GEMINI_RETRY_EXCEPTION as e:  # type: ignore[misc]
+        logging.warning(f"Gemini API rate limit hit: {e}")
+        raise
+    except google_exceptions.Unauthenticated as e:
+        logging.error(f"Gemini API authentication error: {e}")
+        raise
+    except google_exceptions.InvalidArgument as e:
+        logging.error(f"Gemini API bad request error: {e}")
+        raise
+
+
 def request_to_local_llm(
     messages: list[dict],
     model: str,
@@ -275,7 +369,7 @@ def request_to_chat_ai(
         model: 使用するモデル名
         is_json: JSONレスポンスを要求するかどうか
         json_schema: JSONスキーマ（Pydanticモデルまたは辞書）
-        provider: 使用するプロバイダー（"openai", "azure", "local", "openrouter"）
+        provider: 使用するプロバイダー（"openai", "azure", "local", "openrouter", "gemini"）
         local_llm_address: ローカルLLMのアドレス（provider="local"の場合のみ使用）
 
     Returns:
@@ -286,6 +380,7 @@ def request_to_chat_ai(
         - provider="azure": Azure OpenAI APIを使用
         - provider="local": ローカルLLM（OllamaやLM Studio）を使用
         - provider="openrouter": OpenRouter APIを使用（OpenAIやGeminiのモデルにアクセス可能）
+        - provider="gemini": Google Gemini APIを使用
     """
     if provider == "azure":
         return request_to_azure_chatcompletion(messages, is_json, json_schema, user_api_key)
@@ -297,6 +392,8 @@ def request_to_chat_ai(
     elif provider == "openrouter":
         # OpenRouterのモデル名を直接使用
         return request_to_openrouter_chatcompletion(messages, model, is_json, json_schema, user_api_key)
+    elif provider == "gemini":
+        return request_to_gemini_chatcompletion(messages, model, is_json, json_schema, user_api_key)
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
