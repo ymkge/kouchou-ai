@@ -208,16 +208,18 @@ def request_to_gemini_chatcompletion(
     api_key = user_api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
     genai.configure(api_key=api_key)
 
-    system_messages = [m["content"] for m in messages if m.get("role") == "system"]
-    system_instruction = "\n".join(system_messages) if system_messages else None
+    system_instruction = "\n".join(
+        m["content"] for m in messages if m.get("role") == "system"
+    ) or None
 
-    history = []
-    for m in messages:
-        role = m.get("role")
-        if role == "system":
-            continue
-        mapped_role = "user" if role == "user" else "model"
-        history.append({"role": mapped_role, "parts": [m.get("content", "")]})
+    history = [
+        {
+            "role": "user" if m.get("role") == "user" else "model",
+            "parts": [m.get("content", "")],
+        }
+        for m in messages
+        if m.get("role") != "system"
+    ]
 
     model_client = genai.GenerativeModel(
         model, system_instruction=system_instruction
@@ -395,8 +397,6 @@ def request_to_chat_ai(
     elif provider == "openrouter":
         # OpenRouterのモデル名を直接使用
         return request_to_openrouter_chatcompletion(messages, model, is_json, json_schema, user_api_key)
-    elif provider == "gemini":
-        return request_to_gemini_chatcompletion(messages, model, is_json, json_schema, user_api_key)
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
@@ -619,51 +619,6 @@ def _local_llm_test():
     response = request_to_local_llm(messages=messages, model="llama-3-elyza-jp-8b", address="localhost:1234")
     print("Local LLM response example:")
     print(response)
-
-
-def request_to_gemini_chatcompletion(
-    messages: list[dict],
-    model: str,
-    is_json: bool = False,
-    json_schema: dict | type[BaseModel] | None = None,
-    user_api_key: str | None = None,
-) -> tuple[str, int, int, int]:  # 戻り値を文字列とトークン使用量(入力・出力・合計)のタプルに変更
-    api_key = user_api_key or os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY environment variable is not set")
-
-    import google.generativeai as genai
-
-    genai.configure(api_key=api_key)
-
-    generation_config = None
-    if is_json:
-        generation_config = {"response_mime_type": "application/json"}
-    if json_schema:
-        generation_config = {
-            "response_mime_type": "application/json",
-            "response_schema": json_schema,
-        }
-
-    gemini_messages = [{"role": m["role"], "parts": [m["content"]]} for m in messages]
-
-    model_client = genai.GenerativeModel(model)
-    response = model_client.generate_content(
-        gemini_messages,
-        generation_config=generation_config,
-    )
-
-    token_usage_input = 0
-    token_usage_output = 0
-    token_usage_total = 0
-    usage = getattr(response, "usage_metadata", None)
-    if usage:
-        token_usage_input = getattr(usage, "prompt_token_count", 0)
-        token_usage_output = getattr(usage, "candidates_token_count", 0)
-        token_usage_total = getattr(usage, "total_token_count", 0)
-
-    return response.text, token_usage_input, token_usage_output, token_usage_total
-
 
 @retry(
     retry=retry_if_exception_type(openai.RateLimitError),
