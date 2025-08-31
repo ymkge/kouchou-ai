@@ -19,7 +19,7 @@ set /p OPENAI_API_KEY=Enter your OpenAI API key:
 
 REM Enter Gemini API key
 echo Gemini APIキーを入力してください。（省略可）
-set /p GOOGLE_API_KEY=Enter your Gemini API key:
+set /p GEMINI_API_KEY=Enter your Gemini API key:
 
 REM Validate OpenAI API key format
 echo APIキーの形式を確認しています...
@@ -39,7 +39,7 @@ if %errorlevel% neq 0 (
 REM Generate .env file
 echo # Auto-generated .env file > .env
 echo OPENAI_API_KEY=%OPENAI_API_KEY% >> .env
-echo GOOGLE_API_KEY=%GOOGLE_API_KEY% >> .env
+echo GEMINI_API_KEY=%GEMINI_API_KEY% >> .env
 echo PUBLIC_API_KEY=public >> .env
 echo ADMIN_API_KEY=admin >> .env
 echo ENVIRONMENT=development >> .env

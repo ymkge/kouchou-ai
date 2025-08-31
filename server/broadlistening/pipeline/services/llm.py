@@ -205,7 +205,7 @@ def request_to_gemini_chatcompletion(
     if genai is None or google_exceptions is None:  # pragma: no cover - optional dependency
         raise RuntimeError("google-generativeai is required for Gemini provider")
 
-    api_key = user_api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    api_key = user_api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
     genai.configure(api_key=api_key)
 
     system_messages = [m["content"] for m in messages if m.get("role") == "system"]
@@ -628,9 +628,9 @@ def request_to_gemini_chatcompletion(
     json_schema: dict | type[BaseModel] | None = None,
     user_api_key: str | None = None,
 ) -> tuple[str, int, int, int]:  # 戻り値を文字列とトークン使用量(入力・出力・合計)のタプルに変更
-    api_key = user_api_key or os.getenv("GOOGLE_API_KEY")
+    api_key = user_api_key or os.getenv("GEMINI_API_KEY")
     if not api_key:
-        raise RuntimeError("GOOGLE_API_KEY environment variable is not set")
+        raise RuntimeError("GEMINI_API_KEY environment variable is not set")
 
     import google.generativeai as genai
 

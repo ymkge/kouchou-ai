@@ -48,7 +48,7 @@ async def get_azure_models() -> list[dict[str, str]]:
 
 async def get_gemini_models() -> list[dict[str, str]]:
     """Google Geminiのモデルリストを取得"""
-    api_key = os.getenv("GOOGLE_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         return [model.to_dict() for model in GEMINI_MODELS]
 

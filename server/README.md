@@ -22,14 +22,14 @@ cp .env.example .env
 * OPENROUTER_API_KEY
   * OpenRouterのAPIキー。OpenRouter経由でOpenAIやGeminiのモデルを使用する場合に必要。
   * [OpenRouter](https://openrouter.ai/)でアカウントを作成し、APIキーを取得してください。
-* GOOGLE_API_KEY
+* GEMINI_API_KEY
   * GeminiのAPIキー。[Google AI Studio](https://ai.google.dev/gemini-api/docs/api-key)で取得し、Geminiモデルを直接利用する場合に設定。
   * 利用例:
     ```python
     import os
     import google.generativeai as genai
 
-    genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
+    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
     model = genai.GenerativeModel("gemini-1.5-flash")
     print(model.generate_content("Hello Gemini").text)
     ```

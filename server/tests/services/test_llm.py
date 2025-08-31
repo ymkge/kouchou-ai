@@ -799,7 +799,7 @@ class TestLLMService:
         google_module = types.ModuleType("google")
         google_module.generativeai = genai_module
 
-        env_vars = {"GOOGLE_API_KEY": "test-api-key"}
+        env_vars = {"GEMINI_API_KEY": "test-api-key"}
         with patch.dict(sys.modules, {"google": google_module, "google.generativeai": genai_module}):
             with patch.dict(os.environ, env_vars):
                 response, token_input, token_output, token_total = request_to_chat_ai(
@@ -834,7 +834,7 @@ class TestLLMService:
         with patch.dict(os.environ, {}, clear=True):
             with pytest.raises(RuntimeError) as excinfo:
                 request_to_chat_ai(messages=messages, model=model, provider="gemini")
-            assert "GOOGLE_API_KEY environment variable is not set" in str(excinfo.value)
+            assert "GEMINI_API_KEY environment variable is not set" in str(excinfo.value)
 
     def test_request_to_chat_ai_use_gemini_rate_limit(self):
         """Geminiのレート制限エラーのテスト"""
@@ -857,7 +857,7 @@ class TestLLMService:
         google_module = types.ModuleType("google")
         google_module.generativeai = genai_module
 
-        env_vars = {"GOOGLE_API_KEY": "test-api-key"}
+        env_vars = {"GEMINI_API_KEY": "test-api-key"}
         with patch.dict(sys.modules, {"google": google_module, "google.generativeai": genai_module}):
             with patch.dict(os.environ, env_vars):
                 with pytest.raises(RateLimitError):
