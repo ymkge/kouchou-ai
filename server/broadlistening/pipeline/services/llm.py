@@ -215,16 +215,31 @@ def request_to_gemini_chatcompletion(
         model, system_instruction=system_instruction
     )
 
+    def _remove_title_keys(obj: dict | list) -> dict | list:
+        """Recursively remove `title` keys from JSON schema objects."""
+
+        if isinstance(obj, dict):
+            obj.pop("title", None)
+            for value in obj.values():
+                _remove_title_keys(value)
+        elif isinstance(obj, list):
+            for item in obj:
+                _remove_title_keys(item)
+        return obj
+
     generation_config = None
     if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
+        schema = json_schema.model_json_schema()
+        schema = _remove_title_keys(schema)
         generation_config = genai.GenerationConfig(
             response_mime_type="application/json",
-            response_schema=json_schema.model_json_schema(),
+            response_schema=schema,
         )
     elif isinstance(json_schema, dict):
+        schema = _remove_title_keys(json_schema)
         generation_config = genai.GenerationConfig(
             response_mime_type="application/json",
-            response_schema=json_schema,
+            response_schema=schema,
         )
     elif is_json:
         generation_config = genai.GenerationConfig(
