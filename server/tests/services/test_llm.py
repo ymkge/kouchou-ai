@@ -862,3 +862,30 @@ class TestLLMService:
             with patch.dict(os.environ, env_vars):
                 with pytest.raises(RateLimitError):
                     request_to_chat_ai(messages=messages, model=model, provider="gemini")
+
+    def test_request_to_embed_use_gemini(self):
+        """Geminiの埋め込みを使用するテストケース"""
+        args = ["hello", "world"]
+        model = "models/embedding-001"
+
+        genai_module = types.ModuleType("google.generativeai")
+        configure_mock = MagicMock()
+        embed_content_mock = MagicMock(
+            side_effect=[{"embedding": [0.1, 0.2]}, {"embedding": [0.3, 0.4]}]
+        )
+        genai_module.configure = configure_mock
+        genai_module.embed_content = embed_content_mock
+        google_module = types.ModuleType("google")
+        google_module.generativeai = genai_module
+
+        env_vars = {"GEMINI_API_KEY": "test-api-key"}
+        with patch.dict(sys.modules, {"google": google_module, "google.generativeai": genai_module}):
+            with patch("broadlistening.pipeline.services.llm.genai", genai_module):
+                with patch.dict(os.environ, env_vars):
+                    embeds = request_to_embed(args, model, provider="gemini")
+
+        assert embeds == [[0.1, 0.2], [0.3, 0.4]]
+        configure_mock.assert_called_once_with(api_key="test-api-key")
+        assert embed_content_mock.call_count == 2
+        embed_content_mock.assert_any_call(model=model, content="hello")
+        embed_content_mock.assert_any_call(model=model, content="world")

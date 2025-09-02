@@ -522,6 +522,9 @@ def request_to_embed(
         response = client.embeddings.create(input=args, model=model)
         embeds = [item.embedding for item in response.data]
         return embeds
+    elif provider == "gemini":
+        logging.info("request_to_gemini_embed")
+        return request_to_gemini_embed(args, model, user_api_key)
     elif provider == "openrouter":
         raise NotImplementedError("OpenRouter embedding support is not implemented yet")
     elif provider == "local":
@@ -529,6 +532,32 @@ def request_to_embed(
         return request_to_local_llm_embed(args, model, address)
     else:
         raise ValueError(f"Unknown provider: {provider}")
+
+
+def request_to_gemini_embed(args, model, user_api_key: str | None = None):
+    if genai is None:
+        raise RuntimeError("google-generativeai is required for Gemini provider")
+
+    api_key = user_api_key or os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY environment variable is not set")
+
+    genai.configure(api_key=api_key)
+
+    if isinstance(args, str):
+        args = [args]
+
+    embeds: list[list[float]] = []
+    for text in args:
+        response = genai.embed_content(model=model, content=text)
+        embedding = (
+            response["embedding"]
+            if isinstance(response, dict)
+            else getattr(response, "embedding", None)
+        )
+        embeds.append(embedding)
+
+    return embeds
 
 
 def request_to_azure_embed(args, model, user_api_key: str | None = None):
