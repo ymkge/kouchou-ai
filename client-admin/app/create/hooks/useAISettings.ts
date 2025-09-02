@@ -309,10 +309,10 @@ export function useAISettings() {
     }
     if (provider === "gemini") {
       if (model === "gemini-1.5-flash") {
-        return "Gemini 1.5 Flash：高速かつコスト効率の高いモデルです。";
+        return "Gemini 1.5 Flash：高速かつコスト効率の高いモデルです。価格の詳細はGoogleが公開しているAPI料金のページをご参照ください。";
       }
       if (model === "gemini-1.5-pro") {
-        return "Gemini 1.5 Pro：高度な推論能力を備えたモデルです。";
+        return "Gemini 1.5 Pro：Gemini 1.5 Flashよりも高度な推論能力を備えたモデルです。性能はより高くなりますが、Gemini 1.5 Flashと比較してAPIの料金は高くなります。";
       }
     }
     return "";
