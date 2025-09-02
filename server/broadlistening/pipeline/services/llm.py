@@ -2,7 +2,6 @@ import logging
 import os
 import threading
 import time
-import random
 
 import openai
 from dotenv import load_dotenv
@@ -248,10 +247,6 @@ def request_to_gemini_chatcompletion(
         )
 
     max_retries = 3
-    base_wait = 5
-    last_exc: Exception | None = None
-    last_wait: int | None = None
-
     for attempt in range(max_retries):
         try:
             response = model_client.generate_content(
@@ -283,13 +278,14 @@ def request_to_gemini_chatcompletion(
             raise
         except google_exceptions.GoogleAPICallError as e:
             status_code = getattr(e, "code", None)
-            is_rate_limit = (status_code == 429) or isinstance(e, google_exceptions.ResourceExhausted)
-
+            is_rate_limit = (
+                status_code == 429
+                or isinstance(e, google_exceptions.ResourceExhausted)
+            )
             if not is_rate_limit:
                 logging.error(f"Gemini API error: {e}")
                 raise
 
-            last_exc = e
             retry_delay: int | str | None = getattr(e, "retry_delay", None)
             response_data = getattr(e, "response", None)
             if retry_delay is None and isinstance(response_data, dict):
@@ -300,33 +296,25 @@ def request_to_gemini_chatcompletion(
                     .get("retry_delay")
                 )
 
-            wait_time: int
             if isinstance(retry_delay, str) and retry_delay.endswith("s"):
                 retry_delay = retry_delay[:-1]
             try:
-                wait_time = int(retry_delay) if retry_delay is not None else 0
+                wait_time = int(retry_delay) if retry_delay is not None else 30
             except (TypeError, ValueError):
-                wait_time = 0
-
-            if wait_time <= 0:
-                wait_time = int((base_wait * (2 ** attempt)) * (0.5 + random.random()))
-                # 上限は 60 秒程度に丸める
-                wait_time = min(wait_time, 60)
-
-            last_wait = wait_time
+                wait_time = 30
 
             if attempt >= max_retries - 1:
                 logging.error(
-                    "Gemini rate limit: retries exhausted (attempts=%s, last_wait=%ss)",
-                    attempt + 1,
-                    last_wait,
-                    exc_info=last_exc,
+                    "Gemini API rate limit exceeded repeatedly. Free tier allows 15 requests per minute per model. Consider upgrading to a paid plan."
                 )
                 raise
-
+            logging.warning(
+                f"Gemini API rate limit hit. Retrying after {wait_time} seconds."
+            )
             time.sleep(wait_time)
 
     raise RuntimeError("Gemini API call failed after retries")
+
 
 def request_to_local_llm(
     messages: list[dict],
