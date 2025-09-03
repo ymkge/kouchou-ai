@@ -227,8 +227,37 @@ def request_to_gemini_chatcompletion(
             for item in obj:
                 _remove_title_keys(item)
         return obj
+    
+    def _normalize_openai_response_format(schema: dict | None) -> tuple[dict | None, bool]:
+        """
+        OpenAIのresponse_formatをGemini用へ正規化する。
+        戻り値: (raw_schema or None, json_mode_only_flag)
+        - json_mode_only_flag=True のときは response_mime_typeのみを設定（スキーマ無しJSONモード）
+        """
+        if not isinstance(schema, dict):
+            return None, False
+
+        # OpenAI: {"type":"json_object"} → スキーマ無しの JSON モード
+        if schema.get("type") == "json_object":
+            return None, True
+
+        # OpenAI: {"type": "json_schema", "json_schema": {...}} → 中の素スキーマを取り出す
+        if schema.get("type") == "json_schema" and "json_schema" in schema:
+            inner = schema["json_schema"]
+            # OpenRouter等で {"json_schema": {"schema": {...}, "name": "...", "strict": ...}} の場合もあり得る
+            if isinstance(inner, dict) and "schema" in inner:
+                inner = inner["schema"]
+            # 余計なメタ（name/strictなど）は落とす
+            if isinstance(inner, dict):
+                inner.pop("name", None)
+                inner.pop("strict", None)
+            return inner, False
+
+        # 既に“素のスキーマ”が来ているケースはそのまま（後で title 削除）
+        return schema, False
 
     generation_config = None
+    # Pydantic → 素のJSONスキーマ化
     if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
         schema = json_schema.model_json_schema()
         schema = _remove_title_keys(schema)
@@ -236,18 +265,29 @@ def request_to_gemini_chatcompletion(
             response_mime_type="application/json",
             response_schema=schema,
         )
+
+    # dict → OpenAIラッパーを剥がしてからセット
     elif isinstance(json_schema, dict):
-        schema = _remove_title_keys(json_schema)
-        generation_config = genai.GenerationConfig(
-            response_mime_type="application/json",
-            response_schema=schema,
-        )
+        raw_schema, json_only = _normalize_openai_response_format(json_schema)
+        if json_only:
+            generation_config = genai.GenerationConfig(
+                response_mime_type="application/json"
+            )
+        else:
+            schema = _remove_title_keys(raw_schema) if raw_schema else None
+            generation_config = genai.GenerationConfig(
+                response_mime_type="application/json",
+                **({"response_schema": schema} if schema else {}),
+            )
+
     elif is_json:
         generation_config = genai.GenerationConfig(
             response_mime_type="application/json"
         )
 
     max_retries = 3
+    base_wait = 5
+
     for attempt in range(max_retries):
         try:
             response = model_client.generate_content(
@@ -258,6 +298,32 @@ def request_to_gemini_chatcompletion(
                 token_usage_input = getattr(usage, "prompt_token_count", 0) or 0
                 token_usage_output = getattr(usage, "candidates_token_count", 0) or 0
                 token_usage_total = getattr(usage, "total_token_count", 0) or 0
+            
+            try:
+                # candidates, prompt_feedback 等を安全にログ化
+                cands = getattr(response, "candidates", None)
+                finish_reasons = []
+                safety = []
+                if cands:
+                    for i, c in enumerate(cands):
+                        fr = getattr(c, "finish_reason", None)
+                        finish_reasons.append(fr)
+                        sr = getattr(c, "safety_ratings", None)
+                        if sr:
+                            safety.append([getattr(r, "category", None) for r in sr])
+                    logging.debug("[Gemini] Candidates=%d, finish_reasons=%s, safety_categories=%s",
+                                  len(cands), finish_reasons, safety)
+
+                pf = getattr(response, "prompt_feedback", None)
+                if pf:
+                    try:
+                        pf_dict = pf.to_dict() if hasattr(pf, "to_dict") else pf.__dict__
+                    except Exception:
+                        pf_dict = str(pf)
+                    logging.debug("[Gemini] Prompt feedback=%s", pf_dict)
+            except Exception as log_ex:
+                logging.debug("[Gemini] Response meta logging failed: %s", log_ex)
+            
             text = response.text
             if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
                 try:
@@ -279,14 +345,13 @@ def request_to_gemini_chatcompletion(
             raise
         except google_exceptions.GoogleAPICallError as e:
             status_code = getattr(e, "code", None)
-            is_rate_limit = (
-                status_code == 429
-                or isinstance(e, google_exceptions.ResourceExhausted)
-            )
+            is_rate_limit = (status_code == 429) or isinstance(e, google_exceptions.ResourceExhausted)
+
             if not is_rate_limit:
                 logging.error(f"Gemini API error: {e}")
                 raise
 
+            last_exc = e
             retry_delay: int | str | None = getattr(e, "retry_delay", None)
             response_data = getattr(e, "response", None)
             if retry_delay is None and isinstance(response_data, dict):
@@ -297,21 +362,26 @@ def request_to_gemini_chatcompletion(
                     .get("retry_delay")
                 )
 
+            wait_time: int
             if isinstance(retry_delay, str) and retry_delay.endswith("s"):
                 retry_delay = retry_delay[:-1]
             try:
-                wait_time = int(retry_delay) if retry_delay is not None else 30
+                wait_time = int(retry_delay) if retry_delay is not None else 0
             except (TypeError, ValueError):
-                wait_time = 30
+                wait_time = 0
+
+            if wait_time <= 0:
+                wait_time = int((base_wait * (2 ** attempt)) * (0.5 + random.random()))
+                wait_time = min(wait_time, 60)
+
+            last_wait = wait_time
 
             if attempt >= max_retries - 1:
                 logging.error(
                     "Gemini API rate limit exceeded repeatedly. Free tier allows 15 requests per minute per model. Consider upgrading to a paid plan."
                 )
                 raise
-            logging.warning(
-                f"Gemini API rate limit hit. Retrying after {wait_time} seconds."
-            )
+
             time.sleep(wait_time)
 
     raise RuntimeError("Gemini API call failed after retries")
