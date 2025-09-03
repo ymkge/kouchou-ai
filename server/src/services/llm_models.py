@@ -31,6 +31,7 @@ OPENAI_MODELS = [
 
 
 GEMINI_MODELS = [
+    ModelOption("gemini-2.5-flash", "Gemini 2.5 Flash"),
     ModelOption("gemini-1.5-flash", "Gemini 1.5 Flash"),
     ModelOption("gemini-1.5-pro", "Gemini 1.5 Pro"),
 ]

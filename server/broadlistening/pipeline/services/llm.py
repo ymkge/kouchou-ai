@@ -184,7 +184,7 @@ def request_to_azure_chatcompletion(
 
 def request_to_gemini_chatcompletion(
     messages: list[dict],
-    model: str = "gemini-1.5-flash",
+    model: str = "gemini-2.5-flash",
     is_json: bool = False,
     json_schema: dict | type[BaseModel] | None = None,
     user_api_key: str | None = None,
