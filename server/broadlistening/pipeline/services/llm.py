@@ -285,8 +285,8 @@ def request_to_gemini_chatcompletion(
             response_mime_type="application/json"
         )
 
-    max_retries = 3
-    base_wait = 5
+    max_retries = 5
+    base_wait = 8
 
     for attempt in range(max_retries):
         try:
