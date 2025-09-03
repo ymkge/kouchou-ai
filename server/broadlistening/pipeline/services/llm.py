@@ -2,6 +2,7 @@ import logging
 import os
 import threading
 import time
+import random
 
 import openai
 from dotenv import load_dotenv
@@ -315,7 +316,6 @@ def request_to_gemini_chatcompletion(
 
     raise RuntimeError("Gemini API call failed after retries")
 
-
 def request_to_local_llm(
     messages: list[dict],
     model: str,
@@ -453,7 +453,6 @@ EMBDDING_MODELS = [
     "text-embedding-3-small",
 ]
 
-
 def _validate_model(model):
     if model not in EMBDDING_MODELS:
         raise RuntimeError(f"Invalid embedding model: {model}, available models: {EMBDDING_MODELS}")
@@ -524,7 +523,12 @@ def request_to_embed(
         return embeds
     elif provider == "gemini":
         logging.info("request_to_gemini_embed")
-        return request_to_gemini_embed(args, model, user_api_key)
+        # OpenAI名や未指定が来たら Gemini 既定に置き換える
+        openai_aliases = {"text-embedding-3-large", "text-embedding-3-small"}
+        resolved_model = model
+        if not resolved_model or resolved_model in openai_aliases:
+            resolved_model = "gemini-embedding-001"
+        return request_to_gemini_embed(args, resolved_model, user_api_key)
     elif provider == "openrouter":
         raise NotImplementedError("OpenRouter embedding support is not implemented yet")
     elif provider == "local":
