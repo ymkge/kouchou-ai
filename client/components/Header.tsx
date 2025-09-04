@@ -10,12 +10,14 @@ export function Header() {
   });
 
   return (
-    <HStack justify="space-between" py="5" mb={8} mx={"auto"} maxW={"1200px"}>
-      <Image
-        src={logoSrc}
-        alt="広聴AI"
-      />
-      <BroadlisteningGuide />
+    <HStack w="100%" p="6">
+      <HStack className={"container"} py="0" justifyContent="space-between" maxW="1200px" mx="auto" bg="white">
+        <Image
+          src={logoSrc}
+          alt="広聴AI"
+        />
+        <BroadlisteningGuide />
+     </HStack>
     </HStack>
   );
 }

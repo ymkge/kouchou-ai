@@ -60,7 +60,7 @@ export default async function Page() {
       <>
         <div className={"container"}>
           <Header />
-          <Box mx={"auto"} maxW={"1024px"} mb={10}>
+          <Box mx={"auto"} maxW={"1024px"} mb={10} mt="8">
             <Box mb="12">
               <Reporter meta={meta} />
             </Box>
