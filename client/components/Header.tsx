@@ -1,6 +1,5 @@
 "use client";
 
-import { BroadlisteningGuide } from "@/components/report/BroadlisteningGuide";
 import { HStack, Image, useBreakpointValue } from "@chakra-ui/react";
 
 export function Header() {
@@ -12,7 +11,6 @@ export function Header() {
   return (
     <HStack className="container" p="6" justifyContent="space-between" bg="white">
       <Image src={logoSrc} alt="広聴AI" />
-      <BroadlisteningGuide />
     </HStack>
   );
 }
