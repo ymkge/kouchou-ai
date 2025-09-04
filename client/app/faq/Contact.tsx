@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Box, HStack, Heading, Image, Text, VStack } from "@chakra-ui/react";
 import { ArrowUpRight } from "lucide-react";
 
-export default function Contact() {
+export function Contact() {
   return (
     <>
       <Heading textStyle="heading/2xl" pt="12" pb="6">

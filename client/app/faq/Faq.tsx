@@ -65,7 +65,7 @@ const faqs = [
   },
 ] as const;
 
-export default function Faq() {
+export function Faq() {
   return (
     <Box mt="8" color="font.primary">
       <Heading textStyle="heading/2xl" mb="12">

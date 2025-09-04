@@ -3,8 +3,8 @@ import { Header } from "@/components/Header";
 import type { Meta } from "@/type";
 import { Box } from "@chakra-ui/react";
 import { getApiBaseUrl } from "../utils/api";
-import Contact from "./Contact";
-import Faq from "./Faq";
+import { Contact } from "./Contact";
+import { Faq } from "./Faq";
 
 export default async function Page() {
   const metaResponse = await fetch(`${getApiBaseUrl()}/meta/metadata.json`, {
