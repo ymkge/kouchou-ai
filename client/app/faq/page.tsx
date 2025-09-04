@@ -3,6 +3,8 @@ import { Header } from "@/components/Header";
 import type { Meta } from "@/type";
 import { getApiBaseUrl } from "../utils/api";
 import { Box } from "@chakra-ui/react";
+import Faq from "./Faq";
+import Contact from "./Contact";
 
 export default async function Page() {
   const metaResponse = await fetch(`${getApiBaseUrl()}/meta/metadata.json`, {
@@ -13,7 +15,9 @@ export default async function Page() {
   return (
     <>
       <Header />
-      <Box className={"container"} bg="#EFF6FF">
+      <Box className={"container"} bg="#EFF6FF" pb="24">
+        <Faq />
+        <Contact />
       </Box>
       <Footer meta={meta} />
     </>
