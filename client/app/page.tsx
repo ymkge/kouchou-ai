@@ -58,8 +58,8 @@ export default async function Page() {
 
     return (
       <>
-        <div className={"container"}>
-          <Header />
+        <Header />
+        <Box className="container">
           <Box mx={"auto"} maxW={"1024px"} mb={10} mt="8">
             <Box mb="12">
               <Reporter meta={meta} />
@@ -103,7 +103,7 @@ export default async function Page() {
               ))
             )}
           </Box>
-        </div>
+        </Box>
         <Footer meta={meta} />
       </>
     );

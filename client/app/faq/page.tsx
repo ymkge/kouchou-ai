@@ -15,7 +15,7 @@ export default async function Page() {
   return (
     <>
       <Header />
-      <Box className={"container"} bg="#EFF6FF" pb="24">
+      <Box className="container" bg="#EFF6FF" pb="24">
         <Faq />
         <Contact />
       </Box>

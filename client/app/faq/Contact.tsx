@@ -13,7 +13,7 @@ export default function Contact() {
         bg="linear-gradient(241.3deg, #FDC7FD 17.69%, #ACFBFF 50.31%, #D9E0FF 82.31%)"
         borderRadius="2xl"
       >
-        <Box bg="white" borderRadius="2xl" p="8">
+        <Box bg="white" borderRadius="12px" p="8">
           <HStack gap="8">
             <Image w="45%" src="/images/contact-hello.webp" alt="" />
             <VStack alignItems="flex-start" gap="4">
