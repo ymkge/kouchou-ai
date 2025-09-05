@@ -1,6 +1,7 @@
 "use client";
 
 import { HStack, Image, useBreakpointValue } from "@chakra-ui/react";
+import { GlobalNavigation } from "./GlobalNavigation";
 
 export function Header() {
   const logoSrc = useBreakpointValue({
@@ -11,6 +12,7 @@ export function Header() {
   return (
     <HStack className="container" p="6" justifyContent="space-between" bg="white">
       <Image src={logoSrc} alt="広聴AI" />
+      <GlobalNavigation />
     </HStack>
   );
 }
