@@ -94,7 +94,7 @@ export function Faq() {
                     </Center>
                     <Text textStyle="body/lg/bold">{item.question}</Text>
                     <Accordion.ItemContext>
-                      {(context) => <Box ml="auto">{context.expanded ? <Plus /> : <Minus />}</Box>}
+                      {(context) => <Box ml="auto">{context.expanded ? <Minus /> : <Plus />}</Box>}
                     </Accordion.ItemContext>
                   </Accordion.ItemTrigger>
                   <Accordion.ItemContent>
