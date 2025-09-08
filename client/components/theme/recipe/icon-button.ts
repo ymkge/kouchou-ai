@@ -30,7 +30,7 @@ export const iconButtonRecipe = defineRecipe({
     _icon: {
       flexShrink: "0",
       w: "auto",
-      h: "auto"
+      h: "auto",
     },
   },
 

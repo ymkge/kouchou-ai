@@ -1,7 +1,7 @@
 import { Box } from "@chakra-ui/react";
+import { CircleHelp, Files } from "lucide-react";
 import { MdNavigation } from "./md/MdNavigation";
 import { SmNavigation } from "./sm/SmNavigation";
-import { CircleHelp, Files } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "レポート一覧", icon: <Files /> },
