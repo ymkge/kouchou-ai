@@ -71,16 +71,16 @@ export function Faq() {
       <Heading textStyle="heading/2xl" mb="12">
         よくあるご質問
       </Heading>
-      {faqs.map((faq, index) => (
-        <Box key={index} mt="8">
+      {faqs.map((faq) => (
+        <Box key={faq.title} mt="8">
           <Heading textStyle="heading/xl" mb="6">
             {faq.title}
           </Heading>
           <Box p="4" bg="white" borderRadius="sm">
             <Accordion.Root collapsible multiple>
-              {faq.items.map((item, index) => (
+              {faq.items.map((item) => (
                 <Accordion.Item
-                  key={index}
+                  key={item.question}
                   value={item.question}
                   bg="white"
                   p="4"
