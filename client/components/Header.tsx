@@ -12,7 +12,7 @@ export function Header() {
   return (
     <HStack
       className="container"
-      py="0"
+      py={{ base: 4, md: 0 }}
       px="6"
       justifyContent="space-between"
       alignItems="center"
