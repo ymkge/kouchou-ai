@@ -861,9 +861,17 @@ class TestLLMService:
         google_module = types.ModuleType("google")
         google_module.generativeai = genai_module
 
+        google_excs = types.SimpleNamespace(
+            Unauthenticated=Exception,
+            InvalidArgument=Exception,
+            GoogleAPICallError=Exception,
+            ResourceExhausted=Exception,
+        )
+
         env_vars = {"GEMINI_API_KEY": "test-api-key"}
-        with patch.dict(sys.modules, {"google": google_module, "google.generativeai": genai_module}):
-            with patch.dict(os.environ, env_vars):
+        with patch.dict(os.environ, env_vars):
+            with patch("broadlistening.pipeline.services.llm.genai", genai_module), \
+                 patch("broadlistening.pipeline.services.llm.google_exceptions", google_excs):
                 with pytest.raises(RateLimitError):
                     request_to_chat_ai(messages=messages, model=model, provider="gemini")
 
