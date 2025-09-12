@@ -796,16 +796,20 @@ class TestLLMService:
         generative_model_mock = MagicMock(return_value=gen_model_instance)
         genai_module.configure = configure_mock
         genai_module.GenerativeModel = generative_model_mock
-        google_module = types.ModuleType("google")
-        google_module.generativeai = genai_module
 
+        google_excs = types.SimpleNamespace(
+            Unauthenticated=Exception,
+            InvalidArgument=Exception,
+            GoogleAPICallError=Exception,
+            ResourceExhausted=Exception,
+        )
+        
         env_vars = {"GEMINI_API_KEY": "test-api-key"}
-        with patch.dict(sys.modules, {"google": google_module, "google.generativeai": genai_module}):
-            with patch.dict(os.environ, env_vars):
+        with patch.dict(os.environ, env_vars):
+            with patch("broadlistening.pipeline.services.llm.genai", genai_module), \
+                patch("broadlistening.pipeline.services.llm.google_exceptions", google_excs):
                 response, token_input, token_output, token_total = request_to_chat_ai(
-                    messages=messages,
-                    model=model,
-                    provider="gemini",
+                    messages=messages, model=model, provider="gemini"
                 )
 
         assert response == "Hi! How can I help you today?"
@@ -814,15 +818,15 @@ class TestLLMService:
         assert token_total == 30
         configure_mock.assert_called_once_with(api_key="test-api-key")
         expected_messages = [
-            {"role": "system", "parts": ["You are a helpful assistant."]},
             {"role": "user", "parts": ["Hello!"]},
         ]
-        generative_model_mock.assert_called_once_with(model)
-        gen_model_instance.generate_content.assert_called_once_with(
-            expected_messages,
-            generation_config=None,
+        generative_model_mock.assert_called_once_with(
+            model, system_instruction="You are a helpful assistant."
         )
-
+        args, kwargs = gen_model_instance.generate_content.call_args
+        assert args[0] == expected_messages
+        assert kwargs.get("generation_config") is None
+        
     def test_request_to_chat_ai_use_gemini_without_env(self):
         """Geminiの環境変数が設定されていない場合のテスト"""
         messages = [
