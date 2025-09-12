@@ -197,6 +197,8 @@ def request_to_gemini_chatcompletion(
         raise RuntimeError("google-generativeai is required for Gemini provider")
 
     api_key = user_api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY environment variable is not set")
     genai.configure(api_key=api_key)
 
     system_instruction = "\n".join(
