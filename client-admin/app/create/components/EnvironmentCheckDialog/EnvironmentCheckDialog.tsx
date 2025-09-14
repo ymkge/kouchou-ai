@@ -16,10 +16,15 @@ import { SquareArrowOutUpRight } from "lucide-react";
 import { startTransition, useActionState, useState } from "react";
 import { ErrorIcon } from "./ErrorIcon";
 import { GradientCheckIcon } from "./GradientCheckIcon";
-import { verifyChatGptApiKey } from "./verifyChatGptApiKey";
+import { verifyApiKey } from "./verifyApiKey";
+import { useAISettings } from "../../hooks/useAISettings";
 
 function Dialog() {
-  const [state, action, isPending] = useActionState(verifyChatGptApiKey, { result: null, error: false });
+  const { provider } = useAISettings();
+  const [state, action, isPending] = useActionState(verifyApiKey.bind(null, provider), {
+    result: null,
+    error: false,
+  });
 
   return (
     <>

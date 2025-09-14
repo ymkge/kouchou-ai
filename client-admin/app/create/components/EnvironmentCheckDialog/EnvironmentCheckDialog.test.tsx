@@ -3,16 +3,22 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { EnvironmentCheckDialog } from "./EnvironmentCheckDialog";
-import { verifyChatGptApiKey } from "./verifyChatGptApiKey";
+import { verifyApiKey } from "./verifyApiKey";
+import { useAISettings } from "../../hooks/useAISettings";
 
 // test時のimportエラーを防止するために、lucide-reactをモック化
 jest.mock("lucide-react", () => ({
   SquareArrowOutUpRight: () => <div data-testid="arrow-icon" />,
 }));
 
-// verifyChatGptApiKeyをモック化
-jest.mock("./verifyChatGptApiKey");
-const mockVerifyChatGptApiKey = verifyChatGptApiKey as jest.MockedFunction<typeof verifyChatGptApiKey>;
+// verifyApiKeyをモック化
+jest.mock("./verifyApiKey");
+const mockVerifyApiKey = verifyApiKey as jest.MockedFunction<typeof verifyApiKey>;
+
+// useAISettingsをモック化
+jest.mock("../../hooks/useAISettings");
+const mockUseAISettings = useAISettings as jest.MockedFunction<typeof useAISettings>;
+mockUseAISettings.mockReturnValue({ provider: "openai" } as any);
 
 // crypto.randomUUIDをモック化
 const mockUUID = "test-uuid-123";
@@ -43,7 +49,7 @@ describe("EnvironmentCheckDialog", () => {
   });
 
   it("トリガーボタンをクリックすると初期状態のダイアログが開く", async () => {
-    mockVerifyChatGptApiKey.mockResolvedValue({ result: null, error: false });
+    mockVerifyApiKey.mockResolvedValue({ result: null, error: false });
 
     render(
       <TestWrapper>
@@ -58,7 +64,7 @@ describe("EnvironmentCheckDialog", () => {
   });
 
   it("チェックボタンをクリックするとAPIが呼び出される", async () => {
-    mockVerifyChatGptApiKey.mockResolvedValue({ result: null, error: false });
+    mockVerifyApiKey.mockResolvedValue({ result: null, error: false });
 
     render(
       <TestWrapper>
@@ -72,12 +78,33 @@ describe("EnvironmentCheckDialog", () => {
     userEvent.click(checkButton);
 
     await waitFor(() => {
-      expect(mockVerifyChatGptApiKey).toHaveBeenCalledTimes(1);
+      expect(mockVerifyApiKey).toHaveBeenCalledTimes(1);
+      expect(mockVerifyApiKey).toHaveBeenCalledWith("openai");
+    });
+  });
+
+  it("Geminiが選択されている場合、対応するプロバイダーでAPIが呼び出される", async () => {
+    mockVerifyApiKey.mockResolvedValue({ result: null, error: false });
+    mockUseAISettings.mockReturnValue({ provider: "gemini" } as any);
+
+    render(
+      <TestWrapper>
+        <EnvironmentCheckDialog />
+      </TestWrapper>,
+    );
+
+    userEvent.click(screen.getByRole("button", { name: /API接続チェック/i }));
+
+    const checkButton = await screen.findByRole("button", { name: "チェックする" });
+    userEvent.click(checkButton);
+
+    await waitFor(() => {
+      expect(mockVerifyApiKey).toHaveBeenCalledWith("gemini");
     });
   });
 
   it("API接続が成功した場合に成功メッセージが表示される", async () => {
-    mockVerifyChatGptApiKey.mockResolvedValue({
+    mockVerifyApiKey.mockResolvedValue({
       result: {
         success: true,
         message: "接続成功",
@@ -103,7 +130,7 @@ describe("EnvironmentCheckDialog", () => {
   });
 
   it("認証エラーの場合にエラーメッセージが表示される", async () => {
-    mockVerifyChatGptApiKey.mockResolvedValue({
+    mockVerifyApiKey.mockResolvedValue({
       result: {
         success: false,
         message: "認証エラー",
@@ -133,7 +160,7 @@ describe("EnvironmentCheckDialog", () => {
   });
 
   it("クォータ不足エラーの場合にエラーメッセージが表示される", async () => {
-    mockVerifyChatGptApiKey.mockResolvedValue({
+    mockVerifyApiKey.mockResolvedValue({
       result: {
         success: false,
         message: "クォータ不足",
@@ -159,7 +186,7 @@ describe("EnvironmentCheckDialog", () => {
   });
 
   it("レート制限エラーの場合にエラーメッセージが表示される", async () => {
-    mockVerifyChatGptApiKey.mockResolvedValue({
+    mockVerifyApiKey.mockResolvedValue({
       result: {
         success: false,
         message: "レート制限",
@@ -187,7 +214,7 @@ describe("EnvironmentCheckDialog", () => {
   });
 
   it("不明なエラーの場合にエラーメッセージが表示される", async () => {
-    mockVerifyChatGptApiKey.mockResolvedValue({
+    mockVerifyApiKey.mockResolvedValue({
       result: {
         success: false,
         message: "不明なエラー",
@@ -238,7 +265,9 @@ describe("EnvironmentCheckDialog", () => {
     const pendingPromise = new Promise<{ result: null; error: boolean }>((resolve) => {
       resolvePromise = resolve;
     });
-    mockVerifyChatGptApiKey.mockReturnValue(pendingPromise);
+    mockVerifyApiKey.mockReturnValue(pendingPromise);
+
+    mockUseAISettings.mockReturnValue({ provider: "openai" } as any);
 
     render(
       <TestWrapper>
