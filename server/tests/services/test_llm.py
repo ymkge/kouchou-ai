@@ -12,6 +12,7 @@ from broadlistening.pipeline.services.llm import (
     request_to_chat_ai,
     request_to_embed,  # noqa: F401
     request_to_openai,
+    extract_embedding_values,
 )
 from openai import AzureOpenAI  # noqa: F401
 from pydantic import BaseModel, Field
@@ -901,3 +902,67 @@ class TestLLMService:
         assert embed_content_mock.call_count == 2
         embed_content_mock.assert_any_call(model=model, content="hello")
         embed_content_mock.assert_any_call(model=model, content="world")
+
+    def test_extract_embedding_values_genai_object(self):
+        """extract_embedding_values: genai SDKオブジェクト（response.embedding.values）を抽出できる"""
+        emb_obj = MagicMock()
+        emb_obj.values = [0.1, 0.2, 0.3]
+        response = MagicMock()
+        response.embedding = emb_obj
+
+        values = extract_embedding_values(response)
+        assert values == [0.1, 0.2, 0.3]
+
+    def test_extract_embedding_values_gemini_single_dict(self):
+        """extract_embedding_values: dict形式（{'embedding': {'values': [...]}}）を抽出できる"""
+        response = {"embedding": {"values": [0.4, 0.5, 0.6]}}
+        values = extract_embedding_values(response)
+        assert values == [0.4, 0.5, 0.6]
+
+    def test_extract_embedding_values_gemini_batch(self):
+        """extract_embedding_values: バッチ形式（{'embeddings': [{'values': [...]}, ...]}）の先頭を抽出できる"""
+        response = {"embeddings": [{"values": [0.7, 0.8]}, {"values": [0.9]}]}
+        values = extract_embedding_values(response)
+        assert values == [0.7, 0.8]
+
+    def test_extract_embedding_values_openai_compatible(self):
+        """extract_embedding_values: OpenAI互換（{'data': [{'embedding': [...]}]}）を抽出できる"""
+        response = {"data": [{"embedding": [1.0, 1.1, 1.2]}]}
+        values = extract_embedding_values(response)
+        assert values == [1.0, 1.1, 1.2]
+
+    def test_extract_embedding_values_vertex_predictions(self):
+        """extract_embedding_values: Vertex AI風（{'predictions': [{'embeddings': {'values': [...]}}]}）を抽出できる"""
+        response = {"predictions": [{"embeddings": {"values": [2.1, 2.2, 2.3]}}]}
+        values = extract_embedding_values(response)
+        assert values == [2.1, 2.2, 2.3]
+
+    def test_extract_embedding_values_vertex_predictions_alt_key(self):
+        """extract_embedding_values: Vertex AI風で 'embedding' キーでも抽出できる"""
+        response = {"predictions": [{"embedding": {"values": [3.1, 3.2]}}]}
+        values = extract_embedding_values(response)
+        assert values == [3.1, 3.2]
+
+    def test_extract_embedding_values_missing_returns_none(self):
+        """extract_embedding_values: 既知のスキーマに当てはまらない場合は None を返す"""
+        response = {"foo": "bar"}  # 不明な形
+        values = extract_embedding_values(response)
+        assert values is None
+
+    def test_extract_embedding_values_emb_present_but_no_values(self):
+        """extract_embedding_values: 'embedding' はあっても 'values' が無い場合は None"""
+        response = {"embedding": {"not_values": [9.9]}}
+        values = extract_embedding_values(response)
+        assert values is None
+
+    def test_extract_embedding_values_embeddings_empty_list(self):
+        """extract_embedding_values: 'embeddings' が空配列の場合は None"""
+        response = {"embeddings": []}
+        values = extract_embedding_values(response)
+        assert values is None
+
+    def test_extract_embedding_values_openai_data_empty(self):
+        """extract_embedding_values: 'data' が空配列の場合は None"""
+        response = {"data": []}
+        values = extract_embedding_values(response)
+        assert values is None

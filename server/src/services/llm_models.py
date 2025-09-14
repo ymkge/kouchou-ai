@@ -72,10 +72,11 @@ async def get_gemini_models() -> list[dict[str, str]]:
 
             return [
                 {
-                    "value": model.get("name", ""),
-                    "label": model.get("displayName", model.get("name", "")),
+                    "value": (model.get("name", "") or "").removeprefix("models/"),
+                    "label": model.get("displayName", (model.get("name", "") or "").removeprefix("models/")),
                 }
                 for model in data["models"]
+                if "generateContent" in (model.get("supportedGenerationMethods") or [])
             ]
     except Exception as e:
         slogger.error(f"Error fetching Gemini models: {e}")

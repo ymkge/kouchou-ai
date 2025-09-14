@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from openai import AzureOpenAI, OpenAI
 from pydantic import BaseModel
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from typing import Any, List, Optional
 
 try:  # Optional dependency
     import google.generativeai as genai
@@ -196,7 +197,7 @@ def request_to_gemini_chatcompletion(
     if genai is None or google_exceptions is None:  # pragma: no cover - optional dependency
         raise RuntimeError("google-generativeai is required for Gemini provider")
 
-    api_key = user_api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+    api_key = user_api_key or os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY environment variable is not set")
     genai.configure(api_key=api_key)
@@ -219,15 +220,11 @@ def request_to_gemini_chatcompletion(
     )
 
     def _remove_title_keys(obj: dict | list) -> dict | list:
-        """Recursively remove `title` keys from JSON schema objects."""
-
+        """Recursively remove `title` keys from JSON schema objects (non-destructive)."""
         if isinstance(obj, dict):
-            obj.pop("title", None)
-            for value in obj.values():
-                _remove_title_keys(value)
-        elif isinstance(obj, list):
-            for item in obj:
-                _remove_title_keys(item)
+            return {k: _remove_title_keys(v) for k, v in obj.items() if k != "title"}
+        if isinstance(obj, list):
+            return [_remove_title_keys(item) for item in obj]
         return obj
     
     def _normalize_openai_response_format(schema: dict | None) -> tuple[dict | None, bool]:
@@ -352,8 +349,7 @@ def request_to_gemini_chatcompletion(
             if not is_rate_limit:
                 logging.error(f"Gemini API error: {e}")
                 raise
-
-            last_exc = e
+            
             retry_delay: int | str | None = getattr(e, "retry_delay", None)
             response_data = getattr(e, "response", None)
             if retry_delay is None and isinstance(response_data, dict):
@@ -373,17 +369,18 @@ def request_to_gemini_chatcompletion(
                 wait_time = 0
 
             if wait_time <= 0:
-                wait_time = int((base_wait * (2 ** attempt)) * (0.5 + random.random()))
-                wait_time = min(wait_time, 60)
-
-            last_wait = wait_time
+                # ジッターを含む指数バックオフ: base * 2^attempt * (0.5 ~ 1.5)
+                jitter = 0.5 + random.random()  # 0.5 ~ 1.5 の範囲
+                wait_time = min(int(base_wait * (2 ** attempt) * jitter), 60)
 
             if attempt >= max_retries - 1:
                 logging.error(
-                    "Gemini API rate limit exceeded repeatedly. Free tier allows 15 requests per minute per model. Consider upgrading to a paid plan."
+                    f"Gemini API rate limit exceeded repeatedly after {max_retries} attempts. "
+                    f"Error: {e}. Free tier allows 15 requests per minute per model. "
+                    "Consider upgrading to a paid plan."
                 )
                 raise
-
+            logging.info(f"Rate limit hit, retrying after {wait_time} seconds (attempt {attempt + 1}/{max_retries})")       
             time.sleep(wait_time)
 
     raise RuntimeError("Gemini API call failed after retries")
@@ -500,7 +497,6 @@ def request_to_chat_ai(
         - provider="openai": OpenAI APIを使用
         - provider="azure": Azure OpenAI APIを使用
         - provider="local": ローカルLLM（OllamaやLM Studio）を使用
-        - provider="gemini": Google Gemini APIを使用
         - provider="openrouter": OpenRouter APIを使用（OpenAIやGeminiのモデルにアクセス可能）
         - provider="gemini": Google Gemini APIを使用
     """
@@ -609,6 +605,51 @@ def request_to_embed(
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
+def extract_embedding_values(response: Any) -> Optional[List[float]]:
+    # 1) genai オブジェクト系
+    emb_obj = getattr(response, "embedding", None)
+    if emb_obj is not None:
+        # オブジェクトに values 属性
+        vals = getattr(emb_obj, "values", None)
+        if isinstance(vals, list):
+            return vals
+        # ★ 追加: 直接リストのケース（embedding がそのまま list）
+        if isinstance(emb_obj, list):
+            return emb_obj
+
+    # 2) dict 系
+    if isinstance(response, dict):
+        emb = response.get("embedding")
+        # {"embedding": {"values": [...]}}
+        if isinstance(emb, dict) and isinstance(emb.get("values"), list):
+            return emb["values"]
+        # ★ 追加: {"embedding": [...]}
+        if isinstance(emb, list):
+            return emb
+
+        # {"embeddings": [{"values": [...]}, ...]}
+        if isinstance(response.get("embeddings"), list):
+            first = response["embeddings"][0] if response["embeddings"] else None
+            if isinstance(first, dict) and isinstance(first.get("values"), list):
+                return first["values"]
+
+        # OpenAI 互換: {"data": [{"embedding": [...]}]}
+        if isinstance(response.get("data"), list):
+            item = response["data"][0] if response["data"] else None
+            if isinstance(item, dict) and isinstance(item.get("embedding"), list):
+                return item["embedding"]
+
+        # Vertex: {"predictions": [{"embeddings": {"values": [...]}}]} など
+        if isinstance(response.get("predictions"), list):
+            pred = response["predictions"][0] if response["predictions"] else None
+            if isinstance(pred, dict):
+                for key in ("embedding", "embeddings"):
+                    v = pred.get(key)
+                    if isinstance(v, dict) and isinstance(v.get("values"), list):
+                        return v["values"]
+
+    return None
+
 
 def request_to_gemini_embed(args, model, user_api_key: str | None = None):
     if genai is None:
@@ -626,12 +667,15 @@ def request_to_gemini_embed(args, model, user_api_key: str | None = None):
     embeds: list[list[float]] = []
     for text in args:
         response = genai.embed_content(model=model, content=text)
-        embedding = (
-            response["embedding"]
-            if isinstance(response, dict)
-            else getattr(response, "embedding", None)
-        )
-        embeds.append(embedding)
+        values = extract_embedding_values(response)
+        if not isinstance(values, list):
+            # ここでキー一覧などをログに残すと調査が楽
+            keys = list(response.keys()) if isinstance(response, dict) else type(response).__name__
+            raise RuntimeError(
+                f"Gemini embedding response did not contain a 'values' list for text: {text[:50]}... "
+                f"(shape={keys})"
+            )
+        embeds.append(values)
 
     return embeds
 

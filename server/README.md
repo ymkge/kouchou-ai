@@ -27,7 +27,7 @@ cp .env.example .env
 
 ※ APIキーは他人と共有しないでください。GithubやSlackにもアップロードしないよう注意してください。  
 ※ このキーを設定しなくてもサーバーは起動しますが、/admin/reportsなど一部のエンドポイントでエラーになります。  
-※ APIキーを設定してレポート作成などを行うと、OpenAI APIまたはOpenRouter APIの使用料金が発生します。料金は各サービスの公式ドキュメントを参照してください。  
+※ APIキーを設定してレポート作成などを行うと、OpenAI API、Gemini API、またはOpenRouter経由の各APIの使用料金が発生します。
 ※ OpenAI APIまたはOpenRouter APIを使用しない機能は無料で利用できます（通常のインターネット利用の通信料等は除く）。
 
 ## 起動

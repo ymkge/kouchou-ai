@@ -24,9 +24,9 @@ class LLMPricing:
             "google/gemini-2.5-pro-preview": {"input": 1.25, "output": 10.00},
         },
         "gemini": {
+            "gemini-2.5-flash": {"input": 0.35, "output": 1.05},
             "gemini-1.5-flash": {"input": 0.35, "output": 1.05},
             "gemini-1.5-pro": {"input": 3.50, "output": 10.50},
-            # 価格情報未定のためDEFAULT_PRICEを利用
             "gemini-2.5-pro-preview": DEFAULT_PRICE,
         },
     }
