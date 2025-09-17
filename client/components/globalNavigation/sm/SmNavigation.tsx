@@ -1,6 +1,7 @@
 import { CloseButton } from "@/components/ui/close-button";
 import { DrawerBody, Flex, Icon, Link, Portal, Text, VStack } from "@chakra-ui/react";
 import { Menu, X } from "lucide-react";
+import NextLink from "next/link";
 import {
   DrawerBackdrop,
   DrawerCloseTrigger,
@@ -33,13 +34,15 @@ export function SmNavigation({ navItems }: Props) {
             <DrawerBody>
               <VStack alignItems="start" gap="6">
                 {navItems.map((item) => (
-                  <Link key={item.href} href={item.href}>
-                    <Flex gap="3" alignItems="center">
-                      <Icon color="font.link" w="8" h="8">
-                        {item.icon}
-                      </Icon>
-                      <Text textStyle="body/md/bold">{item.label}</Text>
-                    </Flex>
+                  <Link key={item.href} asChild>
+                    <NextLink href={item.href}>
+                      <Flex gap="3" alignItems="center">
+                        <Icon color="font.link" w="8" h="8">
+                          {item.icon}
+                        </Icon>
+                        <Text textStyle="body/md/bold">{item.label}</Text>
+                      </Flex>
+                    </NextLink>
                   </Link>
                 ))}
               </VStack>
