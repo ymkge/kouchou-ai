@@ -15,7 +15,7 @@ export function Contact() {
       >
         <Box bg="white" borderRadius="12px" p="8">
           <Flex gap="8" flexDirection={{ base: "column-reverse", lg: "row" }} alignItems="center">
-            <Image maxW="440px" src="/images/contact-hello.webp" alt="" />
+            <Image maxW={{ base: "auto", md: "440px" }} src="/images/contact-hello.webp" alt="" />
             <VStack alignItems={{ base: "center", lg: "flex-start" }} gap="4">
               <Text textStyle="body/md">
                 このページで解決できなかった内容や、その他のご質問がございましたら、
@@ -23,7 +23,8 @@ export function Contact() {
               </Text>
               <Button variant="secondary" size="md" asChild>
                 <a href="https://dd2030.slack.com" target="_blank" rel="noopener noreferrer">
-                  slackコミュニティで質問する
+                  <Box hideFrom="md">コミュニティで質問する</Box>
+                  <Box hideBelow="md">slackコミュニティで質問する</Box>
                   <ArrowUpRight />
                 </a>
               </Button>
