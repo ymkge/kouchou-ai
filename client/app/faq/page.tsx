@@ -16,8 +16,10 @@ export default async function Page() {
     <>
       <Header />
       <Box className="container" bg="#EFF6FF" pb="24">
-        <Faq />
-        <Contact />
+        <Box mx="auto" maxW="1024px">
+          <Faq />
+          <Contact />
+        </Box>
       </Box>
       <Footer meta={meta} />
     </>

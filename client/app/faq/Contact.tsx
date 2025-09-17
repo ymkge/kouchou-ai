@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Box, HStack, Heading, Image, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, Heading, Image, Text, VStack } from "@chakra-ui/react";
 import { ArrowUpRight } from "lucide-react";
 
 export function Contact() {
@@ -14,9 +14,9 @@ export function Contact() {
         borderRadius="2xl"
       >
         <Box bg="white" borderRadius="12px" p="8">
-          <HStack gap="8">
-            <Image w="45%" src="/images/contact-hello.webp" alt="" />
-            <VStack alignItems="flex-start" gap="4">
+          <Flex gap="8" flexDirection={{ base: "column-reverse", lg: "row" }} alignItems="center">
+            <Image maxW="440px" src="/images/contact-hello.webp" alt="" />
+            <VStack alignItems={{ base: "center", lg: "flex-start" }} gap="4">
               <Text textStyle="body/md">
                 このページで解決できなかった内容や、その他のご質問がございましたら、
                 デジタル民主主義2030のslackコミュニティのチャンネル「#6_ホストユーザー相談」でお気軽にお声がけください。チーム一同、迅速にサポートいたします。
@@ -28,7 +28,7 @@ export function Contact() {
                 </a>
               </Button>
             </VStack>
-          </HStack>
+          </Flex>
         </Box>
       </Box>
     </>
