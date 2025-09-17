@@ -25,7 +25,7 @@ export function NavItem({ href, label, icon }: Props) {
         color: !isActive ? "font.link" : "currentcolor",
       }}
     >
-      <Link asChild>
+      <Link asChild aria-current={isActive ? "page" : undefined}>
         <NextLink href={href}>
           <VStack>
             {icon}
