@@ -13,7 +13,7 @@ export function Contact() {
         bg="linear-gradient(241.3deg, #FDC7FD 17.69%, #ACFBFF 50.31%, #D9E0FF 82.31%)"
         borderRadius="2xl"
       >
-        <Box bg="white" borderRadius="12px" p="8">
+        <Box bg="white" borderRadius="12px" p={{ base: "6", md: "8" }}>
           <Flex gap="8" flexDirection={{ base: "column-reverse", lg: "row" }} alignItems="center">
             <Image maxW={{ base: "auto", md: "440px" }} src="/images/contact-hello.webp" alt="" />
             <VStack alignItems={{ base: "center", lg: "flex-start" }} gap="4">
