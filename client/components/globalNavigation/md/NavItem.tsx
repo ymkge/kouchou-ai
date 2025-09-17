@@ -1,6 +1,7 @@
 "use client";
 
-import { Box, Text, VStack } from "@chakra-ui/react";
+import { Box, Link, Text, VStack } from "@chakra-ui/react";
+import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 
 type Props = {
@@ -24,12 +25,14 @@ export function NavItem({ href, label, icon }: Props) {
         color: !isActive ? "font.link" : "currentcolor",
       }}
     >
-      <a href={href}>
-        <VStack>
-          {icon}
-          <Text textStyle="body/sm">{label}</Text>
-        </VStack>
-      </a>
+      <Link asChild>
+        <NextLink href={href}>
+          <VStack>
+            {icon}
+            <Text textStyle="body/sm">{label}</Text>
+          </VStack>
+        </NextLink>
+      </Link>
     </Box>
   );
 }
