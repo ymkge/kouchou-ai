@@ -21,7 +21,7 @@ export function SmNavigation({ navItems }: Props) {
   return (
     <DrawerRoot>
       <DrawerTrigger asChild>
-        <IconButton variant="ghost" size="xl" hideFrom="md">
+        <IconButton variant="ghost" size="xl" hideFrom="md" aria-label="メニューを開く">
           <Menu size="32px" />
         </IconButton>
       </DrawerTrigger>
