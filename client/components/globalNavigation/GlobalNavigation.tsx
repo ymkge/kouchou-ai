@@ -13,7 +13,7 @@ export type NavItems = typeof navItems;
 export function GlobalNavigation() {
   return (
     <>
-      <Box hideFrom="md">
+      <Box hideFrom="md" py="2">
         <SmNavigation navItems={navItems} />
       </Box>
       <Box hideBelow="md">
