@@ -11,7 +11,8 @@ type Props = {
 
 export function NavItem({ href, label, icon }: Props) {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  const normalize = (p: string) => p.replace(/\/+$/, "");
+  const isActive = normalize(pathname ?? "") === normalize(href);
 
   return (
     <Box

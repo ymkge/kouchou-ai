@@ -5,7 +5,7 @@ import { SmNavigation } from "./sm/SmNavigation";
 
 const navItems = [
   { href: "/", label: "レポート一覧", icon: <Files /> },
-  { href: "/faq/", label: "よくあるご質問", icon: <CircleHelp /> },
+  { href: "/faq", label: "よくあるご質問", icon: <CircleHelp /> },
 ] as const;
 
 export type NavItem = typeof navItems;
