@@ -83,18 +83,23 @@ export function Faq() {
                   key={item.question}
                   value={item.question}
                   bg="white"
-                  p="4"
+                  py="4"
+                  px={{ base: 0, md: 4 }}
                   _last={{
                     borderBottom: "none",
                   }}
                 >
-                  <Accordion.ItemTrigger gap="4">
-                    <Center fontWeight="bold" fontSize="xl" w="40px" h="40px" bg="#A1A1AA" color="white">
+                  <Accordion.ItemTrigger gap="4" alignItems="flex-start">
+                    <Center fontWeight="bold" fontSize="xl" w="40px" h="40px" bg="#A1A1AA" color="white" flexShrink="0">
                       Q
                     </Center>
                     <Text textStyle="body/lg/bold">{item.question}</Text>
                     <Accordion.ItemContext>
-                      {(context) => <Box ml="auto">{context.expanded ? <Minus /> : <Plus />}</Box>}
+                      {(context) => (
+                        <Center ml="auto" h="40px">
+                          {context.expanded ? <Minus /> : <Plus />}
+                        </Center>
+                      )}
                     </Accordion.ItemContext>
                   </Accordion.ItemTrigger>
                   <Accordion.ItemContent>
