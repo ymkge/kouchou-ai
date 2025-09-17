@@ -32,7 +32,7 @@ export const semanticTokens = {
       processing: { value: "{colors.purple.50}" },
     },
     border: {
-      default: { value: "{colors.blackalpha.500}" },
+      default: { value: "{colors.blackAlpha.500}" },
       weak: { value: "{colors.blackAlpha.300}" },
       public: { value: "{colors.green.200}" },
       limitedPublic: { value: "{colors.yellow.300}" },
