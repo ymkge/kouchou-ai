@@ -11,10 +11,10 @@ import {
   DrawerTrigger,
 } from "../../ui/drawer";
 import { IconButton } from "../../ui/icon-button";
-import type { NavItem } from "../GlobalNavigation";
+import type { NavItems } from "../GlobalNavigation";
 
 type Props = {
-  navItems: NavItem;
+  navItems: NavItems;
 };
 
 export function SmNavigation({ navItems }: Props) {

@@ -8,7 +8,7 @@ const navItems = [
   { href: "/faq", label: "よくあるご質問", icon: <CircleHelp /> },
 ] as const;
 
-export type NavItem = typeof navItems;
+export type NavItems = typeof navItems;
 
 export function GlobalNavigation() {
   return (

@@ -1,9 +1,9 @@
 import { HStack } from "@chakra-ui/react";
-import type { NavItem as TNavItem } from "../GlobalNavigation";
+import type { NavItems } from "../GlobalNavigation";
 import { NavItem } from "./NavItem";
 
 type Props = {
-  navItems: TNavItem;
+  navItems: NavItems;
 };
 
 export function MdNavigation({ navItems }: Props) {
