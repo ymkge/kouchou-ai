@@ -123,7 +123,7 @@ export default async function Page({ params }: PageProps) {
   return (
     <>
       <Header />
-      <Box className={"container"}>
+      <Box className="container" mt="8">
         <Overview result={result} />
         <ClientContainer result={result} />
         <Analysis result={result} />
