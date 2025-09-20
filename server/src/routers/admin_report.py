@@ -288,7 +288,7 @@ async def verify_api_key(
             "openai": "gpt-4o-mini",
             "azure": "gpt-4o-mini",
             "openrouter": "openai/gpt-4o-mini-2024-07-18",
-            "gemini": "gemini-pro",
+            "gemini": "gemini-2.5-flash",
         }
         model = model_map.get(provider, "gpt-4o-mini")
 

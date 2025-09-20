@@ -779,7 +779,7 @@ class TestLLMService:
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "Hello!"},
         ]
-        model = "gemini-pro"
+        model = "gemini-2.5-flash"
 
         # google.generativeai モジュールをモック化
         genai_module = types.ModuleType("google.generativeai")
@@ -833,7 +833,7 @@ class TestLLMService:
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "Hello!"},
         ]
-        model = "gemini-pro"
+        model = "gemini-2.5-flash"
 
         with patch.dict(os.environ, {}, clear=True):
             with pytest.raises(RuntimeError) as excinfo:
@@ -846,7 +846,7 @@ class TestLLMService:
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "Hello!"},
         ]
-        model = "gemini-pro"
+        model = "gemini-2.5-flash"
 
         genai_module = types.ModuleType("google.generativeai")
         configure_mock = MagicMock()
