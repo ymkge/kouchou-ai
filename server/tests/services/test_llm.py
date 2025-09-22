@@ -751,7 +751,7 @@ class TestLLMService:
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "Hello"},
         ]
-        
+
         with patch.dict(os.environ, {}, clear=True):
             with pytest.raises(RuntimeError) as excinfo:
                 request_to_azure_chatcompletion(messages)

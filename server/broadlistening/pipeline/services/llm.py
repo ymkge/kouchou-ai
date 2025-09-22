@@ -103,7 +103,7 @@ def request_to_azure_chatcompletion(
     deployment = os.getenv("AZURE_CHATCOMPLETION_DEPLOYMENT_NAME")
     api_key = user_api_key or os.getenv("AZURE_CHATCOMPLETION_API_KEY")
     api_version = os.getenv("AZURE_CHATCOMPLETION_VERSION")
-    
+
     missing_vars = []
     if not azure_endpoint:
         missing_vars.append("AZURE_CHATCOMPLETION_ENDPOINT")
@@ -113,14 +113,14 @@ def request_to_azure_chatcompletion(
         missing_vars.append("AZURE_CHATCOMPLETION_API_KEY")
     if not api_version:
         missing_vars.append("AZURE_CHATCOMPLETION_VERSION")
-    
+
     if missing_vars:
         raise RuntimeError(
             f"Azure OpenAI environment variables not set: {', '.join(missing_vars)}. "
             f"Note: Use AZURE_CHATCOMPLETION_* variables, not AZURE_OPENAI_*. "
             f"See .env.example for correct variable names."
         )
-    
+
     token_usage_input = 0  # 入力トークン使用量を追跡する変数
     token_usage_output = 0  # 出力トークン使用量を追跡する変数
     token_usage_total = 0  # 合計トークン使用量を追跡する変数
@@ -417,7 +417,7 @@ def request_to_azure_embed(args, model, user_api_key: str | None = None):
         missing_vars.append("AZURE_EMBEDDING_VERSION")
     if not deployment:
         missing_vars.append("AZURE_EMBEDDING_DEPLOYMENT_NAME")
-    
+
     if missing_vars:
         raise RuntimeError(
             f"Azure OpenAI embedding environment variables not set: {', '.join(missing_vars)}. "
