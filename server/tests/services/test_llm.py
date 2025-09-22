@@ -745,6 +745,37 @@ class TestLLMService:
                 request_to_chat_ai(messages=messages, model=model, provider="openrouter")
             assert "OPENROUTER_API_KEY environment variable is not set" in str(excinfo.value)
 
+    def test_request_to_azure_chatcompletion_missing_environment_variables(self):
+        """Azure OpenAI: 環境変数が不足している場合はRuntimeErrorを発生させる"""
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello"},
+        ]
+        
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(RuntimeError) as excinfo:
+                request_to_azure_chatcompletion(messages)
+            error_message = str(excinfo.value)
+            assert "Azure OpenAI environment variables not set" in error_message
+            assert "AZURE_CHATCOMPLETION_ENDPOINT" in error_message
+            assert "AZURE_CHATCOMPLETION_DEPLOYMENT_NAME" in error_message
+            assert "AZURE_CHATCOMPLETION_API_KEY" in error_message
+            assert "AZURE_CHATCOMPLETION_VERSION" in error_message
+            assert "Use AZURE_CHATCOMPLETION_* variables, not AZURE_OPENAI_*" in error_message
+
+    def test_request_to_azure_embed_missing_environment_variables(self):
+        """Azure OpenAI embedding: 環境変数が不足している場合はRuntimeErrorを発生させる"""
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(RuntimeError) as excinfo:
+                request_to_azure_embed(["test text"], "text-embedding-3-large")
+            error_message = str(excinfo.value)
+            assert "Azure OpenAI embedding environment variables not set" in error_message
+            assert "AZURE_EMBEDDING_ENDPOINT" in error_message
+            assert "AZURE_EMBEDDING_DEPLOYMENT_NAME" in error_message
+            assert "AZURE_EMBEDDING_API_KEY" in error_message
+            assert "AZURE_EMBEDDING_VERSION" in error_message
+            assert "Use AZURE_EMBEDDING_* variables, not AZURE_OPENAI_*" in error_message
+
     def test_request_to_chat_ai_use_openrouter_rate_limit(self):
         """OpenRouterのレート制限エラーのテスト"""
         messages = [

@@ -263,7 +263,10 @@ async def get_models(
 
 
 @router.get("/admin/environment/verify-chatgpt")
-async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -> dict:
+async def verify_chatgpt_api_key(
+    provider: str = Query("openai", description="LLMプロバイダー名（openai, azure）"),
+    api_key: str = Depends(verify_admin_api_key)
+) -> dict:
     """Verify the ChatGPT API key configuration by making a simple chat request.
 
     Checks both OpenAI and Azure OpenAI configurations based on the USE_AZURE setting.
@@ -283,6 +286,7 @@ async def verify_chatgpt_api_key(api_key: str = Depends(verify_admin_api_key)) -
         _ = request_to_chat_ai(
             messages=test_messages,
             model="gpt-4o-mini",
+            provider=provider,
         )
 
         return {
