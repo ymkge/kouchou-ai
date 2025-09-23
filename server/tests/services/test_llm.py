@@ -3,6 +3,9 @@ from unittest.mock import MagicMock, patch
 
 import openai
 import pytest
+from openai import AzureOpenAI  # noqa: F401
+from pydantic import BaseModel, Field
+
 from broadlistening.pipeline.services.llm import (
     _validate_model,
     request_to_azure_chatcompletion,
@@ -11,8 +14,6 @@ from broadlistening.pipeline.services.llm import (
     request_to_embed,  # noqa: F401
     request_to_openai,
 )
-from openai import AzureOpenAI  # noqa: F401
-from pydantic import BaseModel, Field
 
 
 class TestLLMService:

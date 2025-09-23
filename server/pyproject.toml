@@ -80,6 +80,7 @@ lint.ignore = [
 combine-as-imports = true
 force-single-line = false
 relative-imports-order = "closest-to-furthest"
+known-first-party = ["src", "broadlistening", "tests"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # `__init__.py` での未使用importを許可
