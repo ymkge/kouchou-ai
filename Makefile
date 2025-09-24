@@ -5,13 +5,116 @@ azure-cli azure-login azure-build azure-push azure-deploy azure-info azure-confi
 azure-logs-client azure-logs-api azure-logs-admin azure-logs-client-static-build
 
 ##############################################################################
+# envファイル変更チェック機能
+##############################################################################
+
+HASH_DIR := .env-hashes
+
+ENV_HASH_FILE := $(HASH_DIR)/.env.hash
+AZURE_ENV_HASH_FILE := $(HASH_DIR)/.env.azure.hash
+
+define check_env_changes
+changed=false; \
+if [ -f .env ]; then \
+	if command -v sha256sum >/dev/null 2>&1; then \
+		current_hash=$$(sha256sum .env | cut -d' ' -f1); \
+	else \
+		current_hash=$$(shasum -a 256 .env | cut -d' ' -f1); \
+	fi; \
+	stored_hash=$$([ -f $(ENV_HASH_FILE) ] && cat $(ENV_HASH_FILE) || echo "no_hash"); \
+	if [ "$$current_hash" != "$$stored_hash" ]; then \
+		changed=true; \
+	fi; \
+fi; \
+if [ -f .env.azure ]; then \
+	if command -v sha256sum >/dev/null 2>&1; then \
+		current_hash=$$(sha256sum .env.azure | cut -d' ' -f1); \
+	else \
+		current_hash=$$(shasum -a 256 .env.azure | cut -d' ' -f1); \
+	fi; \
+	stored_hash=$$([ -f $(AZURE_ENV_HASH_FILE) ] && cat $(AZURE_ENV_HASH_FILE) || echo "no_hash"); \
+	if [ "$$current_hash" != "$$stored_hash" ]; then \
+		changed=true; \
+	fi; \
+fi
+endef
+
+define update_env_hashes
+mkdir -p $(HASH_DIR); \
+if [ -f .env ]; then sha256sum .env | cut -d' ' -f1 > $(ENV_HASH_FILE); fi; \
+if [ -f .env.azure ]; then sha256sum .env.azure | cut -d' ' -f1 > $(AZURE_ENV_HASH_FILE); fi
+endef
+
+define build_with_env_check
+$(check_env_changes); \
+if [ "$$changed" = "true" ]; then \
+	echo "envファイルの変更が検出されました。再ビルドを実行します..."; \
+	docker compose down 2>/dev/null || true; \
+	docker compose build --no-cache; \
+	$(update_env_hashes); \
+	echo "再ビルド完了"; \
+else \
+	echo "envファイルに変更はありません。通常ビルドを実行します..."; \
+	docker compose build; \
+fi
+endef
+
+$(HASH_DIR):
+	@mkdir -p $(HASH_DIR)
+
+check-env-status:
+	@echo "🔍 envファイルの変更状況:"
+	@echo "----------------------------------------"
+	@if [ -f .env ]; then \
+		current_hash=$$(sha256sum .env | cut -d' ' -f1); \
+		stored_hash=$$([ -f $(ENV_HASH_FILE) ] && cat $(ENV_HASH_FILE) || echo "no_hash"); \
+		if [ "$$current_hash" != "$$stored_hash" ]; then \
+			echo ".env: 変更あり"; \
+		else \
+			echo ".env: 変更なし"; \
+		fi; \
+	else \
+		echo ".env: ファイルなし"; \
+	fi
+	@if [ -f .env.azure ]; then \
+		current_hash=$$(sha256sum .env.azure | cut -d' ' -f1); \
+		stored_hash=$$([ -f $(AZURE_ENV_HASH_FILE) ] && cat $(AZURE_ENV_HASH_FILE) || echo "no_hash"); \
+		if [ "$$current_hash" != "$$stored_hash" ]; then \
+			echo ".env.azure: 変更あり"; \
+		else \
+			echo ".env.azure: 変更なし"; \
+		fi; \
+	else \
+		echo ".env.azure: ファイルなし"; \
+	fi
+	@echo "----------------------------------------"
+
+update-hashes: | $(HASH_DIR)
+	@$(update_env_hashes)
+	@echo ".envファイルのハッシュを更新しました"
+
+clean-env-hashes:
+	@echo ">>> envファイルのハッシュをクリーンアップ中..."
+	@rm -rf $(HASH_DIR)
+	@echo "ハッシュファイルをクリーンアップしました"
+
+##############################################################################
 # ローカル開発環境のコマンド
 ##############################################################################
 
 build:
-	docker compose build
+	@$(build_with_env_check)
 
 up:
+	@$(build_with_env_check)
+	docker compose up
+
+build-force:
+	@echo ">>> チェックをスキップしてビルド..."
+	docker compose build
+
+up-force:
+	@echo ">>> チェックをスキップして起動..."
 	docker compose up --build
 
 down:
@@ -127,20 +230,47 @@ azure-acr-login-auto:
 # Azure用のイメージをビルド
 azure-build:
 	$(call read-env)
-	docker build --platform linux/amd64 -t $(AZURE_ACR_NAME).azurecr.io/api:latest ./server
-	docker build --platform linux/amd64 \
-		--build-arg NEXT_PUBLIC_API_BASEPATH="$(NEXT_PUBLIC_API_BASEPATH)" \
-		--build-arg NEXT_PUBLIC_PUBLIC_API_KEY="$(NEXT_PUBLIC_PUBLIC_API_KEY)" \
-		--build-arg NEXT_PUBLIC_SITE_URL="$(NEXT_PUBLIC_SITE_URL)" \
-		--build-arg API_BASEPATH="$(API_BASEPATH)" \
-		-t $(AZURE_ACR_NAME).azurecr.io/client:latest ./client
-	docker build --platform linux/amd64 --no-cache \
-		--build-arg NEXT_PUBLIC_CLIENT_BASEPATH="$(NEXT_PUBLIC_CLIENT_BASEPATH)" \
-		--build-arg NEXT_PUBLIC_ADMIN_API_KEY="$(NEXT_PUBLIC_ADMIN_API_KEY)" \
-		--build-arg NEXT_PUBLIC_API_BASEPATH="$(NEXT_PUBLIC_API_BASEPATH)" \
-		--build-arg CLIENT_STATIC_BUILD_BASEPATH="$(CLIENT_STATIC_BUILD_BASEPATH)" \
-		-t $(AZURE_ACR_NAME).azurecr.io/client-admin:latest ./client-admin
-	docker build --platform linux/amd64 --no-cache -t $(AZURE_ACR_NAME).azurecr.io/client-static-build:latest -f ./client-static-build/Dockerfile .
+	@$(check_env_changes); \
+	if [ "$$changed" = "true" ]; then \
+		echo "envファイルの変更が検出されました。Azure用イメージを再ビルドします...(no-cache)"; \
+		docker build --platform linux/amd64 --no-cache \
+			-t $(AZURE_ACR_NAME).azurecr.io/api:latest ./server && \
+		docker build --platform linux/amd64 --no-cache \
+			--build-arg NEXT_PUBLIC_API_BASEPATH="$(NEXT_PUBLIC_API_BASEPATH)" \
+			--build-arg NEXT_PUBLIC_PUBLIC_API_KEY="$(NEXT_PUBLIC_PUBLIC_API_KEY)" \
+			--build-arg NEXT_PUBLIC_SITE_URL="$(NEXT_PUBLIC_SITE_URL)" \
+			--build-arg API_BASEPATH="$(API_BASEPATH)" \
+			-t $(AZURE_ACR_NAME).azurecr.io/client:latest ./client && \
+		docker build --platform linux/amd64 --no-cache \
+			--build-arg NEXT_PUBLIC_CLIENT_BASEPATH="$(NEXT_PUBLIC_CLIENT_BASEPATH)" \
+			--build-arg NEXT_PUBLIC_ADMIN_API_KEY="$(NEXT_PUBLIC_ADMIN_API_KEY)" \
+			--build-arg NEXT_PUBLIC_API_BASEPATH="$(NEXT_PUBLIC_API_BASEPATH)" \
+			--build-arg CLIENT_STATIC_BUILD_BASEPATH="$(CLIENT_STATIC_BUILD_BASEPATH)" \
+			-t $(AZURE_ACR_NAME).azurecr.io/client-admin:latest ./client-admin && \
+		docker build --platform linux/amd64 --no-cache \
+			-t $(AZURE_ACR_NAME).azurecr.io/client-static-build:latest \
+			-f ./client-static-build/Dockerfile . && \
+		$(update_env_hashes); \
+	else \
+		echo "envファイルに変更はありません。Azure用イメージをビルドします..."; \
+		docker build --platform linux/amd64 \
+			-t $(AZURE_ACR_NAME).azurecr.io/api:latest ./server; \
+		docker build --platform linux/amd64 \
+			--build-arg NEXT_PUBLIC_API_BASEPATH="$(NEXT_PUBLIC_API_BASEPATH)" \
+			--build-arg NEXT_PUBLIC_PUBLIC_API_KEY="$(NEXT_PUBLIC_PUBLIC_API_KEY)" \
+			--build-arg NEXT_PUBLIC_SITE_URL="$(NEXT_PUBLIC_SITE_URL)" \
+			--build-arg API_BASEPATH="$(API_BASEPATH)" \
+			-t $(AZURE_ACR_NAME).azurecr.io/client:latest ./client; \
+		docker build --platform linux/amd64 \
+			--build-arg NEXT_PUBLIC_CLIENT_BASEPATH="$(NEXT_PUBLIC_CLIENT_BASEPATH)" \
+			--build-arg NEXT_PUBLIC_ADMIN_API_KEY="$(NEXT_PUBLIC_ADMIN_API_KEY)" \
+			--build-arg NEXT_PUBLIC_API_BASEPATH="$(NEXT_PUBLIC_API_BASEPATH)" \
+			--build-arg CLIENT_STATIC_BUILD_BASEPATH="$(CLIENT_STATIC_BUILD_BASEPATH)" \
+			-t $(AZURE_ACR_NAME).azurecr.io/client-admin:latest ./client-admin; \
+		docker build --platform linux/amd64 \
+			-t $(AZURE_ACR_NAME).azurecr.io/client-static-build:latest \
+			-f ./client-static-build/Dockerfile .; \
+	fi
 
 # イメージをAzureにプッシュ（ローカルのDockerから）
 azure-push:

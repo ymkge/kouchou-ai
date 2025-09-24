@@ -5,7 +5,7 @@ import { analysisInfo } from "./analysisInfo";
 describe("analysisInfo", () => {
   const baseReport: Report = {
     slug: "test-report",
-    status: "completed",
+    status: "processing",
     title: "Test Report",
     description: "Test Description",
     isPubcom: false,
@@ -29,7 +29,7 @@ describe("analysisInfo", () => {
       expect(result).toEqual({
         hasInput: true,
         hasTotal: true,
-        estimatedCost: "0.123456",
+        estimatedCost: "$0.123456",
         model: "OpenAI gpt-4",
         tokenUsageInput: "1,000",
         tokenUsageOutput: "500",
@@ -76,7 +76,7 @@ describe("analysisInfo", () => {
       expect(result).toEqual({
         hasInput: false,
         hasTotal: true,
-        estimatedCost: "0.123456",
+        estimatedCost: "$0.123456",
         model: "OpenAI gpt-4",
         tokenUsageTotal: "1,500 (詳細なし)",
       });
@@ -97,7 +97,7 @@ describe("analysisInfo", () => {
       expect(result).toEqual({
         hasInput: false,
         hasTotal: false,
-        estimatedCost: "0.123456",
+        estimatedCost: "$0.123456",
         model: "OpenAI gpt-4",
         tokenUsageTotal: "情報なし",
       });
@@ -131,7 +131,7 @@ describe("analysisInfo", () => {
 
       const result = analysisInfo(report);
 
-      expect(result.estimatedCost).toBe("0.000000");
+      expect(result.estimatedCost).toBe("$0.000000");
     });
   });
 

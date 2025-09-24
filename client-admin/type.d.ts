@@ -14,9 +14,12 @@ export enum ReportVisibility {
   UNLISTED = "unlisted",
 }
 
-export type Report = {
+// report
+type ReportStatus = "ready" | "processing" | "error";
+
+type ReportBase = {
   slug: string;
-  status: string;
+  status: ReportStatus;
   title: string;
   description: string;
   isPubcom: boolean;
@@ -29,6 +32,21 @@ export type Report = {
   provider?: string; // LLMプロバイダー
   model?: string; // LLMモデル
 };
+
+type ReadyReport = ReportBase & {
+  status: "ready";
+  analysis: {
+    commentNum: number;
+    argumentsNum: number;
+    clusterNum: number;
+  };
+};
+
+type ProcessingOrErrorReport = ReportBase & {
+  status: "processing" | "error";
+};
+
+export type Report = ReadyReport | ProcessingOrErrorReport;
 
 export type Result = {
   arguments: Argument[]; // 抽出された意見のリスト

@@ -142,7 +142,7 @@ export function ClientContainer({ result }: Props) {
         if (arg.attributes) {
           const passesAttributeFilters = Object.entries(attrFilters).every(([attrName, selectedValues]) => {
             const attrValue = arg.attributes?.[attrName];
-            const values = selectedValues as string[];
+            const values = selectedValues;
             if (values.length === 1 && values[0].startsWith("range:")) {
               const [_, minStr, maxStr] = values[0].split(":");
               const min = Number(minStr);
@@ -230,10 +230,16 @@ export function ClientContainer({ result }: Props) {
   }, [samples, attributeFilters, numericRanges, enabledRanges, includeEmptyValues]);
 
   // --- クラスタ表示 ---
-  const clustersToDisplay =
-    selectedChart === "scatterDensity"
-      ? filteredResult.clusters.filter((c) => c.level === Math.max(...filteredResult.clusters.map((c) => c.level)))
-      : result.clusters.filter((c) => c.level === 1);
+  const clustersToDisplay = useMemo(() => {
+    let c: Cluster[] = [];
+    if (selectedChart === "scatterDensity") {
+      const max = Math.max(...filteredResult.clusters.map((c) => c.level));
+      c = filteredResult.clusters.filter((c) => c.level === max);
+    } else {
+      c = result.clusters.filter((c) => c.level === 1);
+    }
+    return c.sort((a, b) => b.value - a.value);
+  }, [result.clusters, filteredResult.clusters, selectedChart]);
 
   // --- その他UIハンドラ ---
   const handleCloseDisplaySetting = () => setOpenDensityFilterSetting(false);

@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
+import type { stepKeys } from "./ProgressSteps";
+
+type Progress = (typeof stepKeys)[number] | "loading" | "completed";
 
 export function useReportProgressPoll(slug: string) {
-  const [progress, setProgress] = useState<string>("loading");
+  const [progress, setProgress] = useState<Progress>("loading");
+  const [isError, setIsError] = useState<boolean>(false);
   const [isPolling, setIsPolling] = useState<boolean>(true);
 
   useEffect(() => {
@@ -34,13 +38,13 @@ export function useReportProgressPoll(slug: string) {
             return;
           }
 
-          if (data.current_step === "error") {
-            setProgress("error");
+          setProgress(data.current_step);
+
+          if (data.status === "error") {
+            setIsError(true);
             setIsPolling(false);
             return;
           }
-
-          setProgress(data.current_step);
 
           if (data.current_step === "completed") {
             setIsPolling(false);
@@ -53,7 +57,7 @@ export function useReportProgressPoll(slug: string) {
           retryCount++;
           if (retryCount >= maxRetries) {
             console.error("Maximum retry attempts reached");
-            setProgress("error");
+            setIsError(true);
             setIsPolling(false);
             return;
           }
@@ -64,7 +68,7 @@ export function useReportProgressPoll(slug: string) {
         console.error("Polling error:", error);
         retryCount++;
         if (retryCount >= maxRetries) {
-          setProgress("error");
+          setIsError(true);
           setIsPolling(false);
           return;
         }
@@ -79,5 +83,5 @@ export function useReportProgressPoll(slug: string) {
     };
   }, [slug, isPolling]);
 
-  return { progress };
+  return { progress, isError };
 }

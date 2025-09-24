@@ -10,6 +10,7 @@ dependencies = [
     "pydantic-settings>=2.7.1",
     "pandas>=2.2.3",
     "openai>=1.77.0",
+    "google-generativeai>=0.8.4",
     "litellm>=1.58.2",
     "python-dotenv>=1.0.1",
     "plotly>=5.24.1",
@@ -80,6 +81,8 @@ lint.ignore = [
 combine-as-imports = true
 force-single-line = false
 relative-imports-order = "closest-to-furthest"
+known-first-party = ["src", "broadlistening", "tests"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # `__init__.py` での未使用importを許可
+# Force CI re-run to verify ruff fixes
