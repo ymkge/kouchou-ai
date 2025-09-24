@@ -3,7 +3,6 @@
 import { getImageFromServerSrc } from "@/app/utils/image-src";
 import { HStack, Image, useBreakpointValue } from "@chakra-ui/react";
 import { GlobalNavigation } from "./globalNavigation/GlobalNavigation";
-import { BroadlisteningGuide } from "./report/BroadlisteningGuide";
 
 export function Header() {
   const logoSrc = useBreakpointValue({
@@ -23,7 +22,6 @@ export function Header() {
     >
       <Image src={logoSrc} alt="広聴AI" />
       <GlobalNavigation />
-      <BroadlisteningGuide />
     </HStack>
   );
 }
