@@ -1,6 +1,7 @@
 import json
 
 import openai
+
 try:  # pragma: no cover - optional dependency
     from google.api_core import exceptions as google_exceptions
 except Exception:  # pragma: no cover
@@ -242,9 +243,7 @@ async def update_cluster_label(
 
 @router.get("/admin/models")
 async def get_models(
-    provider: str = Query(
-        ..., description="LLMプロバイダー名 (openai, azure, openrouter, gemini, local)"
-    ),
+    provider: str = Query(..., description="LLMプロバイダー名 (openai, azure, openrouter, gemini, local)"),
     address: str | None = Query(None, description="LocalLLM用アドレス（例: 127.0.0.1:1234）"),
     api_key: str = Depends(verify_admin_api_key),
 ) -> list[dict[str, str]]:
