@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 from services.llm import request_to_chat_ai
 from services.parse_json_list import parse_extraction_response
+
 from utils import update_progress
 
 COMMA_AND_SPACE_AND_RIGHT_BRACKET = re.compile(r",\s*(\])")
