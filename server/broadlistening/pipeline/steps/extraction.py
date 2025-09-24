@@ -1,13 +1,13 @@
 import concurrent.futures
 import json
 import logging
+import os
 import re
 
 import pandas as pd
 from pydantic import BaseModel, Field
 from tqdm import tqdm
 
-from services.category_classification import classify_args
 from services.llm import request_to_chat_ai
 from services.parse_json_list import parse_extraction_response
 from utils import update_progress
@@ -88,16 +88,12 @@ def extraction(config):
     if results.empty:
         raise RuntimeError("result is empty, maybe bad prompt")
 
-    classification_categories = config["extraction"]["categories"]
-    if classification_categories:
-        results = classify_args(results, config, workers)
-
     results.to_csv(path, index=False)
     # comment-idとarg-idの関係を保存
     relation_df.to_csv(f"outputs/{dataset}/relations.csv", index=False)
 
 
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.DEBUG)
 
 
 def extract_batch(batch, prompt, model, workers, provider="openai", local_llm_address=None, config=None):
@@ -157,6 +153,7 @@ def extract_arguments(input, prompt, model, provider="openai", local_llm_address
             json_schema=ExtractionResponse,
             provider=provider,
             local_llm_address=local_llm_address,
+            user_api_key=os.getenv("USER_API_KEY"),
         )
         items = parse_extraction_response(response)
         items = list(filter(None, items))  # omit empty strings

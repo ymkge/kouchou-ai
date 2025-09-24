@@ -1,9 +1,12 @@
+import json
 from copy import deepcopy
+from pathlib import Path
+from unittest.mock import mock_open, patch
 
 import pytest
 
-from src.schemas.report import ReportVisibility
-from src.services.report_status import convert_old_format_status
+from src.schemas.report import Report, ReportStatus, ReportVisibility
+from src.services.report_status import add_analysis_data, convert_old_format_status
 
 
 # FIXME: report_status.jsonのフォーマット変更に対応するための関数のテストコード。広聴AIをver3.0にした段階で削除する。
@@ -155,3 +158,71 @@ class TestReportStatus:
         assert "visibility" in result["new-slug"]
         assert result["new-slug"]["visibility"] == original_new_visibility
         assert "is_public" not in result["new-slug"]
+
+
+class TestAddAnalysisData:
+    @pytest.fixture
+    def ready_report(self):
+        return Report(
+            slug="test-report",
+            status=ReportStatus.READY,
+            title="Test Report",
+            description="Description",
+            visibility=ReportVisibility.PUBLIC,
+        )
+
+    @pytest.fixture
+    def mock_hierarchical_result(self):
+        return {
+            "comment_num": 150,
+            "arguments": [{"id": 1}, {"id": 2}, {"id": 3}],
+            "clusters": [
+                {"id": 1, "level": 1},
+                {"id": 2, "level": 2},
+                {"id": 3, "level": 2},
+            ],
+        }
+
+    @patch("src.services.report_status.settings")
+    def test_add_analysis_data_success(self, mock_settings, ready_report, mock_hierarchical_result):
+        mock_settings.REPORT_DIR = Path("/fake/path")
+        json_data = json.dumps(mock_hierarchical_result)
+
+        with patch("builtins.open", mock_open(read_data=json_data)):
+            updated = add_analysis_data(ready_report)
+
+        assert updated.analysis is not None
+        assert updated.analysis.comment_num == 150
+        assert updated.analysis.arguments_num == 3
+        assert updated.analysis.cluster_num == 1  # level 1 のみ
+
+    @patch("src.services.report_status.settings")
+    def test_add_analysis_data_file_not_found(self, mock_settings, ready_report):
+        mock_settings.REPORT_DIR = Path("/fake/path")
+
+        with patch("builtins.open", side_effect=FileNotFoundError):
+            updated = add_analysis_data(ready_report)
+
+        assert updated.analysis is None
+
+    @patch("src.services.report_status.settings")
+    def test_add_analysis_data_json_decode_error(self, mock_settings, ready_report):
+        mock_settings.REPORT_DIR = Path("/fake/path")
+
+        with patch("builtins.open", mock_open(read_data="invalid json")):
+            updated = add_analysis_data(ready_report)
+
+        assert updated.analysis is None
+
+    def test_add_analysis_data_non_ready_status(self):
+        processing_report = Report(
+            slug="slug",
+            status=ReportStatus.PROCESSING,
+            title="title",
+            description="desc",
+            visibility=ReportVisibility.PRIVATE,
+        )
+
+        updated = add_analysis_data(processing_report)
+        assert updated == processing_report
+        assert updated.analysis is None

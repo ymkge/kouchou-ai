@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { v4 } from "uuid";
-import { isValidId } from "../utils/validation";
+import { validateReportId } from "../utils/validation";
 
 /**
  * 基本情報を管理するカスタムフック
  */
 export function useBasicInfo() {
   // 基本情報の状態
-  const [input, setInput] = useState<string>(v4());
+  const [input, setInput] = useState<string>(crypto.randomUUID());
   const [question, setQuestion] = useState<string>("");
   const [intro, setIntro] = useState<string>("");
-  const [isIdValid, setIsIdValid] = useState<boolean>(true);
+  const [isReportIdValid, setIsReportIdValid] = useState<boolean>(true);
+  const [reportIdErrorMessage, setReportIdErrorMessage] = useState<string>("");
 
   /**
    * ID変更時のハンドラー
@@ -18,7 +18,9 @@ export function useBasicInfo() {
   const handleIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newId = e.target.value;
     setInput(newId);
-    setIsIdValid(isValidId(newId));
+    const reportIdValidation = validateReportId(newId);
+    setIsReportIdValid(reportIdValidation.isValid);
+    setReportIdErrorMessage(reportIdValidation.errorMessage || "");
   };
 
   /**
@@ -39,17 +41,19 @@ export function useBasicInfo() {
    * 基本情報をリセット
    */
   const resetBasicInfo = () => {
-    setInput(v4());
+    setInput(crypto.randomUUID());
     setQuestion("");
     setIntro("");
-    setIsIdValid(true);
+    setIsReportIdValid(true);
+    setReportIdErrorMessage("");
   };
 
   return {
     input,
     question,
     intro,
-    isIdValid,
+    isReportIdValid,
+    reportIdErrorMessage,
     handleIdChange,
     handleQuestionChange,
     handleIntroChange,

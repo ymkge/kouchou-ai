@@ -1,10 +1,7 @@
 import { Header } from "@/components/Header";
 import type { Report } from "@/type";
-import { Box, Button, HStack, Heading } from "@chakra-ui/react";
-import Link from "next/link";
-import { BuildDownloadButton } from "./_components/BuildDownloadButton/BuildDownloadButton";
-import { Empty } from "./_components/Empty";
-import { ReportCardList } from "./_components/ReportCardList";
+import { Box, Heading } from "@chakra-ui/react";
+import { PageContent } from "./_components/PageContent";
 import { getApiBaseUrl } from "./utils/api";
 
 export default async function Page() {
@@ -34,27 +31,12 @@ export default async function Page() {
     const reports: Report[] = await response.json();
 
     return (
-      <div className="container">
+      <Box className="container" bgColor="bg.secondary">
         <Header />
-        <Box mx="auto" maxW="1000px" px="6" py="12">
-          <Heading textAlign="left" fontSize="xl" mb={8}>
-            レポート一覧
-          </Heading>
-          {reports.length === 0 ? (
-            <Empty />
-          ) : (
-            <>
-              <ReportCardList reports={reports} />
-              <HStack justify="center" mt={10}>
-                <Link href="/create">
-                  <Button size="xl">新しいレポートを作成する</Button>
-                </Link>
-                <BuildDownloadButton />
-              </HStack>
-            </>
-          )}
+        <Box mx="auto" maxW="1024px" boxSizing="content-box" px="6" py="12">
+          <PageContent reports={reports} />
         </Box>
-      </div>
+      </Box>
     );
   } catch (error) {
     console.error("Error fetching reports:", error);

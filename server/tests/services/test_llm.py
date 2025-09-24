@@ -1,18 +1,22 @@
 import os
+import sys
+import types
 from unittest.mock import MagicMock, patch
 
 import openai
 import pytest
+from openai import AzureOpenAI  # noqa: F401
+from pydantic import BaseModel, Field
+
 from broadlistening.pipeline.services.llm import (
     _validate_model,
+    extract_embedding_values,
     request_to_azure_chatcompletion,
     request_to_azure_embed,  # noqa: F401
     request_to_chat_ai,
     request_to_embed,  # noqa: F401
     request_to_openai,
 )
-from openai import AzureOpenAI  # noqa: F401
-from pydantic import BaseModel, Field
 
 
 class TestLLMService:
@@ -59,8 +63,11 @@ class TestLLMService:
             **{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15}
         )
 
-        # openai.chat.completions.createをモック化
-        with patch("openai.chat.completions.create", return_value=mock_openai_response):
+        # OpenAIクライアントをモック化
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = mock_openai_response
+
+        with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
             response, token_input, token_output, token_total = request_to_openai(messages, model="gpt-4")
 
         assert response == "This is a test response"
@@ -79,8 +86,11 @@ class TestLLMService:
             **{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15}
         )
 
-        # openai.chat.completions.createをモック化
-        with patch("openai.chat.completions.create", return_value=mock_openai_response):
+        # OpenAIクライアントをモック化
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = mock_openai_response
+
+        with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
             response, token_input, token_output, token_total = request_to_openai(messages, model="gpt-4", is_json=True)
 
         assert response == "This is a test response"
@@ -89,9 +99,12 @@ class TestLLMService:
         assert token_total == 15
 
         # JSON形式のレスポンスを要求していることを確認
-        with patch("openai.chat.completions.create", return_value=mock_openai_response) as mock_create:
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = mock_openai_response
+
+        with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
             request_to_openai(messages, model="gpt-4", is_json=True)
-            args, kwargs = mock_create.call_args
+            args, kwargs = mock_client.chat.completions.create.call_args
             assert kwargs["response_format"] == {"type": "json_object"}
 
     def test_request_to_openai_with_json_schema(self, mock_openai_response):
@@ -120,8 +133,11 @@ class TestLLMService:
             **{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15}
         )
 
-        # openai.chat.completions.createをモック化
-        with patch("openai.chat.completions.create", return_value=mock_openai_response) as mock_create:
+        # OpenAIクライアントをモック化
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = mock_openai_response
+
+        with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
             response, token_input, token_output, token_total = request_to_openai(
                 messages, model="gpt-4", json_schema=json_schema
             )
@@ -132,7 +148,7 @@ class TestLLMService:
         assert token_total == 15
 
         # JSON Schemaを指定していることを確認
-        args, kwargs = mock_create.call_args
+        args, kwargs = mock_client.chat.completions.create.call_args
         assert kwargs["response_format"] == json_schema
 
     def test_request_to_openai_with_pydantic_model(self, mock_openai_parse_response):
@@ -150,8 +166,11 @@ class TestLLMService:
             **{"usage.prompt_tokens": 10, "usage.completion_tokens": 5, "usage.total_tokens": 15}
         )
 
-        # openai.beta.chat.completions.parseをモック化
-        with patch("openai.beta.chat.completions.parse", return_value=mock_openai_parse_response) as mock_parse:
+        # OpenAIクライアントをモック化
+        mock_client = MagicMock()
+        mock_client.beta.chat.completions.parse.return_value = mock_openai_parse_response
+
+        with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
             response, token_input, token_output, token_total = request_to_openai(
                 messages, model="gpt-4", json_schema=TestModel
             )
@@ -162,7 +181,7 @@ class TestLLMService:
         assert token_total == 15
 
         # Pydantic BaseModelを指定していることを確認
-        args, kwargs = mock_parse.call_args
+        args, kwargs = mock_client.beta.chat.completions.parse.call_args
         assert kwargs["response_format"] == TestModel
 
     def test_request_to_openai_rate_limit_error_retry(self):
@@ -190,7 +209,11 @@ class TestLLMService:
         # side_effectに複数の値を指定すると、呼び出しごとに順番に返される
         side_effects = [rate_limit_error, rate_limit_error, mock_response]
 
-        with patch("openai.chat.completions.create", side_effect=side_effects):
+        # OpenAIクライアントをモック化
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = side_effects
+
+        with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
             # リトライ後に正常なレスポンスが返されることを確認
             response, token_input, token_output, token_total = request_to_openai(messages, model="gpt-4")
             assert response == "This is a test response after retry"
@@ -212,7 +235,11 @@ class TestLLMService:
             body=MagicMock(),
         )
 
-        with patch("openai.chat.completions.create", side_effect=[rate_limit_error] * 4):
+        # OpenAIクライアントをモック化
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = [rate_limit_error] * 4
+
+        with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
             # 3回リトライしても失敗するため、最終的に例外が発生する
             with pytest.raises(openai.RateLimitError):
                 request_to_openai(messages, model="gpt-4")
@@ -224,13 +251,17 @@ class TestLLMService:
             {"role": "user", "content": "Hello, world!"},
         ]
 
-        # openai.chat.completions.createをモック化してAuthenticationErrorを発生させる
+        # OpenAIクライアントをモック化してAuthenticationErrorを発生させる
         auth_error = openai.AuthenticationError(
             message="Invalid API key",
             response=MagicMock(),
             body=MagicMock(),
         )
-        with patch("openai.chat.completions.create", side_effect=auth_error):
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = auth_error
+
+        with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
             with pytest.raises(openai.AuthenticationError):
                 request_to_openai(messages, model="gpt-4")
 
@@ -241,13 +272,17 @@ class TestLLMService:
             {"role": "user", "content": "Hello, world!"},
         ]
 
-        # openai.chat.completions.createをモック化してBadRequestErrorを発生させる
+        # OpenAIクライアントをモック化してBadRequestErrorを発生させる
         bad_request_error = openai.BadRequestError(
             message="Bad request",
             response=MagicMock(),
             body=MagicMock(),
         )
-        with patch("openai.chat.completions.create", side_effect=bad_request_error):
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = bad_request_error
+
+        with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
             with pytest.raises(openai.BadRequestError):
                 request_to_openai(messages, model="gpt-4")
 
@@ -557,7 +592,7 @@ class TestLLMService:
         assert token_input == 50
         assert token_output == 50
         assert token_total == 100
-        mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, None)
+        mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, None, None)
 
     def test_request_to_chat_openai_use_azure(self, mock_openai_response):
         """request_to_chat_openai: provider=azureの場合はrequest_to_azure_chatcompletionを使用する"""
@@ -579,7 +614,7 @@ class TestLLMService:
         assert token_input == 75
         assert token_output == 75
         assert token_total == 150
-        mock_request_to_azure.assert_called_once_with(messages, True, None)
+        mock_request_to_azure.assert_called_once_with(messages, True, None, None)
 
     def test_request_to_chat_openai_with_json_schema(self, mock_openai_response):
         """request_to_chat_openai: json_schemaパラメータを指定できる"""
@@ -615,7 +650,7 @@ class TestLLMService:
         assert token_input == 100
         assert token_output == 100
         assert token_total == 200
-        mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, json_schema)
+        mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, json_schema, None)
 
     def test_request_to_chat_openai_with_pydantic_model(self, mock_openai_response):
         """request_to_chat_openai: Pydantic BaseModelを指定できる"""
@@ -640,7 +675,7 @@ class TestLLMService:
         assert token_input == 125
         assert token_output == 125
         assert token_total == 250
-        mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, TestModel)
+        mock_request_to_openai.assert_called_once_with(messages, "gpt-4o", False, TestModel, None)
 
     def test_validate_model_valid(self):
         """_validate_model: 有効なモデルの場合は例外を発生させない"""
@@ -714,6 +749,37 @@ class TestLLMService:
                 request_to_chat_ai(messages=messages, model=model, provider="openrouter")
             assert "OPENROUTER_API_KEY environment variable is not set" in str(excinfo.value)
 
+    def test_request_to_azure_chatcompletion_missing_environment_variables(self):
+        """Azure OpenAI: 環境変数が不足している場合はRuntimeErrorを発生させる"""
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello"},
+        ]
+
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(RuntimeError) as excinfo:
+                request_to_azure_chatcompletion(messages)
+            error_message = str(excinfo.value)
+            assert "Azure OpenAI environment variables not set" in error_message
+            assert "AZURE_CHATCOMPLETION_ENDPOINT" in error_message
+            assert "AZURE_CHATCOMPLETION_DEPLOYMENT_NAME" in error_message
+            assert "AZURE_CHATCOMPLETION_API_KEY" in error_message
+            assert "AZURE_CHATCOMPLETION_VERSION" in error_message
+            assert "Use AZURE_CHATCOMPLETION_* variables, not AZURE_OPENAI_*" in error_message
+
+    def test_request_to_azure_embed_missing_environment_variables(self):
+        """Azure OpenAI embedding: 環境変数が不足している場合はRuntimeErrorを発生させる"""
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(RuntimeError) as excinfo:
+                request_to_azure_embed(["test text"], "text-embedding-3-large")
+            error_message = str(excinfo.value)
+            assert "Azure OpenAI embedding environment variables not set" in error_message
+            assert "AZURE_EMBEDDING_ENDPOINT" in error_message
+            assert "AZURE_EMBEDDING_DEPLOYMENT_NAME" in error_message
+            assert "AZURE_EMBEDDING_API_KEY" in error_message
+            assert "AZURE_EMBEDDING_VERSION" in error_message
+            assert "Use AZURE_EMBEDDING_* variables, not AZURE_OPENAI_*" in error_message
+
     def test_request_to_chat_ai_use_openrouter_rate_limit(self):
         """OpenRouterのレート制限エラーのテスト"""
         messages = [
@@ -739,3 +805,196 @@ class TestLLMService:
             with patch("broadlistening.pipeline.services.llm.OpenAI", return_value=mock_client):
                 with pytest.raises(openai.RateLimitError):
                     request_to_chat_ai(messages=messages, model=model, provider="openrouter")
+
+    def test_request_to_chat_ai_use_gemini(self):
+        """Geminiを使用するテストケース"""
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello!"},
+        ]
+        model = "gemini-2.5-flash"
+
+        # google.generativeai モジュールをモック化
+        genai_module = types.ModuleType("google.generativeai")
+        configure_mock = MagicMock()
+        gen_model_instance = MagicMock()
+        mock_response = MagicMock()
+        mock_response.text = "Hi! How can I help you today?"
+        usage_metadata = MagicMock()
+        usage_metadata.prompt_token_count = 20
+        usage_metadata.candidates_token_count = 10
+        usage_metadata.total_token_count = 30
+        mock_response.usage_metadata = usage_metadata
+        gen_model_instance.generate_content.return_value = mock_response
+        generative_model_mock = MagicMock(return_value=gen_model_instance)
+        genai_module.configure = configure_mock
+        genai_module.GenerativeModel = generative_model_mock
+
+        google_excs = types.SimpleNamespace(
+            Unauthenticated=Exception,
+            InvalidArgument=Exception,
+            GoogleAPICallError=Exception,
+            ResourceExhausted=Exception,
+        )
+
+        env_vars = {"GEMINI_API_KEY": "test-api-key"}
+        with patch.dict(os.environ, env_vars):
+            with (
+                patch("broadlistening.pipeline.services.llm.genai", genai_module),
+                patch("broadlistening.pipeline.services.llm.google_exceptions", google_excs),
+            ):
+                response, token_input, token_output, token_total = request_to_chat_ai(
+                    messages=messages, model=model, provider="gemini"
+                )
+
+        assert response == "Hi! How can I help you today?"
+        assert token_input == 20
+        assert token_output == 10
+        assert token_total == 30
+        configure_mock.assert_called_once_with(api_key="test-api-key")
+        expected_messages = [
+            {"role": "user", "parts": ["Hello!"]},
+        ]
+        generative_model_mock.assert_called_once_with(model, system_instruction="You are a helpful assistant.")
+        args, kwargs = gen_model_instance.generate_content.call_args
+        assert args[0] == expected_messages
+        assert kwargs.get("generation_config") is None
+
+    def test_request_to_chat_ai_use_gemini_without_env(self):
+        """Geminiの環境変数が設定されていない場合のテスト"""
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello!"},
+        ]
+        model = "gemini-2.5-flash"
+
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(RuntimeError) as excinfo:
+                request_to_chat_ai(messages=messages, model=model, provider="gemini")
+            assert "GEMINI_API_KEY environment variable is not set" in str(excinfo.value)
+
+    def test_request_to_chat_ai_use_gemini_rate_limit(self):
+        """Geminiのレート制限エラーのテスト"""
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello!"},
+        ]
+        model = "gemini-2.5-flash"
+
+        genai_module = types.ModuleType("google.generativeai")
+        configure_mock = MagicMock()
+        gen_model_instance = MagicMock()
+
+        class RateLimitError(Exception):
+            pass
+
+        gen_model_instance.generate_content.side_effect = RateLimitError("Rate limit exceeded")
+        genai_module.configure = configure_mock
+        genai_module.GenerativeModel = MagicMock(return_value=gen_model_instance)
+        google_module = types.ModuleType("google")
+        google_module.generativeai = genai_module
+
+        google_excs = types.SimpleNamespace(
+            Unauthenticated=Exception,
+            InvalidArgument=Exception,
+            GoogleAPICallError=Exception,
+            ResourceExhausted=Exception,
+        )
+
+        env_vars = {"GEMINI_API_KEY": "test-api-key"}
+        with patch.dict(os.environ, env_vars):
+            with (
+                patch("broadlistening.pipeline.services.llm.genai", genai_module),
+                patch("broadlistening.pipeline.services.llm.google_exceptions", google_excs),
+            ):
+                with pytest.raises(RateLimitError):
+                    request_to_chat_ai(messages=messages, model=model, provider="gemini")
+
+    def test_request_to_embed_use_gemini(self):
+        """Geminiの埋め込みを使用するテストケース"""
+        args = ["hello", "world"]
+        model = "models/embedding-001"
+
+        genai_module = types.ModuleType("google.generativeai")
+        configure_mock = MagicMock()
+        embed_content_mock = MagicMock(side_effect=[{"embedding": [0.1, 0.2]}, {"embedding": [0.3, 0.4]}])
+        genai_module.configure = configure_mock
+        genai_module.embed_content = embed_content_mock
+        google_module = types.ModuleType("google")
+        google_module.generativeai = genai_module
+
+        env_vars = {"GEMINI_API_KEY": "test-api-key"}
+        with patch.dict(sys.modules, {"google": google_module, "google.generativeai": genai_module}):
+            with patch("broadlistening.pipeline.services.llm.genai", genai_module):
+                with patch.dict(os.environ, env_vars):
+                    embeds = request_to_embed(args, model, provider="gemini")
+
+        assert embeds == [[0.1, 0.2], [0.3, 0.4]]
+        configure_mock.assert_called_once_with(api_key="test-api-key")
+        assert embed_content_mock.call_count == 2
+        embed_content_mock.assert_any_call(model=model, content="hello")
+        embed_content_mock.assert_any_call(model=model, content="world")
+
+    def test_extract_embedding_values_genai_object(self):
+        """extract_embedding_values: genai SDKオブジェクト（response.embedding.values）を抽出できる"""
+        emb_obj = MagicMock()
+        emb_obj.values = [0.1, 0.2, 0.3]
+        response = MagicMock()
+        response.embedding = emb_obj
+
+        values = extract_embedding_values(response)
+        assert values == [0.1, 0.2, 0.3]
+
+    def test_extract_embedding_values_gemini_single_dict(self):
+        """extract_embedding_values: dict形式（{'embedding': {'values': [...]}}）を抽出できる"""
+        response = {"embedding": {"values": [0.4, 0.5, 0.6]}}
+        values = extract_embedding_values(response)
+        assert values == [0.4, 0.5, 0.6]
+
+    def test_extract_embedding_values_gemini_batch(self):
+        """extract_embedding_values: バッチ形式（{'embeddings': [{'values': [...]}, ...]}）の先頭を抽出できる"""
+        response = {"embeddings": [{"values": [0.7, 0.8]}, {"values": [0.9]}]}
+        values = extract_embedding_values(response)
+        assert values == [0.7, 0.8]
+
+    def test_extract_embedding_values_openai_compatible(self):
+        """extract_embedding_values: OpenAI互換（{'data': [{'embedding': [...]}]}）を抽出できる"""
+        response = {"data": [{"embedding": [1.0, 1.1, 1.2]}]}
+        values = extract_embedding_values(response)
+        assert values == [1.0, 1.1, 1.2]
+
+    def test_extract_embedding_values_vertex_predictions(self):
+        """extract_embedding_values: Vertex AI風（{'predictions': [{'embeddings': {'values': [...]}}]}）を抽出できる"""
+        response = {"predictions": [{"embeddings": {"values": [2.1, 2.2, 2.3]}}]}
+        values = extract_embedding_values(response)
+        assert values == [2.1, 2.2, 2.3]
+
+    def test_extract_embedding_values_vertex_predictions_alt_key(self):
+        """extract_embedding_values: Vertex AI風で 'embedding' キーでも抽出できる"""
+        response = {"predictions": [{"embedding": {"values": [3.1, 3.2]}}]}
+        values = extract_embedding_values(response)
+        assert values == [3.1, 3.2]
+
+    def test_extract_embedding_values_missing_returns_none(self):
+        """extract_embedding_values: 既知のスキーマに当てはまらない場合は None を返す"""
+        response = {"foo": "bar"}  # 不明な形
+        values = extract_embedding_values(response)
+        assert values is None
+
+    def test_extract_embedding_values_emb_present_but_no_values(self):
+        """extract_embedding_values: 'embedding' はあっても 'values' が無い場合は None"""
+        response = {"embedding": {"not_values": [9.9]}}
+        values = extract_embedding_values(response)
+        assert values is None
+
+    def test_extract_embedding_values_embeddings_empty_list(self):
+        """extract_embedding_values: 'embeddings' が空配列の場合は None"""
+        response = {"embeddings": []}
+        values = extract_embedding_values(response)
+        assert values is None
+
+    def test_extract_embedding_values_openai_data_empty(self):
+        """extract_embedding_values: 'data' が空配列の場合は None"""
+        response = {"data": []}
+        values = extract_embedding_values(response)
+        assert values is None

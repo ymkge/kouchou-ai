@@ -28,6 +28,8 @@ export function AISettingsSection({
   isEmbeddedAtLocal,
   onEmbeddedAtLocalChange,
   fetchLocalLLMModels,
+  userApiKey,
+  onUserApiKeyChange,
 }: {
   provider: string;
   model: string;
@@ -61,6 +63,8 @@ export function AISettingsSection({
   };
   isEmbeddedAtLocal: boolean;
   onEmbeddedAtLocalChange: (checked: boolean | "indeterminate") => void;
+  userApiKey: string;
+  onUserApiKeyChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   const modelOptions = getCurrentModels();
 
@@ -88,12 +92,27 @@ export function AISettingsSection({
             <option value={"openai"}>OpenAI</option>
             <option value={"azure"}>Azure</option>
             <option value={"openrouter"}>OpenRouter</option>
+            <option value={"gemini"}>Gemini</option>
             <option value={"local"}>LocalLLM</option>
           </NativeSelect.Field>
           <NativeSelect.Indicator />
         </NativeSelect.Root>
         <Field.HelperText>{getProviderDescription()}</Field.HelperText>
       </Field.Root>
+
+      {/* TODO: azure の場合は別の方法が必要そうなので別途対応する */}
+      {provider !== "local" && provider !== "azure" && (
+        <Field.Root>
+          <Field.Label>APIキー</Field.Label>
+          <Input
+            type="password"
+            placeholder="独自のAPIキーを入力（空欄の場合はサーバー設定を使用）"
+            value={userApiKey}
+            onChange={onUserApiKeyChange}
+          />
+          <Field.HelperText>入力されたAPIキーを使用してレポートを生成できます。</Field.HelperText>
+        </Field.Root>
+      )}
 
       {requiresConnectionSettings() && (
         <Field.Root>
@@ -188,7 +207,7 @@ export function AISettingsSection({
           ソースリンク機能を有効にする
         </Checkbox>
         <Field.HelperText>
-         ONにした場合は、CSVのurlカラムの情報を使って、レポートの散布図上でデータ点をクリックすると元のソースにアクセスできます。
+          ONにした場合は、CSVのurlカラムの情報を使って、レポートの散布図上でデータ点をクリックすると元のソースにアクセスできます。
         </Field.HelperText>
       </Field.Root>
 
