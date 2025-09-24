@@ -1,6 +1,7 @@
 import json
 
 import openai
+
 try:  # pragma: no cover - optional dependency
     from google.api_core import exceptions as google_exceptions
 except Exception:  # pragma: no cover

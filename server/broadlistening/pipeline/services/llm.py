@@ -1,15 +1,15 @@
 import logging
 import os
+import random
 import threading
 import time
-import random
+from typing import Any
 
 import openai
 from dotenv import load_dotenv
 from openai import AzureOpenAI, OpenAI
 from pydantic import BaseModel
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
-from typing import Any, List, Optional
 
 try:  # Optional dependency
     import google.generativeai as genai
@@ -322,7 +322,7 @@ def request_to_gemini_chatcompletion(
                 finish_reasons = []
                 safety = []
                 if cands:
-                    for i, c in enumerate(cands):
+                    for _i, c in enumerate(cands):
                         fr = getattr(c, "finish_reason", None)
                         finish_reasons.append(fr)
                         sr = getattr(c, "safety_ratings", None)
@@ -623,7 +623,7 @@ def request_to_embed(
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
-def extract_embedding_values(response: Any) -> Optional[List[float]]:
+def extract_embedding_values(response: Any) -> list[float] | None:
     # 1) genai オブジェクト系
     emb_obj = getattr(response, "embedding", None)
     if emb_obj is not None:

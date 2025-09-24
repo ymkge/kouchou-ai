@@ -10,12 +10,12 @@ from pydantic import BaseModel, Field
 
 from broadlistening.pipeline.services.llm import (
     _validate_model,
+    extract_embedding_values,
     request_to_azure_chatcompletion,
     request_to_azure_embed,  # noqa: F401
     request_to_chat_ai,
     request_to_embed,  # noqa: F401
     request_to_openai,
-    extract_embedding_values,
 )
 
 
