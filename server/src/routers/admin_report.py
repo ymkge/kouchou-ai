@@ -243,9 +243,7 @@ async def update_cluster_label(
 
 @router.get("/admin/models")
 async def get_models(
-    provider: str = Query(
-        ..., description="LLMプロバイダー名 (openai, azure, openrouter, gemini, local)"
-    ),
+    provider: str = Query(..., description="LLMプロバイダー名 (openai, azure, openrouter, gemini, local)"),
     address: str | None = Query(None, description="LocalLLM用アドレス（例: 127.0.0.1:1234）"),
     api_key: str = Depends(verify_admin_api_key),
 ) -> list[dict[str, str]]:

@@ -836,11 +836,13 @@ class TestLLMService:
             GoogleAPICallError=Exception,
             ResourceExhausted=Exception,
         )
-        
+
         env_vars = {"GEMINI_API_KEY": "test-api-key"}
         with patch.dict(os.environ, env_vars):
-            with patch("broadlistening.pipeline.services.llm.genai", genai_module), \
-                patch("broadlistening.pipeline.services.llm.google_exceptions", google_excs):
+            with (
+                patch("broadlistening.pipeline.services.llm.genai", genai_module),
+                patch("broadlistening.pipeline.services.llm.google_exceptions", google_excs),
+            ):
                 response, token_input, token_output, token_total = request_to_chat_ai(
                     messages=messages, model=model, provider="gemini"
                 )
@@ -853,13 +855,11 @@ class TestLLMService:
         expected_messages = [
             {"role": "user", "parts": ["Hello!"]},
         ]
-        generative_model_mock.assert_called_once_with(
-            model, system_instruction="You are a helpful assistant."
-        )
+        generative_model_mock.assert_called_once_with(model, system_instruction="You are a helpful assistant.")
         args, kwargs = gen_model_instance.generate_content.call_args
         assert args[0] == expected_messages
         assert kwargs.get("generation_config") is None
-        
+
     def test_request_to_chat_ai_use_gemini_without_env(self):
         """Geminiの環境変数が設定されていない場合のテスト"""
         messages = [
@@ -903,8 +903,10 @@ class TestLLMService:
 
         env_vars = {"GEMINI_API_KEY": "test-api-key"}
         with patch.dict(os.environ, env_vars):
-            with patch("broadlistening.pipeline.services.llm.genai", genai_module), \
-                 patch("broadlistening.pipeline.services.llm.google_exceptions", google_excs):
+            with (
+                patch("broadlistening.pipeline.services.llm.genai", genai_module),
+                patch("broadlistening.pipeline.services.llm.google_exceptions", google_excs),
+            ):
                 with pytest.raises(RateLimitError):
                     request_to_chat_ai(messages=messages, model=model, provider="gemini")
 
@@ -915,9 +917,7 @@ class TestLLMService:
 
         genai_module = types.ModuleType("google.generativeai")
         configure_mock = MagicMock()
-        embed_content_mock = MagicMock(
-            side_effect=[{"embedding": [0.1, 0.2]}, {"embedding": [0.3, 0.4]}]
-        )
+        embed_content_mock = MagicMock(side_effect=[{"embedding": [0.1, 0.2]}, {"embedding": [0.3, 0.4]}])
         genai_module.configure = configure_mock
         genai_module.embed_content = embed_content_mock
         google_module = types.ModuleType("google")

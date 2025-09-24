@@ -220,9 +220,7 @@ def request_to_gemini_chatcompletion(
         raise RuntimeError("GEMINI_API_KEY environment variable is not set")
     genai.configure(api_key=api_key)
 
-    system_instruction = "\n".join(
-        m["content"] for m in messages if m.get("role") == "system"
-    ) or None
+    system_instruction = "\n".join(m["content"] for m in messages if m.get("role") == "system") or None
 
     history = [
         {
@@ -233,9 +231,7 @@ def request_to_gemini_chatcompletion(
         if m.get("role") != "system"
     ]
 
-    model_client = genai.GenerativeModel(
-        model, system_instruction=system_instruction
-    )
+    model_client = genai.GenerativeModel(model, system_instruction=system_instruction)
 
     def _remove_title_keys(obj: dict | list) -> dict | list:
         """Recursively remove `title` keys from JSON schema objects (non-destructive)."""
@@ -244,7 +240,7 @@ def request_to_gemini_chatcompletion(
         if isinstance(obj, list):
             return [_remove_title_keys(item) for item in obj]
         return obj
-    
+
     def _normalize_openai_response_format(schema: dict | None) -> tuple[dict | None, bool]:
         """
         OpenAIのresponse_formatをGemini用へ正規化する。
@@ -287,9 +283,7 @@ def request_to_gemini_chatcompletion(
     elif isinstance(json_schema, dict):
         raw_schema, json_only = _normalize_openai_response_format(json_schema)
         if json_only:
-            generation_config = genai.GenerationConfig(
-                response_mime_type="application/json"
-            )
+            generation_config = genai.GenerationConfig(response_mime_type="application/json")
         else:
             schema = _remove_title_keys(raw_schema) if raw_schema else None
             generation_config = genai.GenerationConfig(
@@ -298,24 +292,20 @@ def request_to_gemini_chatcompletion(
             )
 
     elif is_json:
-        generation_config = genai.GenerationConfig(
-            response_mime_type="application/json"
-        )
+        generation_config = genai.GenerationConfig(response_mime_type="application/json")
 
     max_retries = 5
     base_wait = 8
 
     for attempt in range(max_retries):
         try:
-            response = model_client.generate_content(
-                history, generation_config=generation_config
-            )
+            response = model_client.generate_content(history, generation_config=generation_config)
             usage = getattr(response, "usage_metadata", None)
             if usage:
                 token_usage_input = getattr(usage, "prompt_token_count", 0) or 0
                 token_usage_output = getattr(usage, "candidates_token_count", 0) or 0
                 token_usage_total = getattr(usage, "total_token_count", 0) or 0
-            
+
             try:
                 # candidates, prompt_feedback 等を安全にログ化
                 cands = getattr(response, "candidates", None)
@@ -328,8 +318,12 @@ def request_to_gemini_chatcompletion(
                         sr = getattr(c, "safety_ratings", None)
                         if sr:
                             safety.append([getattr(r, "category", None) for r in sr])
-                    logging.debug("[Gemini] Candidates=%d, finish_reasons=%s, safety_categories=%s",
-                                  len(cands), finish_reasons, safety)
+                    logging.debug(
+                        "[Gemini] Candidates=%d, finish_reasons=%s, safety_categories=%s",
+                        len(cands),
+                        finish_reasons,
+                        safety,
+                    )
 
                 pf = getattr(response, "prompt_feedback", None)
                 if pf:
@@ -340,7 +334,7 @@ def request_to_gemini_chatcompletion(
                     logging.debug("[Gemini] Prompt feedback=%s", pf_dict)
             except Exception as log_ex:
                 logging.debug("[Gemini] Response meta logging failed: %s", log_ex)
-            
+
             text = response.text
             if isinstance(json_schema, type) and issubclass(json_schema, BaseModel):
                 try:
@@ -367,15 +361,12 @@ def request_to_gemini_chatcompletion(
             if not is_rate_limit:
                 logging.error(f"Gemini API error: {e}")
                 raise
-            
+
             retry_delay: int | str | None = getattr(e, "retry_delay", None)
             response_data = getattr(e, "response", None)
             if retry_delay is None and isinstance(response_data, dict):
                 retry_delay = (
-                    response_data.get("error", {})
-                    .get("details", [{}])[0]
-                    .get("metadata", {})
-                    .get("retry_delay")
+                    response_data.get("error", {}).get("details", [{}])[0].get("metadata", {}).get("retry_delay")
                 )
 
             wait_time: int
@@ -389,7 +380,7 @@ def request_to_gemini_chatcompletion(
             if wait_time <= 0:
                 # ジッターを含む指数バックオフ: base * 2^attempt * (0.5 ~ 1.5)
                 jitter = 0.5 + random.random()  # 0.5 ~ 1.5 の範囲
-                wait_time = min(int(base_wait * (2 ** attempt) * jitter), 60)
+                wait_time = min(int(base_wait * (2**attempt) * jitter), 60)
 
             if attempt >= max_retries - 1:
                 logging.error(
@@ -398,10 +389,11 @@ def request_to_gemini_chatcompletion(
                     "Consider upgrading to a paid plan."
                 )
                 raise
-            logging.info(f"Rate limit hit, retrying after {wait_time} seconds (attempt {attempt + 1}/{max_retries})")       
+            logging.info(f"Rate limit hit, retrying after {wait_time} seconds (attempt {attempt + 1}/{max_retries})")
             time.sleep(wait_time)
 
     raise RuntimeError("Gemini API call failed after retries")
+
 
 def request_to_local_llm(
     messages: list[dict],
@@ -539,6 +531,7 @@ EMBDDING_MODELS = [
     "text-embedding-3-small",
 ]
 
+
 def _validate_model(model):
     if model not in EMBDDING_MODELS:
         raise RuntimeError(f"Invalid embedding model: {model}, available models: {EMBDDING_MODELS}")
@@ -623,6 +616,7 @@ def request_to_embed(
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
+
 def extract_embedding_values(response: Any) -> list[float] | None:
     # 1) genai オブジェクト系
     emb_obj = getattr(response, "embedding", None)
@@ -690,8 +684,7 @@ def request_to_gemini_embed(args, model, user_api_key: str | None = None):
             # ここでキー一覧などをログに残すと調査が楽
             keys = list(response.keys()) if isinstance(response, dict) else type(response).__name__
             raise RuntimeError(
-                f"Gemini embedding response did not contain a 'values' list for text: {text[:50]}... "
-                f"(shape={keys})"
+                f"Gemini embedding response did not contain a 'values' list for text: {text[:50]}... (shape={keys})"
             )
         embeds.append(values)
 
@@ -850,6 +843,7 @@ def _local_llm_test():
     response = request_to_local_llm(messages=messages, model="llama-3-elyza-jp-8b", address="localhost:1234")
     print("Local LLM response example:")
     print(response)
+
 
 @retry(
     retry=retry_if_exception_type(openai.RateLimitError),

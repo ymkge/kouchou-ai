@@ -122,6 +122,7 @@ class TestUpdateReportVisibility:
         assert response.status_code == 401
         assert response.json()["detail"] == "Invalid API key"
 
+
 class TestVerifyApiKey:
     def test_verify_api_key_openai(self, client):
         with patch("broadlistening.pipeline.services.llm.request_to_chat_ai") as mock_request:
