@@ -6,6 +6,17 @@
 実行方法:
     cd server && rye run python scripts/test_storage.py
 
+出力例:
+2025-09-25 12:31:44 [info     ] Logger setup complete          [app] json_logs=False log_file=stdout log_level=INFO
+STORAGE_TYPE: azure_blob
+AZURE_BLOB_STORAGE_ACCOUNT_NAME: <BLOB_STORAGE_NAME>
+AZURE_BLOB_STORAGE_CONTAINER_NAME: kouchou-reports
+Azure Blob Storage Account URL: https://<BLOB_STORAGE_NAME>.blob.core.windows.net
+2025-09-25 12:31:44 [info     ] AzureBlobStorageServiceを使用します。アカウント: <BLOB_STORAGE_NAME> コンテナ: kouchou-reports [app]
+Storage service initialized: AzureBlobStorageService
+2025-09-25 12:31:46 [info     ] ファイルをアップロードしました。パス: 'test_upload.txt' パス: 'test/test_upload.txt' [app]
+✅ Upload successful to: test/test_upload.txt
+
 Azure Storage内のファイル確認方法:
 
 1. Azure CLI を使用した確認:
@@ -24,6 +35,8 @@ Azure Storage内のファイル確認方法:
    - ストレージアカウント: <BLOB_STORAGE_NAME>
    - コンテナ: kouchou-reports
    - 表示設定: 「すべてのBlobと現在のバージョンがないBlob」を選択
+
+   スクリーンショット: https://gyazo.com/81698c6fdf2532005c5b1cd5d9ac2298
 
    ファイル構造:
    kouchou-reports/
@@ -49,6 +62,10 @@ Azure Storage内のファイル確認方法:
 """
 
 import os
+import sys
+
+# serverフォルダから実行する場合のパス設定
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.config import settings
 from src.services.storage import get_storage_service
