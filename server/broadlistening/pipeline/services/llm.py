@@ -358,10 +358,20 @@ def request_to_gemini_chatcompletion(
             status_code = getattr(e, "code", None)
             is_rate_limit = (status_code == 429) or isinstance(e, google_exceptions.ResourceExhausted)
 
-            if not is_rate_limit:
+            if is_rate_limit:
+                error_message = str(e).lower()
+                if "free tier" in error_message:
+                    logging.error(
+                        f"Gemini API free tier rate limit exceeded. Stopping immediately. Error: {e}"
+                    )
+                    # パイプラインを停止させるために、例外を再発生させる
+                    raise e
+            else:
+                # レート制限以外のAPIエラー
                 logging.error(f"Gemini API error: {e}")
                 raise
 
+            # --- 以下、有料プラン向けの既存リトライロジック ---
             retry_delay: int | str | None = getattr(e, "retry_delay", None)
             response_data = getattr(e, "response", None)
             if retry_delay is None and isinstance(response_data, dict):
